@@ -8,9 +8,9 @@ from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 
-epoch_number = 5
-max_epoch_steps = 10
-learning_start_steps = 5
+epoch_number = 10
+max_epoch_steps = 200
+learning_start_steps = 100
 train_freq = 1
 
 total_timesteps = max_epoch_steps * epoch_number
