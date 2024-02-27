@@ -232,7 +232,7 @@ class ConnectionEnv(gym.Env):
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
-        observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+        observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)],np.array(self.max_wrench))
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
