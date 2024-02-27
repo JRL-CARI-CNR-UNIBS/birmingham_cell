@@ -10,11 +10,9 @@ from rosgraph_msgs.msg import Clock
 
 import numpy as np
 import gymnasium as gym
-import numpy as np
 from gymnasium import spaces
 # from gymnasium.utils import seeding
 
-import panda_gym
 import time
 
 class BirminghamCellEnv(gym.Env):
