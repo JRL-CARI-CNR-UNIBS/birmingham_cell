@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="simulation" default="True" />
+
+  <include file="$(find birmingham_cell_pybullet)/launch/simulation.launch"/>
+
+  <include file="$(find birmingham_cell_description)/launch/display.launch">
+    <arg name="simulation" default="$(arg simulation)" />
+  </include>
+
+</launch>

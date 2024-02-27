@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+  <rosparam command="load" file="$(find birmingham_cell_pybullet)/config/panda_params.yaml" subst_value="true"/>
+  <rosparam command="load" file="$(find birmingham_cell_pybullet)/config/object_params.yaml" subst_value="true"/>
+  <rosparam command="load" file="$(find birmingham_cell_pybullet)/config/pybullet_params.yaml" subst_value="true"/>
+</launch>

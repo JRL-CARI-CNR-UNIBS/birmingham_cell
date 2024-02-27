@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="use_moveit" default="true" />
+  <arg name="test_type" default="simulation" />
+  <include file="$(find birmingham_cell_configurations)/launch/simulation_start.launch"/>
+
+  <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
+  <include file="$(find birmingham_cell_tests)/launch/skills_servers.launch">
+    <arg name="test_type" default="$(arg test_type)" />
+  </include>
+
+  <include file="$(find skills_util)/launch/bt_server.launch"/>
+</launch>

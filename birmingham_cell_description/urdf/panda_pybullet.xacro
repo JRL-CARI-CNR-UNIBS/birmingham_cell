@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+
+<robot name="panda" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include filename="$(find birmingham_cell_description)/urdf/panda.xacro" />
+  <xacro:panda/>
+</robot>

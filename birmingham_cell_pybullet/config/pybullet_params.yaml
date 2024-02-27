@@ -1,0 +1,31 @@
+pybullet_simulation:
+  simulation_step_time: 0.001
+  real_step_time : 0.001
+  camera_init:
+    distance: 3.00
+    yaw: -3.20
+    pitch: -34.20
+    target_position: [0.65,1.55,-0.64]
+
+  joint_state_publish_rate: 250
+  joint_target_publish_rate: 250
+  object_tf_publish_rate: 250
+  ##### Cell layout
+
+  robots:
+    panda:
+      start_position: [0,0,0]
+      start_orientation: [0,0,0]
+      start_configuration: [0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0, 0.0]
+      fixed: 1    # 1 to fix robot to world, 0 to spawn it unfixed
+
+
+  # environment:
+  #   battery_table:
+  #     start_position: [0.051,-1.61,0]
+  #     start_orientation: [0,0,-0.015]
+  #     fixed: 1    # 1 to fix robot to world, 0 to spawn it unfixed
+  #     package_name: battery_cell_description
+  #     xacro_file_path: 'urdf/battery_table_pybullet.xacro'   # an urdf file with the same name will be generated
+  #     controlled_joint_name: []
+  #     joint_control_mode : '' # position (which is in fact POSITION_VELOCITY_PD), velocity, torque and pd.

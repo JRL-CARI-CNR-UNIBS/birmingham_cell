@@ -1,0 +1,16 @@
+pybullet_simulation:
+  objects:
+    can:
+      package_name: 'battery_cell_description'
+      urdf_file_path: 'urdf/can.urdf'
+      mesh_file_path: 'meshes/can.STL'
+      mesh_position_offset: [0, 0, -0.0575] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    hole:
+      package_name: 'battery_cell_description'
+      urdf_file_path: 'urdf/hole.urdf'
+      mesh_file_path: 'meshes/Hole_60.STL'
+      mesh_position_offset: [0, 0, -0.0575] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'

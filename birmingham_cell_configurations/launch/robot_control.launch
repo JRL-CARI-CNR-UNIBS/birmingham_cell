@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="fake" default="true"/>
+  <arg name="launch_prefix" default=""/>
+  <arg name="controllers_configurations" default="$(find birmingham_cell_configurations)/config/controllers_configurations.yaml"/>
+  <arg name="controllers_dispatches" default="$(find birmingham_cell_configurations)/config/controllers_dispatches.yaml"/>
+
+
+<!-- Load CNR_ROS_CONTROL -->
+<!--Load robot hardware-->
+<rosparam if= "$(arg fake)" command="load" file="$(find birmingham_cell_configurations)/config/level0_hw.yaml" />
+<rosparam unless= "$(arg fake)" command="load" file="$(find birmingham_cell_configurations)/config/level0_pybullet_hw.yaml" />
+<rosparam command="load" file="$(find birmingham_cell_configurations)/config/level1_hw.yaml" />
+
+<!--Load controllers-->
+<rosparam if= "$(arg fake)" command="load" file="$(find birmingham_cell_configurations)/config/level0_controllers_fake.yaml" />
+<rosparam unless= "$(arg fake)" command="load" file="$(find birmingham_cell_configurations)/config/level0_controllers_real.yaml" />
+<rosparam command="load" file="$(find birmingham_cell_configurations)/config/level1_controllers.yaml" />
+
+<node launch-prefix="$(arg launch_prefix)"
+      pkg="cnr_configuration_manager"
+      type="cnr_configuration_manager_node"
+      name="configuration_manager" output="screen">
+
+  <rosparam>
+    appenders: [screen,file]
+    levels: [info]
+    file_name: "controller_manager"
+    append_to_file: true
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%04L][%c] %m%n"
+  </rosparam>
+
+  <!--Load configurations-->
+  <rosparam command="load" file="$(find birmingham_cell_configurations)/config/controllers_configurations.yaml" />
+</node>
+
+
+<node pkg="cnr_configuration_manager" type="dispatcher" name="configuration_dispatcher" output="screen" >
+<rosparam>
+  appenders: [screen,file]
+  levels: [info,file]
+  file_name: "configuration_dispatcher"
+  pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%04L][%c] %m%n"
+</rosparam>
+  <param name="num_worker_threads" value="40" />
+  <!-- Load dispatches -->
+  <rosparam command="load" file="$(find birmingham_cell_configurations)/config/controllers_dispatches.yaml" />
+</node>
+
+</launch>

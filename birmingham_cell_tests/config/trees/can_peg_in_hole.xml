@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="can_peg_in_hole">
+    <Sequence name="can_peg_in_hole">
+        <SubTree ID='can_pick'/>
+        <SubTree ID='can_place'/>
+    </Sequence>
+  </BehaviorTree>
+</root>

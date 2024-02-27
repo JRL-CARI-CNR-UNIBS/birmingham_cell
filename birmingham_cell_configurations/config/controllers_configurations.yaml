@@ -1,0 +1,25 @@
+control_configurations:
+- name: "watch"
+  components:
+  - {hardware_interface: "level0_hw", controller: "js_pub", description: ""}
+  - {hardware_interface: "level0_hw", controller: "ft_pub", description: ""}
+
+- name: "trajectory_tracking"
+  depends: ["watch"]
+  components:
+  - {hardware_interface: "level0_hw", controller: "microinterpolator", description: ""}
+
+- name: simple_touch
+  depends: ["cartesian_velocity"]
+  components:
+  - {hardware_interface: "level1_hw", controller: "simple_touch", runtime_check: false}
+
+- name: "cartesian_velocity"
+  depends: ["watch"]
+  components:
+  - {hardware_interface: "level0_hw", controller: "cartesian_velocity",  runtime_check: false}
+
+- name: "cartesian_position"
+  depends: ["watch"]
+  components:
+  - {hardware_interface: "level0_hw", controller: "cartesian_position",  runtime_check: true}

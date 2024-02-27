@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="debug" default="false" />
+  <arg if="$(arg debug)" name="launch_prefix" default="xterm -e gdb -ex run  --args" />
+  <arg unless="$(arg debug)" name="launch_prefix" default="" />
+
+<node pkg="ik_solver"  type="ik_solver_node" name="panda" output="screen" launch-prefix="$(arg launch_prefix)" >
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/panda_rosdyn_config.yaml"/>
+</node>
+
+</launch>

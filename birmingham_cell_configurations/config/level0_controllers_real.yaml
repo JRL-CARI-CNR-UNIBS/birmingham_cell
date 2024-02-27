@@ -1,0 +1,147 @@
+level0_hw:
+  remap_source_args:
+    - "/level0_hw/microinterpolator/follow_joint_trajectory/cancel"
+    - "/level0_hw/microinterpolator/follow_joint_trajectory/feedback"
+    - "/level0_hw/microinterpolator/follow_joint_trajectory/goal"
+    - "/level0_hw/microinterpolator/follow_joint_trajectory/result"
+    - "/level0_hw/microinterpolator/follow_joint_trajectory/status"
+    - "/level0_hw/microinterpolator/unscaled_joint_target"
+    - "/level0_hw/microinterpolator/execution_ratio"
+
+    - "/level0_hw/js_pub/joint_states"
+
+    - "/level0_hw/cartesian_position/relative_move/cancel"
+    - "/level0_hw/cartesian_position/relative_move/feedback"
+    - "/level0_hw/cartesian_position/relative_move/goal"
+    - "/level0_hw/cartesian_position/relative_move/result"
+    - "/level0_hw/cartesian_position/relative_move/status"
+
+  remap_target_args:
+    - "/panda/follow_joint_trajectory/cancel"
+    - "/panda/follow_joint_trajectory/feedback"
+    - "/panda/follow_joint_trajectory/goal"
+    - "/panda/follow_joint_trajectory/result"
+    - "/panda/follow_joint_trajectory/status"
+    - "/panda/unscaled_joint_target"
+    - "/panda/execution_ratio"
+
+    - "/panda/controller_manager/joint_states"
+
+    - "/panda/relative_move/cancel"
+    - "/panda/relative_move/feedback"
+    - "/panda/relative_move/goal"
+    - "/panda/relative_move/result"
+    - "/panda/relative_move/status"
+
+  ur_trj:
+    action_ns: /scaled_pos_joint_traj_controller/follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - panda_joint1
+      - panda_joint2
+      - panda_joint3
+      - panda_joint4
+      - panda_joint5
+      - panda_joint6
+      - panda_joint7
+  
+  js_pub:
+    type: cnr/control/JointStatePublisher
+    controlled_joint: all
+    base_link: world
+    tool_link: panda_link8
+    robot_description_param: /robot_description
+    robot_description_planning_param: /robot_description_planning
+
+  ft_pub:
+    appenders: [file, screen]
+    levels: [trace, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "panda_hw_ft_pub"
+    type: "cnr/control/ForceTorquePublisher"
+    name: wrench
+    published_topic: "/panda_gripper/wrench"
+
+  microinterpolator:
+    type: "cnr/control/ScaledFJTPosVelEffController"
+    controlled_joints: all
+    continuity_order: 1
+    appenders: [file, screen]
+    levels: [debug, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "microinterpolator"
+    goal_tolerance: 0.001
+    path_tolerance: 0.001
+    check_tolerance: true
+    pub_log_target: true
+    clik_gain: 0.0
+
+  cartesian_velocity:
+    appenders: [file, screen]
+    levels: [debug, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "cartesian_velocity"
+    type: cnr/control/CartesianVelocityController
+    controlled_joints : all
+    kin_update_period : 0.002
+    target_twist_topic: /panda/target_cart_twist  # setpoint twist topic name
+
+  cartesian_position:
+    appenders: [file, screen]
+    levels: [debug, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "cartesian_position"
+    type: cnr/control/CartesianPositionController
+    controlled_joints : all
+    kin_update_period : 0.002
+
+  ctrl1:
+    type:        cnr/control/OpenLoopPositionController
+    setpoint_topic_name: "/joint_target"
+    controlled_joint: all
+    enable_setpoint_watchdog: false
+
+  posvel_ctrl:
+    appenders: [file, screen]
+    levels: [trace, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "posvel"
+    type: "cnr/control/PositionToVelocityController"
+    controlled_joints : all # controlled joints
+    setpoint_topic_name: "/joint_target" # name of the JointState topic with provide the position setpoint
+    use_target_velocity: true # if true, the velocity feedforward (namely, the velocity field of setpoint_topic_name) is added to the controller output. if false, velocity feedforward is not used.
+    antiwindup_ratio: 1.0 #antiwindup_ratio = T_t/T_i. if you don't know what you're doing keep it equal to 1.0
+
+    position_maximum_error: 1.0 # maximum allowed error, controller goes in error mode if it is exceeded. Error mode will set the command velocity equal to zero.
+    position_minimum_error: 0.00001 # minimum error, if the absolute value of error is smaller than this threshold, the error is set equal to 0. It is useful in case of stick-slip to reduce chattering.
+
+    interpolate_setpoint: false # to enable/disable interpolation of setpoint topic if there are not new messages. The interpolation is a first-order-hold, that is: target_position=last_received_target_position+last_received_target_velocity*time_from_last_message. This option is used when the setpoint_topic has a frequency smaller than the controller rate. If disable the last value of target position is used.
+    maximum_interpolation_time: 0.01 # maximum time from last message used for interpolation. If time_from_last_message is greater than maximum_interpolation_time, the target position is set as target_position=last_received_target_position+last_received_target_velocity*maximum_interpolation_time.
+
+    pos_filter: {type: "unity", dof: 6} # filter on feedback position, if you don't know what you're doing keep it disable, that is type: unity
+    target_pos_filter: {type: "unity", dof: 6} # filter on setpoint position, if you don't know what you're doing keep it disable, that is type: unity
+    controller: {type: "proportional_controller", proportional_gain: 0.05, dof: 6} # controller (excluding the integral part). If the lower controllers works properly, a proportional controller should be sufficient. See eigen_control_toolbox to implement advanced controllers.
+    integral_controller: {type: "proportional_controller", proportional_gain: 0.0, dof: 6} # controller (excluding the integral part). If the lower controllers works properly, an integral controller should not be required (set it as a constant equal to 0). See eigen_control_toolbox to implement advanced controllers.
+    use_target_torque: false
+
+  cart_impedance:
+    appenders: [file, screen]
+    levels: [trace, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "cart_impedance"
+    # REQUIRED:
+    controlled_joints : all
+    type                  : "cnr_control/CartImpedanceController"
+    inertia               : [ 10, 10, 10, 10, 10, 10]      # in [kg, kg, kg, kg*m^2, kg*m^2, kg*m^2]
+    stiffness             : [100,100,1200, 120,120,120]   # in [N/m, N/m, N/m, Nm/rad, Nm/rad, Nm/rad]
+    damping               : [120,120,120, 120,120,120]     # in [N/(m/s), N/(m/s), N/(m/s), Nm/(rad/s), Nm/rad/s), Nm/rad/s)]
+    joint_target_topic    : "/joint_target"                # setpoint joint topic name
+    base_frame            : world                          # name of the base link
+    tool_frame            : panda_link8                          # name of the tool link
+    sensor_frame          : panda_link8                          # name of the sensor link (has to be integral with tool_frame)
+
+    # OPTIONAL:
+    base_is_reference     : true                          # true: impedance in base_frame, false: impedance in tool_frame [DEFAULT: true]
+    wrench_deadband       : [0.1, 0.1, 0.1, 0.0, 0.0, 0.0] # deadband on the wrench topic [DEFAULT: zero]
+    external_wrench_topic : "/panda/wrench"      # wrench topic name [DEFAULT: ~/external_wrench]
+    zeroing_sensor_at_startup: true    # remove offset from wrench at startup [DEFALT: true]

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node pkg="birmingham_cell_pybullet"
+        type="hand_server.py"
+        name="hand_server"
+        output="screen" />
+</launch>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<launch>
+<arg name="fake" default="false"/>
+<arg name="use_rviz" default="true" />
+<arg name="debug" default="false" />
+<arg name="pipeline" default="ompl" />
+
+<arg unless="$(arg debug)" name="launch_prefix" value="" />
+<arg     if="$(arg debug)" name="launch_prefix"
+ value="gdb --ex run --args" />
+
+<!-- load URDF&co -->
+ <include file="$(find birmingham_cell_moveit_config)/launch/planning_context.launch">
+   <arg name="load_robot_description" value="true"/>
+ </include>
+
+ <!-- the controller does not manage the hand, use a joint_state_publisher to handle it -->
+<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+  <param name="/use_gui" value="false"/>
+  <param name="rate" value="500"/>
+  <rosparam param="/source_list">[/panda/joint_states,/panda_gripper/joint_states]</rosparam>
+</node>
+
+  <!-- in high_dof_6_moveit_config package the joint_states is remapped to joint_states_desired -->
+<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="true" output="screen" />
+
+<!-- load moveit -->
+<include file="$(find birmingham_cell_moveit_config)/launch/move_group.launch">
+  <arg name="allow_trajectory_execution" value="true"/>
+  <arg name="fake_execution_type" value="false"/>
+  <arg name="info" value="true"/>
+  <arg name="debug" value="$(arg debug)"/>
+  <arg name="pipeline" value="$(arg pipeline)"/>
+</include>
+
+<!-- load rviz -->
+<include file="$(find birmingham_cell_configurations)/launch/rviz.launch" if="$(arg use_rviz)">
+  <arg name="rviz_config" value="$(find birmingham_cell_configurations)/launch/control.rviz"/>
+  <arg name="debug" value="$(arg debug)"/>
+</include>
+
+
+<include file="$(find birmingham_cell_configurations)/launch/robot_control.launch">
+  <arg name="fake" value="$(arg fake)"/>
+  <arg name="launch_prefix" value="$(arg launch_prefix)"/>
+</include>
+</launch>

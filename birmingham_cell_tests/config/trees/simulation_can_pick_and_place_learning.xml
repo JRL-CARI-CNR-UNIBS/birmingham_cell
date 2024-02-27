@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="simulation_can_pick_and_place_learning">
+    <Sequence name="simulation_can_pick_and_place_learning">
+      <ActionExploretionNode action_name="can_pick_and_place" type="standard"/>
+      <ForceSuccess>
+        <SubTree ID='can_pick_and_place'/>
+      </ForceSuccess>
+      <ActionArbitrationNode action_name="can_pick_and_place"/>
+      <ActionLearningNode    action_name="can_pick_and_place" type="standard"/>
+      <SkillExecutionNode robot="kuka" action_name="init" skill_name="open_gripper"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

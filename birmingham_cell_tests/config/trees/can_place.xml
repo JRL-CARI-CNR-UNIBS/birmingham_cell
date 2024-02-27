@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="can_place">
+    <Sequence name="can_place">
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name= "move_to_hole_approach"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name= "move_to_hole_insertion"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name= "insert"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

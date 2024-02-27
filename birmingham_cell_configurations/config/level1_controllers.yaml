@@ -1,0 +1,157 @@
+level1_hw:
+  remap_source_args:
+    - "/level1_hw/js_pub/joint_states"
+    - "/level1_hw/microinterpolator/follow_joint_trajectory/cancel"
+    - "/level1_hw/microinterpolator/follow_joint_trajectory/feedback"
+    - "/level1_hw/microinterpolator/follow_joint_trajectory/goal"
+    - "/level1_hw/microinterpolator/follow_joint_trajectory/result"
+    - "/level1_hw/microinterpolator/follow_joint_trajectory/status"
+    - "/level1_hw/microinterpolator/unscaled_joint_target"
+    - "/level1_hw/microinterpolator/execution_ratio"
+
+    - "/level1_hw/microinterpolator_impedance/follow_joint_trajectory/cancel"
+    - "/level1_hw/microinterpolator_impedance/follow_joint_trajectory/feedback"
+    - "/level1_hw/microinterpolator_impedance/follow_joint_trajectory/goal"
+    - "/level1_hw/microinterpolator_impedance/follow_joint_trajectory/result"
+    - "/level1_hw/microinterpolator_impedance/follow_joint_trajectory/status"
+    - "/level1_hw/microinterpolator_impedance/unscaled_joint_target"
+    - "/level1_hw/microinterpolator_impedance/execution_ratio"
+
+    - "/level1_hw/microinterpolator_elastoplastic/follow_joint_trajectory/cancel"
+    - "/level1_hw/microinterpolator_elastoplastic/follow_joint_trajectory/feedback"
+    - "/level1_hw/microinterpolator_elastoplastic/follow_joint_trajectory/goal"
+    - "/level1_hw/microinterpolator_elastoplastic/follow_joint_trajectory/result"
+    - "/level1_hw/microinterpolator_elastoplastic/follow_joint_trajectory/status"
+    - "/level1_hw/microinterpolator_elastoplastic/unscaled_joint_target"
+    - "/level1_hw/microinterpolator_elastoplastic/execution_ratio"
+
+    - "/level1_hw/simple_touch/simple_touch/cancel"
+    - "/level1_hw/simple_touch/simple_touch/feedback"
+    - "/level1_hw/simple_touch/simple_touch/goal"
+    - "/level1_hw/simple_touch/simple_touch/result"
+    - "/level1_hw/simple_touch/simple_touch/status"
+    - "/level1_hw/replanner/follow_joint_trajectory/cancel"
+    - "/level1_hw/replanner/follow_joint_trajectory/feedback"
+    - "/level1_hw/replanner/follow_joint_trajectory/goal"
+    - "/level1_hw/replanner/follow_joint_trajectory/result"
+    - "/level1_hw/replanner/follow_joint_trajectory/status"
+    - "/level1_hw/replanner/unscaled_joint_target"
+
+  remap_target_args:
+    - "/joint_states"
+    - "/panda/follow_joint_trajectory/cancel"
+    - "/panda/follow_joint_trajectory/feedback"
+    - "/panda/follow_joint_trajectory/goal"
+    - "/panda/follow_joint_trajectory/result"
+    - "/panda/follow_joint_trajectory/status"
+    - "/panda/unscaled_joint_target"
+    - "/panda/execution_ratio"
+
+    - "/panda/follow_joint_trajectory/cancel"
+    - "/panda/follow_joint_trajectory/feedback"
+    - "/panda/follow_joint_trajectory/goal"
+    - "/panda/follow_joint_trajectory/result"
+    - "/panda/follow_joint_trajectory/status"
+    - "/panda/unscaled_joint_target"
+    - "/panda/execution_ratio"
+
+    - "/panda/follow_joint_trajectory/cancel"
+    - "/panda/follow_joint_trajectory/feedback"
+    - "/panda/follow_joint_trajectory/goal"
+    - "/panda/follow_joint_trajectory/result"
+    - "/panda/follow_joint_trajectory/status"
+    - "/panda/unscaled_joint_target"
+    - "/panda/execution_ratio"
+
+    - "/panda/simple_touch/cancel"
+    - "/panda/simple_touch/feedback"
+    - "/panda/simple_touch/goal"
+    - "/panda/simple_touch/result"
+    - "/panda/simple_touch/status"
+    - "/panda/follow_joint_trajectory/cancel"
+    - "/panda/follow_joint_trajectory/feedback"
+    - "/panda/follow_joint_trajectory/goal"
+    - "/panda/follow_joint_trajectory/result"
+    - "/panda/follow_joint_trajectory/status"
+    - "/panda/unscaled_joint_target"
+
+  js_pub:
+    # type:         ros/control/JointStatePublisher
+    type:         cnr/control/JointStatePublisher
+    controlled_joint: all
+    base_link: "world"
+    tool_link: "panda_link8"
+    robot_description_param: /robot_description
+    robot_description_planning_param: /robot_description_planning
+
+  microinterpolator:
+    type: "cnr/control/ScaledFJTPosVelEffController"
+    controlled_joints: all
+    continuity_order: 1
+    goal_tolerance: 0.0001
+    path_tolerance: 0.001
+    check_tolerance: true
+    pub_log_target: true
+    clik_gain: 0.0
+
+  microinterpolator_impedance:  # we need it to restart the planner when we switch to and from the impedance mode
+    type: "cnr/control/ScaledFJTPosController"
+    controlled_joints: all
+    continuity_order: 1
+
+  microinterpolator_elastoplastic:  # we need it to restart the planner when we switch to and from the impedance mode
+    type: "cnr/control/ScaledFJTPosController"
+    controlled_joints: all
+    continuity_order: 1
+
+  freq_est:
+    type:        cnr/control/MultisineIdentificationController
+    controlled_joints: all
+    base_link  : "world"
+    tool_link  : "panda_link8"
+    kin_update_period: 0.002
+    appenders: [file, screen]
+    levels: [trace, info]
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%L][%c] %m%n"
+    file_name: "freq_est"
+    # REQUIRED:
+    active_joint: "shoulder_pan_joint"
+
+    # multisine parameters:
+    rampup_time: 10.0  # [seconds] transient time before and after the multisine signal.
+
+    carrier:
+      angular_frequency: 0.1       # [rad/s]            angular frequency
+      amplitude: 0.1               # [rad or m]         amplitude of the carrier
+      periods:   2.0               # [-]                number of repetitions of the carriers (round using std::ceil)
+
+    input:
+      max_pos: 0.1                 # [rad     or m]     maximum amplitude of the signal in position (deflection from the starting point)
+      max_vel: 2.0                 # [rad/s   or m/s]   maximum velocity of the signal
+      max_acc: 5.0                 # [rad/s^2 or m/s^2] maximum acceleration of the signal
+
+      min_angular_frequency: 1.0   # [rad/s]            must be high than carrier/angular_frequency
+      max_angular_frequency: 100.0 # [rad/s]            must be high than input/min_angular_frequency
+      harmonics_number: 40         # [-]                number of harmonics in the multisine signal
+
+  simple_touch:
+    type: cnr/control/SimpleTouchController
+    sensor_name : "wrench"
+    base_link   : "world"
+    tool_link   : "panda_link8"
+    sensor_frame: "panda_link8"
+    output_twist_ns: "/panda/target_cart_twist"
+
+  replanner:
+    appenders      : [file, screen]
+    levels         : [trace, info]
+    pattern_layout : "[%5p][%d{HH:mm:ss,SSS}][%50M:%04L][%24c] %m%n"
+    file_name      : "replanner"
+    type: "cnr/control/ReplannerFJTPosController"
+    controlled_joints: all
+    n_paths: 4
+    opt_path: true
+    checker_resolution: 0.05
+    group_name: "panda"
+    base_link   : "world"
+    tool_link   : "panda_link8"

@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: birmingham_cell_description
+    relative_path: urdf/birmingham_cell.xacro
+    xacro_args: ""
+  SRDF:
+    relative_path: config/panda.srdf
+  CONFIG:
+    author_name: Michele Delledonne
+    author_email: m.delledonne002@unibs.it
+    generated_timestamp: 1708355874

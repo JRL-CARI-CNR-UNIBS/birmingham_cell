@@ -1,0 +1,87 @@
+exec_params:
+  actions:
+    init:
+      action_type: "init"
+
+      skills:
+        move_to_home:
+          robot: "panda"
+          skill_type: "move_to"
+          target_frame: "home"
+          acceleration_scaling: 1
+          velocity_scaling: 1
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+    can_peg_in_hole:
+      action_type: "peg_in_hole"
+      object_name: "can"
+      location_name: "hole"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+
+        move_to_can_approach:
+          target_frame : "can_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_can_grasp:
+          target_frame : "can_grasp"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"         # the movement is refered to this frame
+          position: [0,0,-0.02]     # traslation to respect the three axes. Position and orientation are alternative to rotZdeg and others.
+          quaternion: [0,0,0,1]  # rotation to respect the three axes
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7
+
+        move_to_hole_approach:
+          target_frame : "hole_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_hole_insertion:
+          target_frame : "hole_insertion"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        insert:
+          skill_type: "simple_touch"
+          goal_twist_frame: "panda_grasptarget"
+          release: 0.06
+          release_condition: 0
+          relative_target: true
+          goal_twist: [0, 0, 0.05, 0, 0, 0]
+          target_force: 200.0

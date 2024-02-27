@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+  <include file="$(find birmingham_cell_tests)/launch/rosdyn_node.launch"/>
+  <arg name="test_type" default="simulation"/>
+
+  <rosparam if="$(eval test_type == 'real')" command="load" file="$(find birmingham_cell_tests)/config/real_skills_framework_config.yaml" />
+  <rosparam if="$(eval test_type == 'simulation')" command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
+  <include file="$(find skills_util)/launch/skills_servers.launch"/>
+</launch>

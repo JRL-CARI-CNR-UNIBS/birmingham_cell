@@ -1,0 +1,420 @@
+actions:
+  can_peg_in_hole:
+    action_type: peg_in_hole
+    duration: 0
+    duration_reward: -12385.99999900009
+    executed: 0
+    fail: 1
+    failure: 0
+    failure_reward: -0.0
+    final_distance: 0
+    final_distance_reward: -11094.824754935094
+    location_name: hole
+    max_force: 0
+    max_force_reward: -780.8261191876478
+    max_wrench:
+    - 244.63801896250973
+    - 106.26812710569372
+    - 917.0796072300682
+    - 37.252170207894416
+    - 20.470159706886758
+    - 85.81274187897102
+    object_name: can
+    place_tollerance: 0.01
+    skills:
+      close_gripper:
+        contact: false
+        duration: 2.2099999999999227
+        executed: 1
+        fail: 0
+        gripper_type: pybullet
+        max_force: 29.375180517219658
+        max_wrench:
+        - 0.785577178389604
+        - 22.789325336973036
+        - 18.96681946201835
+        - 4.204949860683012
+        - 1.7970857288181312
+        - 1.3053125019293874
+        movement: close
+        skill_type: panda_gripper_move
+      insert:
+        contact: true
+        duration: 1.1660000000000537
+        executed: 0
+        final_distance: 0.011094824754935095
+        goal_twist:
+        - 0.0
+        - 0.0
+        - 0.05
+        - 0.0
+        - 0.0
+        - 0.0
+        goal_twist_frame: panda_grasptarget
+        goal_twist_old:
+        - 0.0
+        - 0.0
+        - 0.05
+        - 0.0
+        - 0.0
+        - 0.0
+        goal_twist_ratio:
+        - 1.0
+        - .inf
+        - 1.0
+        - 1.0
+        - 0.25
+        - 1.0
+        - 0.5
+        - 0.5
+        - 1.0
+        - 1.0
+        - 0.25
+        - 1.0
+        - 1.0
+        - .inf
+        - 1.0
+        - 1.0
+        - 0.25
+        - 1.0
+        goal_twist_test_number:
+        - 2
+        - 0
+        - 0
+        - 1
+        - 1
+        - 0
+        - 1
+        - 1
+        - 0
+        - 1
+        - 1
+        - 0
+        - 2
+        - 0
+        - 0
+        - 0
+        - 1
+        - 1
+        max_force: 780.8261191876478
+        max_wrench:
+        - 44.08324250432492
+        - 106.26812710569372
+        - 778.9244466887312
+        - 37.252170207894416
+        - 3.746260058779828
+        - 9.797811838454711
+        relative_target: true
+        release: 0.06
+        release_condition: 0
+        reward: -1.0e+20
+        reward_old: -1.0e+20
+        skill_type: simple_touch
+        target_force: 200.0
+        target_force_old: 200.0
+        target_force_ratio:
+        - 0.5
+        - 1.0
+        - 0.5
+        target_force_test_number:
+        - 1
+        - 0
+        - 1
+        test_number: 3
+      move_to_can_approach:
+        acceleration_scaling: 0.5
+        contact: false
+        duration: 2.0270000000000437
+        executed: 1
+        final_distance: 0.30599490875088464
+        max_force: 100.57404660242001
+        max_wrench:
+        - 69.06064434794008
+        - 4.224118615434369
+        - 73.1140478563018
+        - 1.7624494530940786
+        - 1.0127242605348457
+        - 2.861156973261142
+        planning_time: 0.5
+        relative_orientation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        relative_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        replan_attempts: 10
+        skill_type: move_to
+        target_frame: can_approach
+        velocity_scaling: 0.5
+      move_to_can_grasp:
+        acceleration_scaling: 0.5
+        acceleration_scaling_old: 0.5
+        acceleration_scaling_ratio:
+        - 1.0
+        - 0.5
+        - 0.5
+        acceleration_scaling_test_number:
+        - 0
+        - 1
+        - 1
+        contact: false
+        duration: 1.6100000000000136
+        executed: 0
+        final_distance: 0.30601927646861476
+        max_force: 96.72912985800475
+        max_wrench:
+        - 14.904172875121095
+        - 2.1073391552128866
+        - 96.67266634745692
+        - 2.9070856722011413
+        - 0.3935736580840699
+        - 4.344019526844282
+        planning_time: 0.5
+        relative_orientation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        relative_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        relative_position_old:
+        - 0.0
+        - 0.0
+        - 0.0
+        relative_position_ratio:
+        - 0.5
+        - 0.5
+        - 1.0
+        - 0.5
+        - 0.5
+        - 1.0
+        - 1.0
+        - 1.0
+        - 0.25
+        relative_position_test_number:
+        - 1
+        - 1
+        - 0
+        - 1
+        - 1
+        - 0
+        - 0
+        - 0
+        - 2
+        replan_attempts: 10
+        reward: -1.0e+20
+        reward_old: -1.0e+20
+        skill_type: move_to
+        target_frame: can_grasp
+        test_number: 3
+        velocity_scaling: 0.5
+        velocity_scaling_old: 0.5
+        velocity_scaling_ratio:
+        - 0.5
+        - 1.0
+        - 0.5
+        velocity_scaling_test_number:
+        - 1
+        - 0
+        - 1
+      move_to_hole_approach:
+        acceleration_scaling: 0.5
+        contact: false
+        duration: 1.6130000000000564
+        executed: 1
+        final_distance: 0.16349971114610037
+        max_force: 136.62200034031866
+        max_wrench:
+        - 96.17021821127524
+        - 75.13568324279173
+        - 78.22541832586919
+        - 8.799905400551381
+        - 5.222009527429259
+        - 39.655548490075724
+        planning_time: 0.5
+        relative_orientation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        relative_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        replan_attempts: 10
+        skill_type: move_to
+        target_frame: hole_approach
+        velocity_scaling: 0.5
+      move_to_hole_insertion:
+        acceleration_scaling: 0.5
+        acceleration_scaling_old: 0.5
+        acceleration_scaling_ratio:
+        - 1.0
+        - 0.5
+        - 0.5
+        acceleration_scaling_test_number:
+        - 0
+        - 1
+        - 1
+        contact: false
+        duration: 1.0309999989999596
+        executed: 0
+        final_distance: 0.11404683576785755
+        max_force: 36.79658609708857
+        max_wrench:
+        - 2.0777150038362846
+        - 2.552314345856793
+        - 36.66979837707957
+        - 1.978130308407898
+        - 0.7012590095251182
+        - 1.2627731495075794
+        planning_time: 0.5
+        relative_orientation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        relative_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        relative_position_old:
+        - 0.0
+        - 0.0
+        - 0.0
+        relative_position_ratio:
+        - 0.5
+        - 1.0
+        - 0.5
+        - 0.5
+        - 1.0
+        - 0.5
+        - 1.0
+        - 0.25
+        - 1.0
+        relative_position_test_number:
+        - 1
+        - 0
+        - 1
+        - 1
+        - 0
+        - 1
+        - 0
+        - 2
+        - 0
+        replan_attempts: 10
+        reward: -1.0e+20
+        reward_old: -1.0e+20
+        skill_type: move_to
+        target_frame: hole_insertion
+        test_number: 3
+        velocity_scaling: 0.5
+        velocity_scaling_old: 0.5
+        velocity_scaling_ratio:
+        - 0.5
+        - 0.5
+        - 1.0
+        velocity_scaling_test_number:
+        - 1
+        - 1
+        - 0
+      open_gripper:
+        contact: false
+        duration: 2.2480000000000473
+        executed: 1
+        fail: 0
+        gripper_type: pybullet
+        max_force: 53.95432439535217
+        max_wrench:
+        - 6.817270169829727
+        - 45.98560581856411
+        - 32.74860345484667
+        - 6.758621815562852
+        - 1.061888415829166
+        - 4.828776589363703
+        movement: open
+        skill_type: panda_gripper_move
+      return:
+        angular_velocity_rad_s: 0.7
+        contact: false
+        duration: 0.48099999999999454
+        executed: 1
+        final_distance: 0.3039410274580268
+        frame: panda_grasptarget
+        linear_velocity_m_s: 0.05
+        max_force: 43.78075719724715
+        max_wrench:
+        - 0.8717751643928602
+        - 1.3109464633283565
+        - 43.75496137076526
+        - 1.4360773324648843
+        - 1.22809065863426
+        - 3.5317158838521756
+        position:
+        - 0
+        - 0
+        - -0.02
+        quaternion:
+        - 0
+        - 0
+        - 0
+        - 1
+        skill_type: cartesian_position
+    test_number: 4
+    test_number_star: 2
+    total_reward: -24261.650873122835
+    total_reward_old: -23338.89566598255
+  init:
+    action_type: init
+    duration: 8.050999999999988
+    executed: 1
+    failure: 0
+    max_force: 193.93128461758832
+    max_wrench:
+    - 123.98588171668854
+    - 152.55026880245742
+    - 53.519278274837546
+    - 10.45531621729827
+    - 10.136946453535234
+    - 7.572979166062925
+    skills:
+      close_gripper:
+        gripper_type: pybullet
+        movement: close
+        skill_type: panda_gripper_move
+      move_to_home:
+        acceleration_scaling: 1
+        relative_orientation:
+        - 0.0
+        - 0.0
+        - 0.0
+        - 1.0
+        relative_position:
+        - 0.0
+        - 0.0
+        - 0.0
+        robot: panda
+        skill_type: move_to
+        target_frame: home
+        velocity_scaling: 1
+      open_gripper:
+        contact: false
+        duration: 1.9890000000000327
+        executed: 1
+        fail: 0
+        gripper_type: pybullet
+        max_force: 193.93128461758832
+        max_wrench:
+        - 123.98588171668854
+        - 152.55026880245742
+        - 33.00890037256394
+        - 10.45531621729827
+        - 7.182816911797027
+        - 3.568953782266673
+        movement: open
+        skill_type: panda_gripper_move

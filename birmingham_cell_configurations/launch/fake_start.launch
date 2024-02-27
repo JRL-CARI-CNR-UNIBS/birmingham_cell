@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find birmingham_cell_configurations)/launch/start.launch">
+    <arg name="fake" value="true"/>
+  </include>
+
+</launch>

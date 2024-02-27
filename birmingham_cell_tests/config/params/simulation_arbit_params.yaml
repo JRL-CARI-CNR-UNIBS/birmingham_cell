@@ -1,0 +1,33 @@
+arbit_params:
+  actions:
+    can_peg_in_hole:
+      failure: -1000000000
+      final_distance: -1000000
+      duration: -1000
+      max_force: -1 
+
+      skills:
+        move_to_can_approach:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_can_grasp:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_hole_approach:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_hole_insertion:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        insert:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 

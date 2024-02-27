@@ -1,0 +1,75 @@
+pybullet_simulation:
+  robots:
+    panda:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/panda_pybullet.xacro'   # an urdf file with the same name will be generated
+      controlled_joint_name: 
+      - 'panda_joint1'
+      - 'panda_joint2'
+      - 'panda_joint3'
+      - 'panda_joint4'
+      - 'panda_joint5'
+      - 'panda_joint6'
+      - 'panda_joint7'
+      - 'panda_left_joint_circle'
+      joint_control_mode : 'position' # position (which is in fact POSITION_VELOCITY_PD), velocity, torque and pd.
+      joint_control_integral_gain: [0,0,0,0,0,0,0,0]
+      sensors: # define an array that containing the sensorized joints
+        - 'panda_hand_joint'
+
+      constraints:
+        - parent_body: 'panda'
+          parent_link: 'panda_leftfinger'
+          child_body: 'panda'
+          child_link: 'panda_end_left_circle'
+          type: 'fixed'             # joint type: prismatic, fixed, point2point, gear
+          axis: [0,0,0]                   # joint axis, in child link frame
+          parent_frame_position: [0, 0, 0]  # position of the joint frame relative to parent center of mass frame.
+          child_frame_position: [0,0,0]   # position of the joint frame relative to a given child center of mass frame (or world origin if no child specified)
+          parent_frame_orientation: [0,0,0,1] # the orientation of the joint frame relative to parent center of mass coordinate frame
+          child_frame_orientation: [0,0,0,1]  # the orientation of the joint frame relative to the child center of mass coordinate frame (or world origin frame if no child specified)
+          max_force: 10000
+        - parent_body: 'panda'
+          parent_link: 'panda_rightfinger'
+          child_body: 'panda'
+          child_link: 'panda_end_right_circle'
+          type: 'fixed'             # joint type: prismatic, fixed, point2point, gear
+          axis: [0,0,0]                   # joint axis, in child link frame
+          parent_frame_position: [0, 0, 0]  # position of the joint frame relative to parent center of mass frame.
+          child_frame_position: [0,0,0]   # position of the joint frame relative to a given child center of mass frame (or world origin if no child specified)
+          parent_frame_orientation: [0,0,1,0] # the orientation of the joint frame relative to parent center of mass coordinate frame
+          child_frame_orientation: [0,0,0,1]  # the orientation of the joint frame relative to the child center of mass coordinate frame (or world origin frame if no child specified)
+          max_force: 10000
+        - parent_body: 'panda'
+          parent_link: 'panda_left_circle'
+          child_body: 'panda'
+          child_link: 'panda_right_circle'
+          type: 'gear'             # joint type: prismatic, fixed, point2point, gear
+          gear_ratio: -1
+          erp: 10
+          # erp: 0.1
+          axis: [1,0,0]                   # joint axis, in child link frame
+          parent_frame_position: [0,0,0]  # position of the joint frame relative to parent center of mass frame.
+          parent_frame_orientation: [0,0,0,1] # the orientation of the joint frame relative to parent center of mass coordinate frame
+          child_frame_position: [0,0,0]   # position of the joint frame relative to a given child center of mass frame (or world origin if no child specified)
+          child_frame_orientation: [0,0,0,1]  # the orientation of the joint frame relative to the child center of mass coordinate frame (or world origin frame if no child specified)
+          max_force: 10000
+      # link_dynamics:
+      #   - link_name: 'gripper_left_finger'
+      #     lateral_friction: 60
+      #     spinning_friction: 0.1
+      #     rolling_friction: 0.1
+      #     contact_stiffness: 1000000
+      #     contact_damping: 1
+      #     linear_damping: 0
+      #     angular_damping: 0
+      #     friction_anchor: 1
+      #   - link_name: 'gripper_right_finger'
+      #     lateral_friction: 60
+      #     spinning_friction: 0.1
+      #     rolling_friction: 0.1
+      #     contact_stiffness: 1000000
+      #     contact_damping: 1
+      #     linear_damping: 0
+      #     angular_damping: 0
+      #     friction_anchor: 1

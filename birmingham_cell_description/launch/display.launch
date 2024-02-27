@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="simulation" default="False" />
+
+  <include file="$(find birmingham_cell_description)/launch/upload.launch"/>
+
+  <node if = "$(arg simulation)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="/use_gui" value="false"/>
+    <param name="rate" value="500"/>
+    <rosparam param="/source_list">[/panda/joint_states]</rosparam>
+  </node>
+
+  <node name="joint_target_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" >
+    <param name="rate" value="500"/>
+    <remap if = "$(arg simulation)" from="joint_states" to="/panda/joint_targets"/>
+  </node>
+  
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find birmingham_cell_description)/config/view_cell.rviz" required="true" />
+</launch>
+
+

@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="use_moveit" default="false" />
+
+  <include file="$(find birmingham_cell_pybullet)/launch/load_config.launch" />
+
+  <include file="$(find pybullet_simulation)/launch/run_pybullet.launch" >
+      <arg name="use_moveit" value="$(arg use_moveit)"/>
+  </include>
+  <include file="$(find birmingham_cell_pybullet)/launch/gripper_server.launch" />
+
+</launch>

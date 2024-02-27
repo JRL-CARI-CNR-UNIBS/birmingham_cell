@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="can_pick">
+    <Sequence name="can_pick">
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name="open_gripper"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name="move_to_can_approach"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name="move_to_can_grasp"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name="close_gripper"/>
+      <SkillExecutionNode robot="panda" action_name="can_peg_in_hole" skill_name="return"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

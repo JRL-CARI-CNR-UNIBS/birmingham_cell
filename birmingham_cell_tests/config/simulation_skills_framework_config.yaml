@@ -1,0 +1,23 @@
+skills_arbitrator:
+  arbitrator_parameters_name_space: 'arbit_params'
+
+skills_learning:
+  learning_parameter_name_space: 'learn_params'
+
+skills_executer:
+  skills_parameters_name_space:  'exec_params'
+  robots:
+    panda:
+      end_link_frame: "panda_grasptarget"
+      sensor_type: "pybullet"
+      sensored_joint: "panda_hand_joint"
+      initial_attached_link_name: 'panda_hand'
+      initial_end_effector_touch_links:
+        - 'panda_leftfinger'
+        - 'panda_rightfinger'
+  # skill_types:
+  #   watch: # only joint state and force torque publischer are activate
+  #     controller_configuration_name: "watch"
+  #   cart_pos:
+
+

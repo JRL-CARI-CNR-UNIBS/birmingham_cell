@@ -1,0 +1,14 @@
+type: ik_solver/RosdynIkSolver
+base_frame: world # base frame of the chain
+flange_frame: panda_link8 # end frame of the chain
+
+tool_frame: panda_grasptarget # destination frame of the IK (it should be rigid attached to flange_frame)
+desired_solutions: 32 # number of desired solution
+joint_names:
+- panda_joint1
+- panda_joint2
+- panda_joint3
+- panda_joint4
+- panda_joint5
+- panda_joint6
+- panda_joint7

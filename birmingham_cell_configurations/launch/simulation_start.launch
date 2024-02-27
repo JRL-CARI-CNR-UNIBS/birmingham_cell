@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find birmingham_cell_configurations)/launch/start.launch">
+    <arg name="fake" value="false"/>
+  </include>
+
+  <include file="$(find birmingham_cell_pybullet)/launch/simulation.launch">
+    <arg name="use_moveit" value="true"/>
+  </include>
+</launch>

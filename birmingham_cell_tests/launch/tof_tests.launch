@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="tests_type" default="simulation" />
+  <arg name="tree_name" default="tof_can_peg_in_hole" />
+ 
+  <param name="tree_name" type="string" value="$(arg tree_name)" />
+  <param name="tests_type" type="string" value="$(arg tests_type)" />
+
+  <node name="rosparam_to_rostopic" pkg="birmingham_cell_tests" type="rosparam_to_rostopic.py" output="screen"/>
+  <node name="run_opt_tests_node" pkg="birmingham_cell_tests" type="tof_tests.py" output="screen"/>
+
+</launch>

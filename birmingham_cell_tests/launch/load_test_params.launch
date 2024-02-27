@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="tests_type" default="simulation"/>
+  
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/params/simulation_arbit_params.yaml" />
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/params/simulation_exec_params.yaml" />
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/params/simulation_learn_params.yaml" />
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/params/TF_params.yaml" />
+</launch>
