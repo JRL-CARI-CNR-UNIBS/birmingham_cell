@@ -33,7 +33,8 @@ class ConnectionEnv(gym.Env):
         force_threshold: float = 50,
         torque_threshold: float = 100,
         action_type: str = 'target_value',
-        randomized_tf: list = ['can_grasp', 'hole_insertion']
+        randomized_tf: list = ['can_grasp', 'hole_insertion'],
+        debug_mode: bool = False
     ) -> None:
         rospy.init_node(node_name)
 
@@ -46,6 +47,7 @@ class ConnectionEnv(gym.Env):
         self.torque_threshold = torque_threshold
         self.action_type = action_type   # currently available, target_value  increment_value  
         self.randomized_tf = randomized_tf
+        self.debug_mode = debug_mode
 
         # arguments to define
         self.param_lower_bound = []
@@ -233,6 +235,7 @@ class ConnectionEnv(gym.Env):
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
         observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
+        if self.debug_mode: self._print_obs(observation)
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -291,6 +294,7 @@ class ConnectionEnv(gym.Env):
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
+        if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
         # Settaggio dei nuovi parametri attraverso la action.
@@ -424,3 +428,21 @@ class ConnectionEnv(gym.Env):
         except:
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
             self.max_wrench = [100000,100000,100000,100000,100000,100000]
+
+    def _print_action(self, action) -> None:
+        print('ACTION____________________________________________________________________')
+        for param_name in self.param_names_to_value_index.keys():
+            for index in self.param_names_to_value_index[param_name]:
+                print(param_name + str(index) + ': ' + str(action[index]))
+        print('__________________________________________________________________________')
+
+    def _print_obs(self, observation) -> None:
+        print('OBSERVATION_______________________________________________________________')
+        for param_name in self.param_names_to_value_index.keys():
+            for index in self.param_names_to_value_index[param_name]:
+                print(param_name + str(index) + ': ' + str(self.param_values[index]))
+        
+        print('obj_to_grasp_pos: ' + str(observation[len(self.param_values):len(self.param_values)+3]))
+        print('tar_to_insertion_pos: ' + str(observation[len(self.param_values)+4:len(self.param_values)+7]))
+        print('max_wrench: ' + str(observation[len(self.param_values)+8:len(self.param_values)+14]))
+        print('__________________________________________________________________________')
