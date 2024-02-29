@@ -24,7 +24,7 @@
       name="configuration_manager" output="screen">
 
   <rosparam>
-    appenders: [screen,file]
+    appenders: [screen]
     levels: [info]
     file_name: "controller_manager"
     append_to_file: true
@@ -37,12 +37,12 @@
 
 
 <node pkg="cnr_configuration_manager" type="dispatcher" name="configuration_dispatcher" output="screen" >
-<rosparam>
-  appenders: [screen,file]
-  levels: [info,file]
-  file_name: "configuration_dispatcher"
-  pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%04L][%c] %m%n"
-</rosparam>
+  <rosparam>
+    appenders: [screen]
+    levels: [info]
+    file_name: "configuration_dispatcher"
+    pattern_layout: "[%5p][%d{HH:mm:ss,SSS}][%M:%04L][%c] %m%n"
+  </rosparam>
   <param name="num_worker_threads" value="40" />
   <!-- Load dispatches -->
   <rosparam command="load" file="$(find birmingham_cell_configurations)/config/controllers_dispatches.yaml" />

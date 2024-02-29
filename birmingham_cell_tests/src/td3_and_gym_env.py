@@ -20,7 +20,7 @@ env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
                trees_path=trees_path,
-               # debug_mode=True)
+            #    debug_mode=True)
                debug_mode=False)
 
 n_actions = env.action_space.shape[-1]

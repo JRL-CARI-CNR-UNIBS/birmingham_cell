@@ -86,7 +86,7 @@ class ConnectionEnv(gym.Env):
             exit(0)
         
         n_env_action = 0
-
+        # n_total_params = 0
         for action_name in action_params:
             for skill_name in action_params[action_name]['skills']:
                 for param_name in action_params[action_name]['skills'][skill_name]:
@@ -111,10 +111,10 @@ class ConnectionEnv(gym.Env):
                                 if param_value[i][0] == param_value[i][1]:
                                     self.param_to_avoid_index[complete_name].append(i)
                                 else:
-                                    n_env_action +=1
                                     self.param_lower_bound.append(param_value[i][0])
                                     self.param_upper_bound.append(param_value[i][1])
-                                    self.param_names_to_value_index[complete_name].append(n_env_action-1)
+                                    self.param_names_to_value_index[complete_name].append(n_env_action)
+                                    n_env_action +=1
                             else:
                                 rospy.logerr('There is a problem with the structure of /' + 
                                             learn_ns + '/' + action_name + 
@@ -126,6 +126,7 @@ class ConnectionEnv(gym.Env):
                                      '/skills/' + skill_name + 
                                      '/' + param_name)          
 
+        
         # creo i client per i servizi pybullet
         rospy.loginfo("Wait for skills_util/run_tree service")
         rospy.wait_for_service('/skills_util/run_tree')
@@ -235,6 +236,7 @@ class ConnectionEnv(gym.Env):
                 new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
             new_tfs.append(new_tf)
         rospy.set_param('tf_params',new_tfs)
+        rospy.sleep(0.5)
 
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri
@@ -303,6 +305,7 @@ class ConnectionEnv(gym.Env):
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
+
         # Settaggio dei nuovi parametri attraverso la action.
         # Se l'azione è il nuovo set di parametri
         if self.action_type == 'target_value':        
@@ -358,6 +361,9 @@ class ConnectionEnv(gym.Env):
                         new_param = float(np.clip(param_value + variation,
                                                   self.param_lower_bound[self.param_names_to_value_index[param_name][0]],
                                                   self.param_upper_bound[self.param_names_to_value_index[param_name][0]]))
+                        if self.debug_mode:
+                            print(param_name + ' old: ' + str(param_value))
+                            print(param_name + ' new: ' + str(new_param))
                         rospy.set_param(param_name,new_param)
                     else:
                         rospy.logerr('Current parameter and the new one have different sizes')
@@ -369,6 +375,9 @@ class ConnectionEnv(gym.Env):
                             new_param.append(float(np.clip((param_value[i] + variation),
                                                    self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
                                                    self.param_upper_bound[self.param_names_to_value_index[param_name][i]])))
+                        if self.debug_mode:
+                            print(param_name + ' old: ' + str(param_value))
+                            print(param_name + ' new: ' + str(new_param))
                         rospy.set_param(param_name,new_param)
                     elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
                         rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
@@ -383,6 +392,9 @@ class ConnectionEnv(gym.Env):
                                 new_param.append(float(np.clip((param_value[i] + variation),
                                                     self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
                                                     self.param_upper_bound[self.param_names_to_value_index[param_name][ind]])))
+                        if self.debug_mode:
+                            print(param_name + ' old: ' + str(param_value))
+                            print(param_name + ' new: ' + str(new_param))
                         rospy.set_param(param_name,new_param)
                     else:
                         rospy.logerr('Current parameter and the new one have different sizes')
@@ -390,12 +402,12 @@ class ConnectionEnv(gym.Env):
                     rospy.logerr('Current param has wrong structure.')
 
         # Lancio del tree. Le distanze di inizio e fine vengono registrate. 
-        self._update_info
+        self._update_info()
         self.initial_distance = self._distance(self.tar_pos,self.obj_pos)
         self.run_tree_clnt.call(self.tree_name, self.trees_path)
         observation = self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
-        
+
         reward = self._get_reward()
         terminated = bool(self._is_success())
         truncated = False
@@ -411,6 +423,7 @@ class ConnectionEnv(gym.Env):
     def _get_reward(self) -> float:
         self._update_info()
         dist_perc = 1 - (self.final_distance/self.initial_distance)
+        rospy.loginfo('REWARD_____________________________________________________________________')
         rospy.loginfo('Distance percentage: ' + str(dist_perc))
         rospy.loginfo('Max wrench: [' + 
                       str(self.max_wrench[0]) + ',' + 
@@ -425,20 +438,26 @@ class ConnectionEnv(gym.Env):
         reward = reward + (self.max_wrench[3] * -1)
         reward = reward + (self.max_wrench[4] * -1)
         rospy.loginfo('Reward: ' + str(reward))
+        rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
+        rospy.loginfo('---------------------------------------------------------------------------')
         return reward
 
-    def _update_info(self) -> None:
-        rospy.sleep(0.5)
-        
+    def _update_info(self) -> None:        
         # leggo i valori dei parametri
         self.param_values.clear()
+
         for param_name in self.param_names_to_value_index.keys():
             param_value = rospy.get_param(param_name)
             if isinstance(param_value, int) or isinstance(param_value, float):
                 self.param_values.append(param_value)
             elif isinstance(param_value, list):
-                for single_value in param_value:
-                    self.param_values.append(single_value)
+                if (len(self.param_names_to_value_index[param_name]) == len(param_value)):
+                    for single_value in param_value:
+                        self.param_values.append(single_value)
+                elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
+                    for i in range(len(param_value)):
+                        if not i in self.param_to_avoid_index[param_name]:
+                            self.param_values.append(param_value[i])
 
         # leggo posizione oggetto e target
         (self.obj_pos, self.obj_rot) = self.tf_listener.lookupTransform(self.object_name, 'world', rospy.Time(0))
@@ -447,6 +466,9 @@ class ConnectionEnv(gym.Env):
         # leggo posizioni relative di presa e rilascio 
         (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp', rospy.Time(0))
         (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
+
+        print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
+        print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
 
         # leggo la forza massima del task 
         try:
@@ -466,17 +488,26 @@ class ConnectionEnv(gym.Env):
     def _print_action(self, action) -> None:
         print('ACTION____________________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
-            for index in self.param_names_to_value_index[param_name]:
-                print(param_name + str(index) + ': ' + str(action[index]))
-        print('__________________________________________________________________________')
+            if len(self.param_names_to_value_index[param_name]) == 1:
+                print(param_name + ': ' + str(action[self.param_names_to_value_index[param_name][0]]))
+            else:
+                param_len = len(self.param_names_to_value_index[param_name])
+                start_index = self.param_names_to_value_index[param_name][0]
+                print(param_name + ': ' + str(action[start_index:start_index+param_len]))
+        print('--------------------------------------------------------------------------')
 
     def _print_obs(self, observation) -> None:
         print('OBSERVATION_______________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
-            for index in self.param_names_to_value_index[param_name]:
-                print(param_name + str(index) + ': ' + str(self.param_values[index]))
-        
-        print('obj_to_grasp_pos: ' + str(observation[len(self.param_values):len(self.param_values)+3]))
-        print('tar_to_insertion_pos: ' + str(observation[len(self.param_values)+4:len(self.param_values)+7]))
-        print('max_wrench: ' + str(observation[len(self.param_values)+8:len(self.param_values)+14]))
-        print('__________________________________________________________________________')
+            if len(self.param_names_to_value_index[param_name]) == 1:
+                print(param_name + ': ' + str(observation[self.param_names_to_value_index[param_name][0]]))
+            else:
+                param_len = len(self.param_names_to_value_index[param_name])
+                start_index = self.param_names_to_value_index[param_name][0]
+                print(param_name + ': ' + str(observation[start_index:start_index+param_len]))
+
+        start_index = len(self.param_values)
+        print('obj_to_grasp_pos: ' + str(observation[start_index:start_index+3]))
+        print('tar_to_insertion_pos: ' + str(observation[start_index+3:start_index+6]))
+        print('max_wrench: ' + str(observation[start_index+6:start_index+12]))
+        print('--------------------------------------------------------------------------')
