@@ -53,6 +53,7 @@ class ConnectionEnv(gym.Env):
         self.param_lower_bound = []
         self.param_upper_bound = []
         self.param_names_to_value_index = {}
+        self.param_to_avoid_index = {}
         self.param_values = []
         self.obj_pos = []
         self.obj_rot = []
@@ -104,12 +105,16 @@ class ConnectionEnv(gym.Env):
                                          '/skills/' + skill_name + 
                                          '/' + param_name)
                     elif isinstance(param_value[0], list):
+                        self.param_to_avoid_index[complete_name] = []
                         for i in range(len(param_value)):
                             if (len(param_value[i]) == 2):
-                                n_env_action +=1
-                                self.param_lower_bound.append(param_value[i][0])
-                                self.param_upper_bound.append(param_value[i][1])
-                                self.param_names_to_value_index[complete_name].append(n_env_action-1)
+                                if param_value[i][0] == param_value[i][1]:
+                                    self.param_to_avoid_index[complete_name].append(i)
+                                else:
+                                    n_env_action +=1
+                                    self.param_lower_bound.append(param_value[i][0])
+                                    self.param_upper_bound.append(param_value[i][1])
+                                    self.param_names_to_value_index[complete_name].append(n_env_action-1)
                             else:
                                 rospy.logerr('There is a problem with the structure of /' + 
                                             learn_ns + '/' + action_name + 
@@ -235,6 +240,7 @@ class ConnectionEnv(gym.Env):
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
         observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
+        # observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
         if self.debug_mode: self._print_obs(observation)
         return observation
 
@@ -320,12 +326,21 @@ class ConnectionEnv(gym.Env):
                             value = float(np.clip(action[self.param_names_to_value_index[param_name][i]],
                                                   self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
                                                   self.param_upper_bound[self.param_names_to_value_index[param_name][i]]))
-                            if value != value:
-                                value = (self.param_upper_bound[self.param_names_to_value_index[param_name][i]] 
-                                        - self.param_lower_bound[self.param_names_to_value_index[param_name][i]]) / 2
-
                             values.append(value)
                         rospy.set_param(param_name,values)
+                    elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
+                        rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
+                        ind = -1
+                        values = []
+                        for i in range(len(param_value)):
+                            if i in self.param_to_avoid_index[param_name]:
+                                value = param_value[i]
+                            else:
+                                ind += 1
+                                value = float(np.clip(action[self.param_names_to_value_index[param_name][ind]],
+                                    self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
+                                    self.param_upper_bound[self.param_names_to_value_index[param_name][ind]]))
+                            values.append(value)  
                     else:
                         rospy.logerr('Current parameter and the new one have different sizes')
                 else:
@@ -351,12 +366,23 @@ class ConnectionEnv(gym.Env):
                         new_param = []
                         for i in range(len(param_value)):
                             variation = action[self.param_names_to_value_index[param_name][i]]
-                            if variation != variation:
-                                variation = (self.param_upper_bound[self.param_names_to_value_index[param_name][i]] 
-                                            - self.param_lower_bound[self.param_names_to_value_index[param_name][i]]) / 2
                             new_param.append(float(np.clip((param_value[i] + variation),
                                                    self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
                                                    self.param_upper_bound[self.param_names_to_value_index[param_name][i]])))
+                        rospy.set_param(param_name,new_param)
+                    elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
+                        rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
+                        ind = -1
+                        new_param = []
+                        for i in range(len(param_value)):
+                            if i in self.param_to_avoid_index[param_name]:
+                                new_param.append(param_value[i])
+                            else:
+                                ind += 1
+                                variation = action[self.param_names_to_value_index[param_name][ind]]
+                                new_param.append(float(np.clip((param_value[i] + variation),
+                                                    self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
+                                                    self.param_upper_bound[self.param_names_to_value_index[param_name][ind]])))
                         rospy.set_param(param_name,new_param)
                     else:
                         rospy.logerr('Current parameter and the new one have different sizes')
@@ -424,9 +450,17 @@ class ConnectionEnv(gym.Env):
 
         # leggo la forza massima del task 
         try:
-            self.max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
+            insert_executed = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed')
+            if insert_executed:
+                try:
+                    self.max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
+                except:
+                    rospy.logerr('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
+                    self.max_wrench = [100000,100000,100000,100000,100000,100000]                
+            else:
+                self.max_wrench = [100000,100000,100000,100000,100000,100000]
         except:
-            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
+            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/executed not found, it considered false')
             self.max_wrench = [100000,100000,100000,100000,100000,100000]
 
     def _print_action(self, action) -> None:

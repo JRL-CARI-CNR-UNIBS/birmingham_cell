@@ -18,12 +18,15 @@ learn_params: # In this file we define the bounds for every parameter. Write onl
             - [-0.05, 0.05]
             - [-0.05, 0.05]
 
-        # insert:
-        #   goal_twist: 
-        #     - [-0.01,0.01]
-        #     - [-0.01,0.01]
-        #     - [0.01,0.1]
-        #     - [0,0]
-        #     - [0,0]
-        #     - [0,0]
-        #   target_force: [10,600]
+        insert:
+          goal_twist: 
+            - [-0.01,0.01]
+            - [-0.01,0.01]
+            - [0.01,0.1]
+            - [0,0]
+            - [0,0]
+            - [0,0]
+          target_force: [10,600]
+
+
+

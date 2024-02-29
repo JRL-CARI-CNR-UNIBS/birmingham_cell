@@ -20,8 +20,18 @@ env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
                trees_path=trees_path,
-               debug_mode=True)
-model = TD3("MlpPolicy", env, verbose=1, learning_starts=learning_start_steps, train_freq=train_freq)
+               # debug_mode=True)
+               debug_mode=False)
+
+n_actions = env.action_space.shape[-1]
+action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+
+model = TD3("MlpPolicy", 
+            env, 
+            verbose=1, 
+            action_noise=action_noise,
+            learning_starts=learning_start_steps, 
+            train_freq=train_freq)
 model.learn(total_timesteps=total_timesteps, log_interval=1)
 
 rospack = rospkg.RosPack()
