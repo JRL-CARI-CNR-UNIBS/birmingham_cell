@@ -8,8 +8,7 @@ from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 import rospkg
 
-trees_path = ['/home/battery/michele_projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/config/trees']
-epoch_number = 10
+epoch_number = 50
 max_epoch_steps = 200
 learning_start_steps = 100
 train_freq = 1
@@ -19,8 +18,7 @@ total_timesteps = max_epoch_steps * epoch_number
 env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
-               trees_path=trees_path,
-            #    debug_mode=True)
+               # debug_mode=True)
                debug_mode=False)
 
 n_actions = env.action_space.shape[-1]

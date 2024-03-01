@@ -2,12 +2,14 @@
 from inspect import TPFLAGS_IS_ABSTRACT
 from typing import Any, Dict, Optional, Tuple
 
+import rospkg
 import rospy
 import copy
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 # from gymnasium.utils import seeding
+import pyexcel_ods3 as od
 
 import tf
 
@@ -25,7 +27,8 @@ class ConnectionEnv(gym.Env):
     def __init__(
         self,
         node_name: str = 'Connection_env',
-        trees_path: list = ['/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/config/trees'],
+        package_name: str = 'birmingham_cell_tests',
+        trees_path: str = '/config/trees',
         tree_name: str = 'can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
@@ -38,7 +41,9 @@ class ConnectionEnv(gym.Env):
     ) -> None:
         rospy.init_node(node_name)
 
-        self.trees_path = trees_path
+        rospack = rospkg.RosPack()
+        self.package_path = rospack.get_path(package_name)
+        self.trees_path = [self.package_path + trees_path]
         self.tree_name = tree_name
         self.object_name = object_name
         self.target_name = target_name
@@ -48,6 +53,8 @@ class ConnectionEnv(gym.Env):
         self.action_type = action_type   # currently available, target_value  increment_value  
         self.randomized_tf = randomized_tf
         self.debug_mode = debug_mode
+        self.epoch_number = 0
+        self.step_number = 0
 
         # arguments to define
         self.param_lower_bound = []
@@ -55,6 +62,7 @@ class ConnectionEnv(gym.Env):
         self.param_names_to_value_index = {}
         self.param_to_avoid_index = {}
         self.param_values = []
+        self.initial_param_values = {}
         self.obj_pos = []
         self.obj_rot = []
         self.tar_pos = []
@@ -65,6 +73,8 @@ class ConnectionEnv(gym.Env):
         self.tar_to_insertion_rot = []
         self.initial_distance = None
         self.final_distance = None
+        self.all_param_names = []
+        self.param_history = []
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -86,19 +96,20 @@ class ConnectionEnv(gym.Env):
             exit(0)
         
         n_env_action = 0
-        # n_total_params = 0
         for action_name in action_params:
             for skill_name in action_params[action_name]['skills']:
                 for param_name in action_params[action_name]['skills'][skill_name]:
                     param_value = action_params[action_name]['skills'][skill_name][param_name]
                     complete_name = '/' + exec_ns + '/actions/' + action_name + '/skills/' + skill_name + '/' + param_name
                     self.param_names_to_value_index.update({complete_name: []})
+                    self.initial_param_values[complete_name] = rospy.get_param(complete_name)
                     if isinstance(param_value[0], int) or isinstance(param_value[0], float):
                         if (len(param_value) == 2):
                             n_env_action +=1
                             self.param_lower_bound.append(param_value[0])
                             self.param_upper_bound.append(param_value[1])
                             self.param_names_to_value_index[complete_name].append(n_env_action-1)
+                            self.all_param_names.append('/' + action_name + '/' + skill_name + '/' + param_name)
                         else:
                             rospy.logerr('There is a problem with the structure of /' + 
                                          learn_ns + '/' + action_name + 
@@ -115,6 +126,7 @@ class ConnectionEnv(gym.Env):
                                     self.param_upper_bound.append(param_value[i][1])
                                     self.param_names_to_value_index[complete_name].append(n_env_action)
                                     n_env_action +=1
+                                    self.all_param_names.append('/' + action_name + '/' + skill_name + '/' + param_name + str(i))
                             else:
                                 rospy.logerr('There is a problem with the structure of /' + 
                                             learn_ns + '/' + action_name + 
@@ -125,7 +137,6 @@ class ConnectionEnv(gym.Env):
                                      learn_ns + '/' + action_name + 
                                      '/skills/' + skill_name + 
                                      '/' + param_name)          
-
         
         # creo i client per i servizi pybullet
         rospy.loginfo("Wait for skills_util/run_tree service")
@@ -160,14 +171,12 @@ class ConnectionEnv(gym.Env):
         self.step_state_name = 'step'
         rospy.loginfo("Init done")
 
-
         # Definisco la zona in cui possono essere posizionati gli oggetti di scena
         self.work_space_range_low  = np.array([0.3, -0.4, 0])
         self.work_space_range_high = np.array([0.6,  0.4, 0])
 
         # leggo come son state settate le tf iniziali
         self.initial_tf = rospy.get_param('/tf_params')
-
 
         self.tf_listener = tf.TransformListener()
         self.start_obj_pos = None
@@ -188,6 +197,7 @@ class ConnectionEnv(gym.Env):
             self.action_space = spaces.Box(-max_variations,max_variations, dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
+
 
     def _create_scene(self,obj_pos,tar_pos) -> None:
         """Create the scene."""
@@ -250,6 +260,21 @@ class ConnectionEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
+        # salvo i dati ottenuti dal'epoca precedente 
+        if self.param_history:
+            self.epoch_number += 1
+            data = []
+            data.append(self.all_param_names + ['reward','iteration'])
+            for index in range(len(self.param_history)):
+                data.append(self.param_history[index])
+            param_history_ods = od.get_data(self.package_path + "/data/td3_tests.ods")
+            param_history_ods.update({str(self.epoch_number): data})
+            od.save_data(self.package_path + "/data/td3_tests.ods", param_history_ods)
+            self.param_history.clear()
+            self.step_number = 0
+        else:
+            rospy.logwarn('Nothing to save')
+
         # rimuovo gli oggetti della scena, riporto il robot nello stato iniziale e poi riaggiungo gli oggetti 
         # in una posizione casuale ma non sovrapposta
         object_names = [self.target_name, self.object_name]
@@ -259,6 +284,11 @@ class ConnectionEnv(gym.Env):
 
         self.restore_state_clnt.call(self.reset_state_name)
         rospy.loginfo("Reset_state restored")
+
+        # Setto i parametri come nello stato iniziale così da ripartire da zero nella modifica dei parametri 
+        for param_name in self.initial_param_values.keys():
+            rospy.set_param(param_name,self.initial_param_values[param_name])
+
 
         self.start_tar_pos = self._sample_target()
         self.start_obj_pos = self._sample_object()
@@ -302,6 +332,7 @@ class ConnectionEnv(gym.Env):
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
+        self.step_number += 1
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
@@ -332,7 +363,7 @@ class ConnectionEnv(gym.Env):
                             values.append(value)
                         rospy.set_param(param_name,values)
                     elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
-                        rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
+                        # rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
                         ind = -1
                         values = []
                         for i in range(len(param_value)):
@@ -350,6 +381,9 @@ class ConnectionEnv(gym.Env):
                     rospy.logerr('Current param has wrong structure.')
 
         # Se l'azione è la variazione
+        if self.debug_mode:
+            print(' ')
+            print('NEW_PARAM____________________________________________________________________________')
         if self.action_type == 'increment_value':        
             for param_name in self.param_names_to_value_index.keys():
                 param_value = rospy.get_param(param_name)
@@ -379,8 +413,7 @@ class ConnectionEnv(gym.Env):
                             print(param_name + ' old: ' + str(param_value))
                             print(param_name + ' new: ' + str(new_param))
                         rospy.set_param(param_name,new_param)
-                    elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
-                        rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
+                    elif (len(self.param_names_to_value_index[param_name]) + len(self.param_to_avoid_index[param_name]) == len(param_value)):
                         ind = -1
                         new_param = []
                         for i in range(len(param_value)):
@@ -400,6 +433,9 @@ class ConnectionEnv(gym.Env):
                         rospy.logerr('Current parameter and the new one have different sizes')
                 else:
                     rospy.logerr('Current param has wrong structure.')
+        if self.debug_mode:
+            print('-------------------------------------------------------------------------------------')
+            print(' ')
 
         # Lancio del tree. Le distanze di inizio e fine vengono registrate. 
         self._update_info()
@@ -423,23 +459,29 @@ class ConnectionEnv(gym.Env):
     def _get_reward(self) -> float:
         self._update_info()
         dist_perc = 1 - (self.final_distance/self.initial_distance)
-        rospy.loginfo('REWARD_____________________________________________________________________')
-        rospy.loginfo('Distance percentage: ' + str(dist_perc))
-        rospy.loginfo('Max wrench: [' + 
-                      str(self.max_wrench[0]) + ',' + 
-                      str(self.max_wrench[1]) + ',' + 
-                      str(self.max_wrench[2]) + ',' + 
-                      str(self.max_wrench[3]) + ',' + 
-                      str(self.max_wrench[4]) + ',' + 
-                      str(self.max_wrench[5]) + ']')
+        print(' ')
+        print('REWARD_____________________________________________________________________')
+        print('Distance percentage: ' + str(dist_perc))
+        print('Max wrench: [' + 
+              str(self.max_wrench[0]) + ',' + 
+              str(self.max_wrench[1]) + ',' + 
+              str(self.max_wrench[2]) + ',' + 
+              str(self.max_wrench[3]) + ',' + 
+              str(self.max_wrench[4]) + ',' + 
+              str(self.max_wrench[5]) + ']')
         reward = dist_perc * 1000000
         reward = reward + (self.max_wrench[0] * -1)
         reward = reward + (self.max_wrench[1] * -1)
         reward = reward + (self.max_wrench[3] * -1)
         reward = reward + (self.max_wrench[4] * -1)
-        rospy.loginfo('Reward: ' + str(reward))
+        print('Reward: ' + str(reward))
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
-        rospy.loginfo('---------------------------------------------------------------------------')
+        print('---------------------------------------------------------------------------')
+        print(' ')
+
+        # Qua riempio lo storico dei parametri e il relativo reward
+        self.param_history.append(self.param_values + [float(reward),self.step_number])
+
         return reward
 
     def _update_info(self) -> None:        
@@ -467,8 +509,9 @@ class ConnectionEnv(gym.Env):
         (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp', rospy.Time(0))
         (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
 
-        print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
-        print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
+        if self.debug_mode:
+            print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
+            print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
 
         # leggo la forza massima del task 
         try:
@@ -486,6 +529,7 @@ class ConnectionEnv(gym.Env):
             self.max_wrench = [100000,100000,100000,100000,100000,100000]
 
     def _print_action(self, action) -> None:
+        print(' ')
         print('ACTION____________________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
             if len(self.param_names_to_value_index[param_name]) == 1:
@@ -495,8 +539,10 @@ class ConnectionEnv(gym.Env):
                 start_index = self.param_names_to_value_index[param_name][0]
                 print(param_name + ': ' + str(action[start_index:start_index+param_len]))
         print('--------------------------------------------------------------------------')
+        print(' ')
 
     def _print_obs(self, observation) -> None:
+        print(' ')
         print('OBSERVATION_______________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
             if len(self.param_names_to_value_index[param_name]) == 1:
@@ -511,3 +557,4 @@ class ConnectionEnv(gym.Env):
         print('tar_to_insertion_pos: ' + str(observation[start_index+3:start_index+6]))
         print('max_wrench: ' + str(observation[start_index+6:start_index+12]))
         print('--------------------------------------------------------------------------')
+        print(' ')
