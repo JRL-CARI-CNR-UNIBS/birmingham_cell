@@ -463,15 +463,25 @@ class ConnectionEnv(gym.Env):
         print('REWARD_____________________________________________________________________')
         try:
             move_to_grasp_fail = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail')
+            move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
         except:
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
             move_to_grasp_fail = True
+
+        try:
+            move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
+        except:
+            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
+            move_to_grasp_contant = False
 
         if move_to_grasp_fail:
             print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
             reward = -500000
             print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
             reward -= np.linalg.norm(self.obj_to_grasp_pos) # - grasping position to object distance
+        elif move_to_grasp_contant:
+            print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
+            reward = -600000
         else:
             if (dist_perc < 0.1):
                 print('dist_perc < 0.1')

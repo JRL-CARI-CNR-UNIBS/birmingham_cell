@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <arg name="use_rviz" default="true" />
+  <arg name="use_pybullet_gui" default="true" />
+  <arg name="use_moveit" default="true" />
 
   <include file="$(find birmingham_cell_configurations)/launch/start.launch">
     <arg name="fake" value="false"/>
+    <arg name="use_rviz" value="$(arg use_rviz)"/>
   </include>
 
   <include file="$(find birmingham_cell_pybullet)/launch/simulation.launch">
-    <arg name="use_moveit" value="true"/>
+    <arg name="use_moveit" value="$(arg use_moveit)"/>
+    <arg name="use_gui" value="$(arg use_pybullet_gui)"/>
   </include>
 </launch>

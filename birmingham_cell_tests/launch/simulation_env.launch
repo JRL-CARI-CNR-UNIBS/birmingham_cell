@@ -2,8 +2,14 @@
 
 <launch>
   <arg name="use_moveit" default="true" />
+  <arg name="use_rviz" default="true" />
+  <arg name="use_pybullet_gui" default="true" />
   <arg name="test_type" default="simulation" />
-  <include file="$(find birmingham_cell_configurations)/launch/simulation_start.launch"/>
+  
+  <include file="$(find birmingham_cell_configurations)/launch/simulation_start.launch">
+     <arg name="use_rviz" default="$(arg use_rviz)" />
+     <arg name="use_pybullet_gui" default="$(arg use_pybullet_gui)" />
+  </include>   
 
   <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
   <include file="$(find birmingham_cell_tests)/launch/skills_servers.launch">

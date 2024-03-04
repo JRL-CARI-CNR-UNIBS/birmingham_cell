@@ -2,11 +2,13 @@
 
 <launch>
   <arg name="use_moveit" default="false" />
+  <arg name="use_pybullet_gui" default="true" />
 
   <include file="$(find birmingham_cell_pybullet)/launch/load_config.launch" />
 
   <include file="$(find pybullet_simulation)/launch/run_pybullet.launch" >
       <arg name="use_moveit" value="$(arg use_moveit)"/>
+      <arg name="use_gui" value="$(arg use_pybullet_gui)"/>
   </include>
   <include file="$(find birmingham_cell_pybullet)/launch/gripper_server.launch" />
 

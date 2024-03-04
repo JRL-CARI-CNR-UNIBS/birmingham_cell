@@ -19,7 +19,6 @@ pybullet_simulation:
       start_configuration: [0.0, 0.0, 0.0, -1.5708, 0.0, 1.5708, 0.0, 0.0]
       fixed: 1    # 1 to fix robot to world, 0 to spawn it unfixed
 
-
   # environment:
   #   battery_table:
   #     start_position: [0.051,-1.61,0]

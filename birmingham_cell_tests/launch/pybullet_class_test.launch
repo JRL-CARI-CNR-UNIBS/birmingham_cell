@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node name="boh" pkg="birmingham_cell_tests" type="pybullet_class_test.py" output="screen"/>
+</launch>
