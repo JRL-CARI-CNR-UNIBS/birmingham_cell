@@ -55,7 +55,9 @@ class ConnectionEnv(gym.Env):
         self.debug_mode = debug_mode
         self.epoch_number = 0
         self.step_number = 0
-
+        self.start_obj_pos = None
+        self.start_tar_pos = None
+        
         # arguments to define
         self.param_lower_bound = []
         self.param_upper_bound = []
@@ -210,6 +212,7 @@ class ConnectionEnv(gym.Env):
         pose = []
         fixed = []
         tar_pose = Pose()
+        self.start_tar_pos = tar_pose
 
         tar_pose.position.x = tar_pos[0]
         tar_pose.position.y = tar_pos[1]
@@ -221,6 +224,8 @@ class ConnectionEnv(gym.Env):
         model_name.append(self.target_name)
         pose.append(tar_pose)
         fixed.append(True)
+
+        self.start_obj_pos = obj_pos
 
         obj_pose = Pose()
         obj_pose.position.x = obj_pos[0]
@@ -482,6 +487,10 @@ class ConnectionEnv(gym.Env):
         elif move_to_grasp_contant:
             print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
             reward = -600000
+            (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
+            print('grasp_goal_pos: ' + str(grasp_goal_pos))
+            print('start_obj_pos: ' + str(self.start_obj_pos))
+            reward -= self._distance(self.start_obj_pos,grasp_goal_pos) # - grasping position to object distance
         else:
             if (dist_perc < 0.1):
                 print('dist_perc < 0.1')
