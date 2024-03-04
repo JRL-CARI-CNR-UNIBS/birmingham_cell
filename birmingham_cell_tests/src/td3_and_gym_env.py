@@ -8,7 +8,7 @@ from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 import rospkg
 
-epoch_number = 50
+epoch_number = 1
 max_epoch_steps = 200
 learning_start_steps = 100
 train_freq = 1
@@ -18,8 +18,8 @@ total_timesteps = max_epoch_steps * epoch_number
 env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
-               # debug_mode=True)
-               debug_mode=False)
+               debug_mode=True)
+            #    debug_mode=False)
 
 n_actions = env.action_space.shape[-1]
 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
@@ -30,11 +30,23 @@ model = TD3("MlpPolicy",
             action_noise=action_noise,
             learning_starts=learning_start_steps, 
             train_freq=train_freq)
+# model.learn(total_timesteps=total_timesteps, log_interval=1)
+
+# rospack = rospkg.RosPack()
+# path = rospack.get_path('birmingham_cell_tests')
+
+# model.save(path + "/data/td3_model_2")
+
+print('epoch 1')
 model.learn(total_timesteps=total_timesteps, log_interval=1)
 
 rospack = rospkg.RosPack()
 path = rospack.get_path('birmingham_cell_tests')
 
 model.save(path + "/data/td3_model_2")
+model.learning_start_steps = 0 
 
-
+for i in range(50):
+    print('iteration ' + str(i+2))
+    model.learn(total_timesteps=total_timesteps, log_interval=1)
+    model.save(path + "/data/td3_model_2")

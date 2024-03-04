@@ -461,19 +461,38 @@ class ConnectionEnv(gym.Env):
         dist_perc = 1 - (self.final_distance/self.initial_distance)
         print(' ')
         print('REWARD_____________________________________________________________________')
-        print('Distance percentage: ' + str(dist_perc))
-        print('Max wrench: [' + 
-              str(self.max_wrench[0]) + ',' + 
-              str(self.max_wrench[1]) + ',' + 
-              str(self.max_wrench[2]) + ',' + 
-              str(self.max_wrench[3]) + ',' + 
-              str(self.max_wrench[4]) + ',' + 
-              str(self.max_wrench[5]) + ']')
-        reward = dist_perc * 1000000
-        reward = reward + (self.max_wrench[0] * -1)
-        reward = reward + (self.max_wrench[1] * -1)
-        reward = reward + (self.max_wrench[3] * -1)
-        reward = reward + (self.max_wrench[4] * -1)
+        try:
+            move_to_grasp_fail = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail')
+        except:
+            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
+            move_to_grasp_fail = True
+
+        if move_to_grasp_fail:
+            print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
+            reward = -500000
+            print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+            reward -= np.linalg.norm(self.obj_to_grasp_pos) # - grasping position to object distance
+        else:
+            if (dist_perc < 0.1):
+                print('dist_perc < 0.1')
+                reward = -400000
+                print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+                reward -= np.linalg.norm(self.obj_to_grasp_pos) # - grasping position to object distance
+            else:
+                print('Distance percentage: ' + str(dist_perc))
+                print('Max wrench: [' + 
+                    str(self.max_wrench[0]) + ',' + 
+                    str(self.max_wrench[1]) + ',' + 
+                    str(self.max_wrench[2]) + ',' + 
+                    str(self.max_wrench[3]) + ',' + 
+                    str(self.max_wrench[4]) + ',' + 
+                    str(self.max_wrench[5]) + ']')
+                reward = dist_perc * 1000000
+                reward += (self.max_wrench[0] * -1)
+                reward += (self.max_wrench[1] * -1)
+                reward += (self.max_wrench[3] * -1)
+                reward += (self.max_wrench[4] * -1)
+
         print('Reward: ' + str(reward))
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
         print('---------------------------------------------------------------------------')
@@ -506,8 +525,14 @@ class ConnectionEnv(gym.Env):
         (self.tar_pos, self.tar_rot) = self.tf_listener.lookupTransform(self.target_name, 'world', rospy.Time(0))
 
         # leggo posizioni relative di presa e rilascio 
-        (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp', rospy.Time(0))
-        (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
+        try:
+            (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp_goal', rospy.Time(0))
+        except:
+            (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp', rospy.Time(0))
+        try:
+            (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion_goal', rospy.Time(0))
+        except:    
+            (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
 
         if self.debug_mode:
             print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
