@@ -11,6 +11,6 @@
 
   <include file="$(find birmingham_cell_pybullet)/launch/simulation.launch">
     <arg name="use_moveit" value="$(arg use_moveit)"/>
-    <arg name="use_gui" value="$(arg use_pybullet_gui)"/>
+    <arg name="use_pybullet_gui" value="$(arg use_pybullet_gui)"/>
   </include>
 </launch>
