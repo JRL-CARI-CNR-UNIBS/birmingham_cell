@@ -54,22 +54,22 @@ pybullet_simulation:
           child_frame_position: [0,0,0]   # position of the joint frame relative to a given child center of mass frame (or world origin if no child specified)
           child_frame_orientation: [0,0,0,1]  # the orientation of the joint frame relative to the child center of mass coordinate frame (or world origin frame if no child specified)
           max_force: 10000
-      # link_dynamics:
-      #   - link_name: 'gripper_left_finger'
-      #     lateral_friction: 60
-      #     spinning_friction: 0.1
-      #     rolling_friction: 0.1
-      #     contact_stiffness: 1000000
-      #     contact_damping: 1
-      #     linear_damping: 0
-      #     angular_damping: 0
-      #     friction_anchor: 1
-      #   - link_name: 'gripper_right_finger'
-      #     lateral_friction: 60
-      #     spinning_friction: 0.1
-      #     rolling_friction: 0.1
-      #     contact_stiffness: 1000000
-      #     contact_damping: 1
-      #     linear_damping: 0
-      #     angular_damping: 0
-      #     friction_anchor: 1
+      link_dynamics:
+        - link_name: 'panda_leftfinger'
+          lateral_friction: 60
+          spinning_friction: 0.1
+          rolling_friction: 0.1
+          contact_stiffness: 1000000
+          contact_damping: 1
+          linear_damping: 0
+          angular_damping: 0
+          friction_anchor: 1
+        - link_name: 'panda_rightfinger'
+          lateral_friction: 60
+          spinning_friction: 0.1
+          rolling_friction: 0.1
+          contact_stiffness: 1000000
+          contact_damping: 1
+          linear_damping: 0
+          angular_damping: 0
+          friction_anchor: 1

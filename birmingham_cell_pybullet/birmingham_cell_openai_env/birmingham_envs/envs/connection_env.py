@@ -483,20 +483,20 @@ class ConnectionEnv(gym.Env):
             print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
             reward = -500000
             print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward -= np.linalg.norm(self.obj_to_grasp_pos) # - grasping position to object distance
+            reward -= np.linalg.norm(self.obj_to_grasp_pos) * 100 # - grasping position to object distance
         elif move_to_grasp_contant:
             print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
             reward = -600000
             (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
             print('grasp_goal_pos: ' + str(grasp_goal_pos))
             print('start_obj_pos: ' + str(self.start_obj_pos))
-            reward -= self._distance(self.start_obj_pos,grasp_goal_pos) # - grasping position to object distance
+            reward -= self._distance(self.start_obj_pos,grasp_goal_pos) * 100 # - grasping position to object distance
         else:
             if (dist_perc < 0.1):
                 print('dist_perc < 0.1')
                 reward = -400000
                 print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-                reward -= np.linalg.norm(self.obj_to_grasp_pos) # - grasping position to object distance
+                reward -= np.linalg.norm(self.obj_to_grasp_pos) * 100 # - grasping position to object distance
             else:
                 print('Distance percentage: ' + str(dist_perc))
                 print('Max wrench: [' + 
