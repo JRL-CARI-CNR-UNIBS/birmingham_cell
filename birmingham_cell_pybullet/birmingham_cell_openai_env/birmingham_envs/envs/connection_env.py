@@ -37,7 +37,9 @@ class ConnectionEnv(gym.Env):
         torque_threshold: float = 100,
         action_type: str = 'target_value',
         randomized_tf: list = ['can_grasp', 'hole_insertion'],
-        debug_mode: bool = False
+        debug_mode: bool = False,
+        start_epoch_number: int = 0,
+        data_file_name: str = 'td3_tests'
     ) -> None:
         rospy.init_node(node_name)
 
@@ -53,10 +55,12 @@ class ConnectionEnv(gym.Env):
         self.action_type = action_type   # currently available, target_value  increment_value  
         self.randomized_tf = randomized_tf
         self.debug_mode = debug_mode
-        self.epoch_number = 0
+        self.epoch_number = start_epoch_number
+        self.data_file_name = data_file_name + '.ods'
         self.step_number = 0
         self.start_obj_pos = None
         self.start_tar_pos = None
+        self.last_action = None
         
         # arguments to define
         self.param_lower_bound = []
@@ -200,7 +204,6 @@ class ConnectionEnv(gym.Env):
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
 
-
     def _create_scene(self,obj_pos,tar_pos) -> None:
         """Create the scene."""
         object_names = []
@@ -245,7 +248,7 @@ class ConnectionEnv(gym.Env):
         for old_tf in self.initial_tf:
             new_tf = copy.copy(old_tf)
             if new_tf['name'] in self.randomized_tf:
-                low_limit = [-0.02, -0.02, -0.02]
+                low_limit = [-0.02, -0.02, 0.0]
                 high_limit = [0.02, 0.02, 0.02]
                 noise = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
                 new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
@@ -337,7 +340,9 @@ class ConnectionEnv(gym.Env):
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
+        self.last_action = action.tolist()
         self.step_number += 1
+        print('  ' + str(self.step_number))
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
@@ -453,6 +458,21 @@ class ConnectionEnv(gym.Env):
         terminated = bool(self._is_success())
         truncated = False
         info = {"is_success": terminated}
+
+        # save data
+        if self.param_history:
+            data = []
+            data.append(self.all_param_names + ['reward','iteration'])
+            for index in range(len(self.param_history)):
+                data.append(self.param_history[index])
+            param_history_ods = od.get_data(self.package_path + "/data/" + self.data_file_name)
+            param_history_ods.update({str(self.epoch_number): data})
+            od.save_data(self.package_path + "/data/" + self.data_file_name, param_history_ods)
+        else:
+            rospy.logwarn('Nothing to save')
+
+
+
         return observation, reward, terminated, truncated, info
 
     def render(self) -> Optional[np.array]:
@@ -464,8 +484,9 @@ class ConnectionEnv(gym.Env):
     def _get_reward(self) -> float:
         self._update_info()
         dist_perc = 1 - (self.final_distance/self.initial_distance)
-        print(' ')
-        print('REWARD_____________________________________________________________________')
+        if (self.debug_mode):
+            print(' ')
+            print('REWARD_____________________________________________________________________')
         try:
             move_to_grasp_fail = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail')
             move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
@@ -480,45 +501,50 @@ class ConnectionEnv(gym.Env):
             move_to_grasp_contant = False
 
         if move_to_grasp_fail:
-            print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
             reward = -500000
-            print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward -= np.linalg.norm(self.obj_to_grasp_pos) * 100 # - grasping position to object distance
+            if (self.debug_mode):
+                print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
+                print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+            reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 100 # - grasping position to object distance
         elif move_to_grasp_contant:
-            print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
             reward = -600000
             (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
-            print('grasp_goal_pos: ' + str(grasp_goal_pos))
-            print('start_obj_pos: ' + str(self.start_obj_pos))
+            if (self.debug_mode):
+                print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
+                print('grasp_goal_pos: ' + str(grasp_goal_pos))
+                print('start_obj_pos: ' + str(self.start_obj_pos))
             reward -= self._distance(self.start_obj_pos,grasp_goal_pos) * 100 # - grasping position to object distance
         else:
             if (dist_perc < 0.1):
-                print('dist_perc < 0.1')
                 reward = -400000
-                print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+                if (self.debug_mode):
+                    print('dist_perc < 0.1')
+                    print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
                 reward -= np.linalg.norm(self.obj_to_grasp_pos) * 100 # - grasping position to object distance
             else:
-                print('Distance percentage: ' + str(dist_perc))
-                print('Max wrench: [' + 
-                    str(self.max_wrench[0]) + ',' + 
-                    str(self.max_wrench[1]) + ',' + 
-                    str(self.max_wrench[2]) + ',' + 
-                    str(self.max_wrench[3]) + ',' + 
-                    str(self.max_wrench[4]) + ',' + 
-                    str(self.max_wrench[5]) + ']')
+                if (self.debug_mode):
+                    print('Distance percentage: ' + str(dist_perc))
+                    print('Max wrench: [' + 
+                        str(self.max_wrench[0]) + ',' + 
+                        str(self.max_wrench[1]) + ',' + 
+                        str(self.max_wrench[2]) + ',' + 
+                        str(self.max_wrench[3]) + ',' + 
+                        str(self.max_wrench[4]) + ',' + 
+                        str(self.max_wrench[5]) + ']')
                 reward = dist_perc * 1000000
                 reward += (self.max_wrench[0] * -1)
                 reward += (self.max_wrench[1] * -1)
                 reward += (self.max_wrench[3] * -1)
                 reward += (self.max_wrench[4] * -1)
 
-        print('Reward: ' + str(reward))
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
-        print('---------------------------------------------------------------------------')
-        print(' ')
+        if (self.debug_mode):
+            print('Reward: ' + str(reward))
+            print('---------------------------------------------------------------------------')
+            print(' ')
 
         # Qua riempio lo storico dei parametri e il relativo reward
-        self.param_history.append(self.param_values + [float(reward),self.step_number])
+        self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
 
         return reward
 
