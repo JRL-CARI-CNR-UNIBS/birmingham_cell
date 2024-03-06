@@ -259,8 +259,8 @@ class ConnectionEnv(gym.Env):
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
-        observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
-        # observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+        # observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
+        observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
         if self.debug_mode: self._print_obs(observation)
         return observation
 
@@ -501,26 +501,27 @@ class ConnectionEnv(gym.Env):
             move_to_grasp_contant = False
 
         if move_to_grasp_fail:
-            reward = -500000
             if (self.debug_mode):
                 print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
                 print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 100 # - grasping position to object distance
+            reward = 1000
+            reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
         elif move_to_grasp_contant:
-            reward = -600000
             (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
             if (self.debug_mode):
                 print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
                 print('grasp_goal_pos: ' + str(grasp_goal_pos))
                 print('start_obj_pos: ' + str(self.start_obj_pos))
-            reward -= self._distance(self.start_obj_pos,grasp_goal_pos) * 100 # - grasping position to object distance
+            poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
+            reward = 1000
+            reward -= np.linalg.norm(poses_diff[0:2]) * 10000 # - grasping position to object distance
         else:
             if (dist_perc < 0.1):
-                reward = -400000
                 if (self.debug_mode):
                     print('dist_perc < 0.1')
                     print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-                reward -= np.linalg.norm(self.obj_to_grasp_pos) * 100 # - grasping position to object distance
+                reward = 1000
+                reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
             else:
                 if (self.debug_mode):
                     print('Distance percentage: ' + str(dist_perc))
@@ -531,7 +532,7 @@ class ConnectionEnv(gym.Env):
                         str(self.max_wrench[3]) + ',' + 
                         str(self.max_wrench[4]) + ',' + 
                         str(self.max_wrench[5]) + ']')
-                reward = dist_perc * 1000000
+                reward = dist_perc * 10000
                 reward += (self.max_wrench[0] * -1)
                 reward += (self.max_wrench[1] * -1)
                 reward += (self.max_wrench[3] * -1)
@@ -625,6 +626,6 @@ class ConnectionEnv(gym.Env):
         start_index = len(self.param_values)
         print('obj_to_grasp_pos: ' + str(observation[start_index:start_index+3]))
         print('tar_to_insertion_pos: ' + str(observation[start_index+3:start_index+6]))
-        print('max_wrench: ' + str(observation[start_index+6:start_index+12]))
+        # print('max_wrench: ' + str(observation[start_index+6:start_index+12]))
         print('--------------------------------------------------------------------------')
         print(' ')
