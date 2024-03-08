@@ -26,8 +26,8 @@ env = gym.make('ConnectionEnv-v0',
                max_episode_steps=max_epoch_steps, 
                data_file_name=data_name,
                start_epoch_number=start_epoch_number,
-            #    debug_mode=True)
-               debug_mode=False)
+               debug_mode=True)
+            #    debug_mode=False)
 
 n_actions = env.action_space.shape[-1]
 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))

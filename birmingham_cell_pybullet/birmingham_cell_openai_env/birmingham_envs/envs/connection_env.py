@@ -505,10 +505,13 @@ class ConnectionEnv(gym.Env):
                 print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
                 print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
             reward = 0.1
-            distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-            if distance > 0.1:
-                distance = 0.1
-            reward -= distance
+            obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+            if obj_to_grasp_distance > 0.1:
+                obj_to_grasp_distance = 0.1
+            reward -= obj_to_grasp_distance * 0.5
+            relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+            r_p_d_normalized = relative_poses_difference / 14
+            reward -= r_p_d_normalized * 0.5
         elif move_to_grasp_contant:
             (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
             if (self.debug_mode):
@@ -517,20 +520,27 @@ class ConnectionEnv(gym.Env):
                 print('start_obj_pos: ' + str(self.start_obj_pos))
             poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
             reward = 0.1
-            distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
-            if distance > 0.1:
-                distance = 0.1
-            reward -= distance
+            obj_to_grasp_distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
+            if obj_to_grasp_distance > 0.1:
+                obj_to_grasp_distance = 0.1
+            reward -= obj_to_grasp_distance * 0.5
+            relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+            r_p_d_normalized = relative_poses_difference / 14 
+            reward -= r_p_d_normalized * 0.5
         else:
             if (dist_perc < 0.1):
                 if (self.debug_mode):
                     print('dist_perc < 0.1')
                     print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
                 reward = 0.1
-                distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-                if distance > 0.1:
-                    distance = 0.1
-                reward -= distance
+                obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+                if obj_to_grasp_distance > 0.1:
+                    obj_to_grasp_distance = 0.1
+                reward -= obj_to_grasp_distance * 0.5
+
+                relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+                r_p_d_normalized = relative_poses_difference / 14
+                reward -= r_p_d_normalized * 0.5
             else:
                 if (self.debug_mode):
                     print('Distance percentage: ' + str(dist_perc))
@@ -553,6 +563,10 @@ class ConnectionEnv(gym.Env):
             print('---------------------------------------------------------------------------')
             print(' ')
 
+        print(self.param_values)
+        print(reward)
+        print(self.step_number)
+        print(self.last_action)
         # Qua riempio lo storico dei parametri e il relativo reward
         self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
 
