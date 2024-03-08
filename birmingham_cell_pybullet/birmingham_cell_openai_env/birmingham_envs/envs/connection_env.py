@@ -504,8 +504,11 @@ class ConnectionEnv(gym.Env):
             if (self.debug_mode):
                 print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
                 print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward = 1000
-            reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
+            reward = 0.1
+            distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+            if distance > 0.1:
+                distance = 0.1
+            reward -= distance
         elif move_to_grasp_contant:
             (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
             if (self.debug_mode):
@@ -513,15 +516,21 @@ class ConnectionEnv(gym.Env):
                 print('grasp_goal_pos: ' + str(grasp_goal_pos))
                 print('start_obj_pos: ' + str(self.start_obj_pos))
             poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
-            reward = 1000
-            reward -= np.linalg.norm(poses_diff[0:2]) * 10000 # - grasping position to object distance
+            reward = 0.1
+            distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
+            if distance > 0.1:
+                distance = 0.1
+            reward -= distance
         else:
             if (dist_perc < 0.1):
                 if (self.debug_mode):
                     print('dist_perc < 0.1')
                     print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-                reward = 1000
-                reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
+                reward = 0.1
+                distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+                if distance > 0.1:
+                    distance = 0.1
+                reward -= distance
             else:
                 if (self.debug_mode):
                     print('Distance percentage: ' + str(dist_perc))
@@ -532,11 +541,11 @@ class ConnectionEnv(gym.Env):
                         str(self.max_wrench[3]) + ',' + 
                         str(self.max_wrench[4]) + ',' + 
                         str(self.max_wrench[5]) + ']')
-                reward = dist_perc * 10000
-                reward += (self.max_wrench[0] * -1)
-                reward += (self.max_wrench[1] * -1)
-                reward += (self.max_wrench[3] * -1)
-                reward += (self.max_wrench[4] * -1)
+                reward = dist_perc
+                reward -= (self.max_wrench[0] * 0.001)
+                reward -= (self.max_wrench[1] * 0.001)
+                reward -= (self.max_wrench[3] * 0.001)
+                reward -= (self.max_wrench[4] * 0.001)
 
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
         if (self.debug_mode):
@@ -585,6 +594,7 @@ class ConnectionEnv(gym.Env):
             print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
 
         # leggo la forza massima del task 
+        m_w_p_value = 1000
         try:
             insert_executed = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed')
             if insert_executed:
@@ -592,12 +602,12 @@ class ConnectionEnv(gym.Env):
                     self.max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
                 except:
                     rospy.logerr('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
-                    self.max_wrench = [100000,100000,100000,100000,100000,100000]                
+                    self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]                
             else:
-                self.max_wrench = [100000,100000,100000,100000,100000,100000]
+                self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
         except:
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/executed not found, it considered false')
-            self.max_wrench = [100000,100000,100000,100000,100000,100000]
+            self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
 
     def _print_action(self, action) -> None:
         print(' ')
