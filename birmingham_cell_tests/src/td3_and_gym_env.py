@@ -16,7 +16,7 @@ import os
 # from stable_baselines3.common.vec_env import VecNormalize
 
 
-test_name = "td3"
+test_name = "td3_2_"
 epoch_number = 500
 max_epoch_steps = 60
 learning_start_steps = 2
