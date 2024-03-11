@@ -12,6 +12,32 @@ from stable_baselines3.common.env_util import make_vec_env
 import rospkg
 import os
 
+
+class MyCheckpointCallback(CheckpointCallback):
+    def __init__(self, save_freq: int, save_path: str, name_prefix: str = "rl_model"):
+        super(MyCheckpointCallback, self).__init__(save_freq=save_freq, save_path=save_path, name_prefix=name_prefix)
+        self.episode_number = 0
+
+    def _on_training_start(self) -> None:
+        # Rimuovi il modello precedente all'inizio dell'addestramento
+        self._remove_previous_models()
+
+    def _on_step(self) -> bool:
+        return True
+
+    def _on_episode_end(self) -> None:
+        self.episode_number += 1
+        # Rimuovi il modello precedente prima di salvare il nuovo modello
+        self._remove_previous_models()
+        super(MyCheckpointCallback, self)._on_episode_end()
+
+    def _remove_previous_models(self) -> None:
+        # Rimuovi i modelli precedenti
+        for filename in os.listdir(self.save_path):
+            if filename.startswith(self.name_prefix):
+                os.remove(os.path.join(self.save_path, filename))
+
+
 # from gymnasium import NormalizeObservation
 # from stable_baselines3.common.vec_env import VecNormalize
 
@@ -50,12 +76,15 @@ env = gym.make('ConnectionEnv-v0',
 
 # env = gym.NormalizeObservation(env)
 
-checkpoint_callback = CheckpointCallback(
-    save_freq=max_epoch_steps,
-    save_path=models_repo_path + '/',
-    name_prefix=model_name,
-    keep_only_best=False
-)
+#checkpoint_callback = CheckpointCallback(
+#    save_freq=max_epoch_steps,
+#    save_path=models_repo_path + '/',
+#    name_prefix=model_name,
+#    keep_only_best=False
+#)
+checkpoint_callback = MyCheckpointCallback(save_freq=max_epoch_steps,
+                                           save_path=models_repo_path + '/', 
+                                           name_prefix=model_name)  
 
 # n_actions = env.action_space.shape[-1]
 # action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
