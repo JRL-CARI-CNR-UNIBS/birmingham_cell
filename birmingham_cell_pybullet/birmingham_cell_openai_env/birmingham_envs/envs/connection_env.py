@@ -342,7 +342,6 @@ class ConnectionEnv(gym.Env):
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
         self.last_action = action.tolist()
         self.step_number += 1
-        print('  ' + str(self.step_number))
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
@@ -563,10 +562,6 @@ class ConnectionEnv(gym.Env):
             print('---------------------------------------------------------------------------')
             print(' ')
 
-        print(self.param_values)
-        print(reward)
-        print(self.step_number)
-        print(self.last_action)
         # Qua riempio lo storico dei parametri e il relativo reward
         self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
 

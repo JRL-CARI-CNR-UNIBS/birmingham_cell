@@ -16,16 +16,15 @@ import os
 # from stable_baselines3.common.vec_env import VecNormalize
 
 
-test_name = "td3_2_"
+test_name = "td3_1_"
 epoch_number = 500
 max_epoch_steps = 60
-learning_start_steps = 2
+learning_start_steps = 40
 train_freq = 1
-start_epoch_number = 0
-learning_rate = 0.001
-gamma = 0.99
+learning_rate = 0.1
+gamma = 0.9
 total_timesteps = max_epoch_steps * epoch_number
-model_save_freq = 15
+model_save_freq = 100
 
 rospack = rospkg.RosPack()
 path = rospack.get_path('birmingham_cell_tests')
@@ -46,7 +45,6 @@ env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
                data_file_name=data_name,
-               start_epoch_number=start_epoch_number,
             #    debug_mode=True)
                debug_mode=False)
 
