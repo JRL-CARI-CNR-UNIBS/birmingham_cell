@@ -190,7 +190,7 @@ class ConnectionEnv(gym.Env):
         observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
         observation_shape = observation.shape
-        self.observation_space = spaces.Box(float('-inf'), float('inf'), shape=observation_shape, dtype=np.float64)
+        self.observation_space = spaces.Box(-1, 1, shape=observation_shape, dtype=np.float64)
 
         # Definizione dell'action space
         # Se scegliamo di avere l'azione uguale al valore che desideriamo 
@@ -199,8 +199,10 @@ class ConnectionEnv(gym.Env):
         # Se scegliamo di avere l'azione come una variazione
         elif self.action_type == 'increment_value':
             space_division = 10.0
-            max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
-            self.action_space = spaces.Box(-max_variations,max_variations, dtype=np.float64)
+            # max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
+            # self.action_space = spaces.Box(-max_variations,max_variations, dtype=np.float64)
+            self.max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
+            self.action_space = spaces.Box(-1,1, shape=(len(self.max_variations),), dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
 
@@ -398,7 +400,7 @@ class ConnectionEnv(gym.Env):
                 param_value = rospy.get_param(param_name)
                 if isinstance(param_value, float) or isinstance(param_value, int):
                     if (len(self.param_names_to_value_index[param_name]) == 1):
-                        variation = action[self.param_names_to_value_index[param_name][0]]
+                        variation = action[self.param_names_to_value_index[param_name][0]] * self.max_variations[self.param_names_to_value_index[param_name][0]]
                         if variation != variation:
                             variation = 0
                         new_param = float(np.clip(param_value + variation,
@@ -414,7 +416,7 @@ class ConnectionEnv(gym.Env):
                     if (len(self.param_names_to_value_index[param_name]) == len(param_value)):
                         new_param = []
                         for i in range(len(param_value)):
-                            variation = action[self.param_names_to_value_index[param_name][i]]
+                            variation = action[self.param_names_to_value_index[param_name][i]] * self.max_variations[self.param_names_to_value_index[param_name][i]]
                             new_param.append(float(np.clip((param_value[i] + variation),
                                                    self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
                                                    self.param_upper_bound[self.param_names_to_value_index[param_name][i]])))
@@ -430,7 +432,7 @@ class ConnectionEnv(gym.Env):
                                 new_param.append(param_value[i])
                             else:
                                 ind += 1
-                                variation = action[self.param_names_to_value_index[param_name][ind]]
+                                variation = action[self.param_names_to_value_index[param_name][ind]] * self.max_variations[self.param_names_to_value_index[param_name][ind]]
                                 new_param.append(float(np.clip((param_value[i] + variation),
                                                     self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
                                                     self.param_upper_bound[self.param_names_to_value_index[param_name][ind]])))

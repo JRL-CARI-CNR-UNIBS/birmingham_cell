@@ -45,8 +45,8 @@ env = gym.make('ConnectionEnv-v0',
                action_type='increment_value', 
                max_episode_steps=max_epoch_steps, 
                data_file_name=data_name,
-            #    debug_mode=True)
-               debug_mode=False)
+               debug_mode=True)
+            #    debug_mode=False)
 
 # env = gym.NormalizeObservation(env)
 
