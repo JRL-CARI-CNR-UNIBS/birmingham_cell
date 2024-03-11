@@ -51,9 +51,10 @@ env = gym.make('ConnectionEnv-v0',
 # env = gym.NormalizeObservation(env)
 
 checkpoint_callback = CheckpointCallback(
-    save_freq=model_save_freq,
+    save_freq=max_epoch_steps,
     save_path=models_repo_path + '/',
     name_prefix=model_name,
+    keep_only_best=False
 )
 
 # n_actions = env.action_space.shape[-1]

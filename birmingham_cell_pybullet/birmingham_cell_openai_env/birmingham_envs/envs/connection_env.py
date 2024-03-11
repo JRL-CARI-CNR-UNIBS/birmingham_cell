@@ -268,6 +268,7 @@ class ConnectionEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
+        print(self.epoch_number)
         # salvo i dati ottenuti dal'epoca precedente 
         if self.param_history:
             self.epoch_number += 1
@@ -342,6 +343,7 @@ class ConnectionEnv(gym.Env):
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
         self.last_action = action.tolist()
         self.step_number += 1
+        print(' ' + str(self.step_number))
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
