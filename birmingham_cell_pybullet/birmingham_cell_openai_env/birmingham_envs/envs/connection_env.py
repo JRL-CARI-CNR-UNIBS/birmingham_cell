@@ -81,6 +81,7 @@ class ConnectionEnv(gym.Env):
         self.final_distance = None
         self.all_param_names = []
         self.param_history = []
+        self.observ = None
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -263,6 +264,7 @@ class ConnectionEnv(gym.Env):
         self._update_info()
         # observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
         observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+        self.observ = observation
         if self.debug_mode: self._print_obs(observation)
         return observation
 
@@ -567,7 +569,7 @@ class ConnectionEnv(gym.Env):
             print(' ')
 
         # Qua riempio lo storico dei parametri e il relativo reward
-        self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
+        self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action + self.observ)
 
         return reward
 

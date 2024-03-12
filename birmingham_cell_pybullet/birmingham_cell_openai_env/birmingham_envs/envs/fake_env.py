@@ -22,7 +22,7 @@ from pybullet_simulation.srv import DeleteState
 from geometry_msgs.msg import Pose
 
 
-class ConnectionEnv(gym.Env):
+class FakeEnv(gym.Env):
     
     def __init__(
         self,
@@ -67,8 +67,8 @@ class ConnectionEnv(gym.Env):
         self.param_upper_bound = []
         self.param_names_to_value_index = {}
         self.param_to_avoid_index = {}
-        self.param_values = []
-        self.initial_param_values = {}
+        self.param_values = [0,0,0,0,0,0]
+        self.initial_param_values = [0,0,0,0,0,0]
         self.obj_pos = []
         self.obj_rot = []
         self.tar_pos = []
@@ -81,46 +81,35 @@ class ConnectionEnv(gym.Env):
         self.final_distance = None
         self.all_param_names = []
         self.param_history = []
-
-      
-        n_env_action = 6
-
-        # Definisco la zona in cui possono essere posizionati gli oggetti di scena
+        self.max_variations = []
+              # Definisco la zona in cui possono essere posizionati gli oggetti di scena
         self.work_space_range_low  = np.array([0.3, -0.4, 0])
         self.work_space_range_high = np.array([0.6,  0.4, 0])
+        self.obj_to_grasp_pos_default = np.array([0, 0, 0.06])
+        self.tar_to_insert_pos_default = np.array([0, 0, 0.07])
+        self.relative_grasp_correction = np.array([0, 0, 0])
+        self.relative_inser_correction = np.array([0, 0, 0])
+        self.relative_correct_grasp_pos = [0,0,0.07]
+        self.relative_correct_insert_pos = [0,0,0.07]
 
         observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
         observation_shape = observation.shape
-        self.observation_space = spaces.Box(float('-inf'), float('inf'), shape=observation_shape, dtype=np.float64)
+        self.observation_space = spaces.Box(-1, 1, shape=observation_shape, dtype=np.float64)
 
-        # Definizione dell'action space
-        # Se scegliamo di avere l'azione uguale al valore che desideriamo 
+        self.param_lower_bound = [-0.05,-0.05,-0.05,-0.05,-0.05,-0.05]
+        self.param_upper_bound = [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+
         if self.action_type == 'target_value':
             self.action_space = spaces.Box(np.array(self.param_lower_bound),np.array(self.param_upper_bound), dtype=np.float64)
         # Se scegliamo di avere l'azione come una variazione
         elif self.action_type == 'increment_value':
             space_division = 10.0
-            max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
-            self.action_space = spaces.Box(-max_variations,max_variations, dtype=np.float64)
+            self.max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
+            self.action_space = spaces.Box(-1, 1, dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
-
-    def _create_scene(self,obj_pos,tar_pos) -> None:
-        """Create the scene."""
-        # randomizzo le posizioni di grasp e di insertion
-        new_tfs = []
-        for old_tf in self.initial_tf:
-            new_tf = copy.copy(old_tf)
-            if new_tf['name'] in self.randomized_tf:
-                low_limit = [-0.02, -0.02, 0.0]
-                high_limit = [0.02, 0.02, 0.02]
-                noise = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-                new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
-            new_tfs.append(new_tf)
-        rospy.set_param('tf_params',new_tfs)
-        rospy.sleep(0.5)
-
+   
     def _get_obs(self) -> Dict[str, np.array]:
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         return observation
@@ -147,16 +136,13 @@ class ConnectionEnv(gym.Env):
         self.start_tar_pos = self._sample_target()
         self.start_obj_pos = self._sample_object()
 
-        relative_correct_grasp_pos = [0,0,0.07]
-        relative_correct_insert_pos = [0,0,0.07]
-
         low_limit = [-0.02, -0.02, 0.0]
         high_limit = [0.02, 0.02, 0.02]
 
         initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        self.initial_grasp_pos = np.ndarray.tolist(np.add(relative_correct_grasp_pos,initial_error_grasp_pos))
-        self.initial_insert_pos = np.ndarray.tolist(np.add(relative_correct_insert_pos,initial_error_insert_pos))
+        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.relative_correct_grasp_pos,initial_error_grasp_pos))
+        self.initial_insert_pos = np.ndarray.tolist(np.add(self.relative_correct_insert_pos,initial_error_insert_pos))
 
         self.current_grasp_pos = self.initial_grasp_pos
         self.current_insert_pos = self.initial_insert_pos
@@ -184,12 +170,8 @@ class ConnectionEnv(gym.Env):
         return object_position
 
     def _is_success(self) -> np.array:
-        self._update_info()
-        if (self.final_distance < self.distance_threshold and
-            self.max_wrench[0] < self.force_threshold and
-            self.max_wrench[1] < self.force_threshold and
-            self.max_wrench[3] < self.torque_threshold and
-            self.max_wrench[4] < self.torque_threshold):
+        if (self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos) < 0.01 and
+            self._distance(self.current_insert_pos,self.relative_correct_insert_pos) < 0.01):
             success = True
         else:
             success = False
@@ -205,110 +187,18 @@ class ConnectionEnv(gym.Env):
 
         # Settaggio dei nuovi parametri attraverso la action.
         # Se l'azione è il nuovo set di parametri
-        if self.action_type == 'target_value':        
-            for param_name in self.param_names_to_value_index.keys():
-                param_value = rospy.get_param(param_name)
-                if isinstance(param_value, float) or isinstance(param_value, int):
-                    if (len(self.param_names_to_value_index[param_name]) == 1):
-                        new_param = float(np.clip(action[self.param_names_to_value_index[param_name][0]],
-                                                  self.param_lower_bound[self.param_names_to_value_index[param_name][0]],
-                                                  self.param_upper_bound[self.param_names_to_value_index[param_name][0]]))
-                        if new_param != new_param:
-                            new_param = (self.param_upper_bound[self.param_names_to_value_index[param_name][0]] 
-                                        - self.param_lower_bound[self.param_names_to_value_index[param_name][0]]) / 2
-                        rospy.set_param(param_name,float(action[self.param_names_to_value_index[param_name][0]]))
-                    else:
-                        rospy.logerr('Current parameter and the new one have different sizes')
-                elif isinstance(param_value, list):
-                    if (len(self.param_names_to_value_index[param_name]) == len(param_value)):
-                        values = []
-                        for i in range(len(self.param_names_to_value_index[param_name])):
-                            value = float(np.clip(action[self.param_names_to_value_index[param_name][i]],
-                                                  self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
-                                                  self.param_upper_bound[self.param_names_to_value_index[param_name][i]]))
-                            values.append(value)
-                        rospy.set_param(param_name,values)
-                    elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
-                        # rospy.loginfo('Current parameter has a size bigger than modification, probably some part remain equal')
-                        ind = -1
-                        values = []
-                        for i in range(len(param_value)):
-                            if i in self.param_to_avoid_index[param_name]:
-                                value = param_value[i]
-                            else:
-                                ind += 1
-                                value = float(np.clip(action[self.param_names_to_value_index[param_name][ind]],
-                                    self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
-                                    self.param_upper_bound[self.param_names_to_value_index[param_name][ind]]))
-                            values.append(value)  
-                    else:
-                        rospy.logerr('Current parameter and the new one have different sizes')
-                else:
-                    rospy.logerr('Current param has wrong structure.')
-
+        if self.action_type == 'target_value':
+            self.param_values = action.tolist()
+            self.current_grasp_pos = np.add(self.initial_grasp_pos, action[0:3])
+            self.current_insert_pos = np.add(self.initial_insert_pos, action[3:6])
         # Se l'azione è la variazione
         if self.debug_mode:
-            print(' ')
-            print('NEW_PARAM____________________________________________________________________________')
-        if self.action_type == 'increment_value':        
-            for param_name in self.param_names_to_value_index.keys():
-                param_value = rospy.get_param(param_name)
-                if isinstance(param_value, float) or isinstance(param_value, int):
-                    if (len(self.param_names_to_value_index[param_name]) == 1):
-                        variation = action[self.param_names_to_value_index[param_name][0]]
-                        if variation != variation:
-                            variation = 0
-                        new_param = float(np.clip(param_value + variation,
-                                                  self.param_lower_bound[self.param_names_to_value_index[param_name][0]],
-                                                  self.param_upper_bound[self.param_names_to_value_index[param_name][0]]))
-                        if self.debug_mode:
-                            print(param_name + ' old: ' + str(param_value))
-                            print(param_name + ' new: ' + str(new_param))
-                        rospy.set_param(param_name,new_param)
-                    else:
-                        rospy.logerr('Current parameter and the new one have different sizes')
-                elif isinstance(param_value, list):
-                    if (len(self.param_names_to_value_index[param_name]) == len(param_value)):
-                        new_param = []
-                        for i in range(len(param_value)):
-                            variation = action[self.param_names_to_value_index[param_name][i]]
-                            new_param.append(float(np.clip((param_value[i] + variation),
-                                                   self.param_lower_bound[self.param_names_to_value_index[param_name][i]],
-                                                   self.param_upper_bound[self.param_names_to_value_index[param_name][i]])))
-                        if self.debug_mode:
-                            print(param_name + ' old: ' + str(param_value))
-                            print(param_name + ' new: ' + str(new_param))
-                        rospy.set_param(param_name,new_param)
-                    elif (len(self.param_names_to_value_index[param_name]) + len(self.param_to_avoid_index[param_name]) == len(param_value)):
-                        ind = -1
-                        new_param = []
-                        for i in range(len(param_value)):
-                            if i in self.param_to_avoid_index[param_name]:
-                                new_param.append(param_value[i])
-                            else:
-                                ind += 1
-                                variation = action[self.param_names_to_value_index[param_name][ind]]
-                                new_param.append(float(np.clip((param_value[i] + variation),
-                                                    self.param_lower_bound[self.param_names_to_value_index[param_name][ind]],
-                                                    self.param_upper_bound[self.param_names_to_value_index[param_name][ind]])))
-                        if self.debug_mode:
-                            print(param_name + ' old: ' + str(param_value))
-                            print(param_name + ' new: ' + str(new_param))
-                        rospy.set_param(param_name,new_param)
-                    else:
-                        rospy.logerr('Current parameter and the new one have different sizes')
-                else:
-                    rospy.logerr('Current param has wrong structure.')
-        if self.debug_mode:
-            print('-------------------------------------------------------------------------------------')
-            print(' ')
+            self.param_values = np.add(self.param_values, np.multiply(action, self.max_variations))
+            self.param_values = np.clip(self.param_values, self.param_lower_bound, self.param_upper_bound)
+            self.current_grasp_pos = np.add(self.initial_grasp_pos, self.param_values[0:3])
+            self.current_insert_pos = np.add(self.initial_insert_pos, self.param_values[3:6])
 
-        # Lancio del tree. Le distanze di inizio e fine vengono registrate. 
-        self._update_info()
-        self.initial_distance = self._distance(self.tar_pos,self.obj_pos)
-        self.run_tree_clnt.call(self.tree_name, self.trees_path)
         observation = self._get_obs()
-        self.final_distance = self._distance(self.tar_pos,self.obj_pos)
 
         reward = self._get_reward()
         terminated = bool(self._is_success())
@@ -340,120 +230,29 @@ class ConnectionEnv(gym.Env):
     def _get_reward(self) -> float:
         self._update_info()
         dist_perc = 1 - (self.final_distance/self.initial_distance)
-        if (self.debug_mode):
-            print(' ')
-            print('REWARD_____________________________________________________________________')
-        try:
-            move_to_grasp_fail = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail')
-            move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
-        except:
-            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
-            move_to_grasp_fail = True
 
-        try:
-            move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
-        except:
-            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
-            move_to_grasp_contant = False
-
-        if move_to_grasp_fail:
-            if (self.debug_mode):
-                print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
-                print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward = 1000
-            reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
-        elif move_to_grasp_contant:
-            (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
-            if (self.debug_mode):
-                print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
-                print('grasp_goal_pos: ' + str(grasp_goal_pos))
-                print('start_obj_pos: ' + str(self.start_obj_pos))
-            poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
-            reward = 1000
-            reward -= np.linalg.norm(poses_diff[0:2]) * 10000 # - grasping position to object distance
-        else:
-            if (dist_perc < 0.1):
-                if (self.debug_mode):
-                    print('dist_perc < 0.1')
-                    print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-                reward = 1000
-                reward -= np.linalg.norm(self.obj_to_grasp_pos[0:2]) * 10000 # - grasping position to object distance
-            else:
-                if (self.debug_mode):
-                    print('Distance percentage: ' + str(dist_perc))
-                    print('Max wrench: [' + 
-                        str(self.max_wrench[0]) + ',' + 
-                        str(self.max_wrench[1]) + ',' + 
-                        str(self.max_wrench[2]) + ',' + 
-                        str(self.max_wrench[3]) + ',' + 
-                        str(self.max_wrench[4]) + ',' + 
-                        str(self.max_wrench[5]) + ']')
-                reward = dist_perc * 10000
-                reward += (self.max_wrench[0] * -1)
-                reward += (self.max_wrench[1] * -1)
-                reward += (self.max_wrench[3] * -1)
-                reward += (self.max_wrench[4] * -1)
-
-        rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
-        if (self.debug_mode):
+        if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
+            dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
+            dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
+            reward = 1
+            reward -= dist1 * 25
+            reward -= dist2 * 25
+            print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
             print('Reward: ' + str(reward))
-            print('---------------------------------------------------------------------------')
-            print(' ')
+        else:
+            reward = 0.5
+            dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
+            dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
+            print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
+            reward = 0.5
+            reward -= dist_grasp
+            reward -= dist_equal_grasp_insert
+            print('Reward: ' + str(reward))
 
         # Qua riempio lo storico dei parametri e il relativo reward
         self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
 
         return reward
-
-    def _update_info(self) -> None:        
-        # leggo i valori dei parametri
-        self.param_values.clear()
-
-        for param_name in self.param_names_to_value_index.keys():
-            param_value = rospy.get_param(param_name)
-            if isinstance(param_value, int) or isinstance(param_value, float):
-                self.param_values.append(param_value)
-            elif isinstance(param_value, list):
-                if (len(self.param_names_to_value_index[param_name]) == len(param_value)):
-                    for single_value in param_value:
-                        self.param_values.append(single_value)
-                elif (len(self.param_names_to_value_index[param_name]) < len(param_value)):
-                    for i in range(len(param_value)):
-                        if not i in self.param_to_avoid_index[param_name]:
-                            self.param_values.append(param_value[i])
-
-        # leggo posizione oggetto e target
-        (self.obj_pos, self.obj_rot) = self.tf_listener.lookupTransform(self.object_name, 'world', rospy.Time(0))
-        (self.tar_pos, self.tar_rot) = self.tf_listener.lookupTransform(self.target_name, 'world', rospy.Time(0))
-
-        # leggo posizioni relative di presa e rilascio 
-        try:
-            (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp_goal', rospy.Time(0))
-        except:
-            (self.obj_to_grasp_pos, self.obj_to_grasp_rot) = self.tf_listener.lookupTransform(self.object_name, self.object_name + '_grasp', rospy.Time(0))
-        try:
-            (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion_goal', rospy.Time(0))
-        except:    
-            (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
-
-        if self.debug_mode:
-            print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
-            print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
-
-        # leggo la forza massima del task 
-        try:
-            insert_executed = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed')
-            if insert_executed:
-                try:
-                    self.max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
-                except:
-                    rospy.logerr('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
-                    self.max_wrench = [100000,100000,100000,100000,100000,100000]                
-            else:
-                self.max_wrench = [100000,100000,100000,100000,100000,100000]
-        except:
-            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/executed not found, it considered false')
-            self.max_wrench = [100000,100000,100000,100000,100000,100000]
 
     def _print_action(self, action) -> None:
         print(' ')
