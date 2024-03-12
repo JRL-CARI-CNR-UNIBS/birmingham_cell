@@ -96,7 +96,8 @@ class FakeEnv(gym.Env):
         rospy.loginfo("Reset done")
         observation_shape = observation.shape
         self.observation_space = spaces.Box(-1, 1, shape=observation_shape, dtype=np.float64)
-
+        
+        self.all_param_names = ['x1','y1','z1','x2','y2','z2']
         self.param_lower_bound = [-0.05,-0.05,-0.05,-0.05,-0.05,-0.05]
         self.param_upper_bound = [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
 
@@ -106,7 +107,7 @@ class FakeEnv(gym.Env):
         elif self.action_type == 'increment_value':
             space_division = 10.0
             self.max_variations = (np.array(self.param_upper_bound)-np.array(self.param_lower_bound))/space_division
-            self.action_space = spaces.Box(-1, 1, dtype=np.float64)
+            self.action_space = spaces.Box(-1, 1, shape=(len(self.max_variations),), dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
    
@@ -146,7 +147,7 @@ class FakeEnv(gym.Env):
 
         self.current_grasp_pos = self.initial_grasp_pos
         self.current_insert_pos = self.initial_insert_pos
-
+        self.param_values = [0,0,0,0,0,0]
         observation = self._get_obs()
         info = {"is_success": False}
         return observation, info
@@ -178,12 +179,10 @@ class FakeEnv(gym.Env):
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
-        self.last_action = action.tolist()
+        self.last_action = action
         self.step_number += 1
         print('  ' + str(self.step_number))
         if self.debug_mode: self._print_action(action)
-        # Settaggio dello stato 'step'.
-        self.restore_state_clnt.call(self.step_state_name)
 
         # Settaggio dei nuovi parametri attraverso la action.
         # Se l'azione è il nuovo set di parametri
@@ -192,7 +191,7 @@ class FakeEnv(gym.Env):
             self.current_grasp_pos = np.add(self.initial_grasp_pos, action[0:3])
             self.current_insert_pos = np.add(self.initial_insert_pos, action[3:6])
         # Se l'azione è la variazione
-        if self.debug_mode:
+        if self.action_type == 'increment_value':
             self.param_values = np.add(self.param_values, np.multiply(action, self.max_variations))
             self.param_values = np.clip(self.param_values, self.param_lower_bound, self.param_upper_bound)
             self.current_grasp_pos = np.add(self.initial_grasp_pos, self.param_values[0:3])
@@ -228,29 +227,41 @@ class FakeEnv(gym.Env):
         return np.linalg.norm(np.array(pos1)-np.array(pos2))
     
     def _get_reward(self) -> float:
-        self._update_info()
-        dist_perc = 1 - (self.final_distance/self.initial_distance)
+        # if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
+        #     dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
+        #     dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
+        #     reward = 1
+        #     reward -= dist1 * 25
+        #     reward -= dist2 * 25
+        #     print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
+        #     print('Reward: ' + str(reward))
+        # else:
+        #     reward = 0.5
+        #     dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
+        #     dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
+        #     print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
+        #     reward = 0.5
+        #     reward -= dist_grasp
+        #     reward -= dist_equal_grasp_insert
+        #     print('Reward: ' + str(reward))
 
-        if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
-            dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
-            dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
-            reward = 1
-            reward -= dist1 * 25
-            reward -= dist2 * 25
-            print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
-            print('Reward: ' + str(reward))
-        else:
-            reward = 0.5
-            dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
-            dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
-            print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
-            reward = 0.5
-            reward -= dist_grasp
-            reward -= dist_equal_grasp_insert
-            print('Reward: ' + str(reward))
+        reward = 1
+        reward -= self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos)
+        reward -= self._distance(self.current_insert_pos,self.relative_correct_insert_pos)
 
         # Qua riempio lo storico dei parametri e il relativo reward
-        self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action)
+        rew_step_n = np.array([reward,self.step_number]).tolist()
+        param_values = self.param_values.tolist()
+        last_action = self.last_action.tolist()
+        self.param_history.append(param_values + rew_step_n + last_action)
+
+        print('current_grasp_pos ' + str(self.current_grasp_pos))
+        print('current_insert_pos ' + str(self.current_insert_pos))
+        print('correct_grasp_pos ' + str(self.relative_correct_grasp_pos))
+        print('correct_insert_pos ' + str(self.relative_correct_insert_pos))
+        print('grasp distance ' + str(self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos)))
+        print('insert distance ' + str(self._distance(self.current_insert_pos,self.relative_correct_insert_pos)))
+        print('reward')
 
         return reward
 
