@@ -47,16 +47,16 @@ class MyCheckpointCallback(CheckpointCallback):
 # from gymnasium import NormalizeObservation
 # from stable_baselines3.common.vec_env import VecNormalize
 
-
-test_name = "easy_6_"
+env_dimension = 1
+test_name = "dim_" + str(env_dimension) + '_'
 epoch_number = 500
 max_epoch_steps = 50
 learning_start_steps = 40
 train_freq = 1
-learning_rate = 0.001
+learning_rate = 0.0001
 gamma = 0.99
 total_timesteps = max_epoch_steps * epoch_number
-model_save_freq = 1
+model_save_freq = 50
 
 rospack = rospkg.RosPack()
 path = rospack.get_path('birmingham_cell_tests')
@@ -75,6 +75,7 @@ models_repo_path = model_repo_path + '/' + models_name
 
 env = gym.make('EasyEnv-v0',
                action_type='increment_value', 
+               env_dimension=env_dimension,
                max_episode_steps=max_epoch_steps, 
                data_file_name=data_name)
 
