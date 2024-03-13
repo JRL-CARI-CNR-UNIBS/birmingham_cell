@@ -196,27 +196,27 @@ class FakeEnv(gym.Env):
         return np.linalg.norm(np.array(pos1)-np.array(pos2))
     
     def _get_reward(self) -> float:
-        # if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
-        #     dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
-        #     dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
-        #     reward = 1
-        #     reward -= dist1 * 25
-        #     reward -= dist2 * 25
-        #     print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
-        #     print('Reward: ' + str(reward))
-        # else:
-        #     reward = 0.5
-        #     dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
-        #     dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
-        #     print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
-        #     reward = 0.5
-        #     reward -= dist_grasp
-        #     reward -= dist_equal_grasp_insert
-        #     print('Reward: ' + str(reward))
+        if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
+            dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
+            dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
+            reward = 1
+            reward -= dist1 * 25
+            reward -= dist2 * 25
+            # print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
+            # print('Reward: ' + str(reward))
+        else:
+            reward = 0.5
+            dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
+            dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
+            # print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
+            reward = 0.5
+            reward -= dist_grasp
+            reward -= dist_equal_grasp_insert
+            # print('Reward: ' + str(reward))
 
-        reward = 1
-        reward -= self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos) * 4
-        reward -= self._distance(self.current_insert_pos,self.relative_correct_insert_pos) * 4
+        # reward = 1
+        # reward -= self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos) * 4
+        # reward -= self._distance(self.current_insert_pos,self.relative_correct_insert_pos) * 4
 
         # print('action ' + str(self.last_action))
         # print('param ' + str(self.param_values))

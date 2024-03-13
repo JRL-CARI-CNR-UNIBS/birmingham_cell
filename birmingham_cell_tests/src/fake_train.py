@@ -52,7 +52,7 @@ max_epoch_steps = 200
 learning_start_steps = 1000
 train_freq = 1
 learning_rate = 0.0001
-gamma = 0.5
+gamma = 0.9
 total_timesteps = max_epoch_steps * epoch_number
 model_save_freq = 60
 
