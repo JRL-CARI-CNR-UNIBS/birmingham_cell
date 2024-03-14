@@ -39,7 +39,9 @@ class ConnectionEnv(gym.Env):
         randomized_tf: list = ['can_grasp', 'hole_insertion'],
         debug_mode: bool = False,
         start_epoch_number: int = 0,
-        data_file_name: str = 'td3_tests'
+        data_file_name: str = 'td3_tests',
+        save_data: bool = False,
+        step_print: bool = False,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -57,6 +59,8 @@ class ConnectionEnv(gym.Env):
         self.debug_mode = debug_mode
         self.epoch_number = start_epoch_number
         self.data_file_name = data_file_name + '.ods'
+        self.save_data = save_data
+        self.step_print = step_print
         self.step_number = 0
         self.start_obj_pos = None
         self.start_tar_pos = None
@@ -272,21 +276,23 @@ class ConnectionEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
-        print(self.epoch_number)
+        if self.step_print:
+            print('epoch ' + self.epoch_number)
         # salvo i dati ottenuti dal'epoca precedente 
-        if self.param_history:
-            self.epoch_number += 1
-            data = []
-            data.append(self.all_param_names + ['reward','iteration'])
-            for index in range(len(self.param_history)):
-                data.append(self.param_history[index])
-            param_history_ods = od.get_data(self.package_path + "/data/td3_tests.ods")
-            param_history_ods.update({str(self.epoch_number): data})
-            od.save_data(self.package_path + "/data/td3_tests.ods", param_history_ods)
-            self.param_history.clear()
-            self.step_number = 0
-        else:
-            rospy.logwarn('Nothing to save')
+        if self.save_data:
+            if self.param_history:
+                self.epoch_number += 1
+                data = []
+                data.append(self.all_param_names + ['reward','iteration'])
+                for index in range(len(self.param_history)):
+                    data.append(self.param_history[index])
+                param_history_ods = od.get_data(self.package_path + "/data/td3_tests.ods")
+                param_history_ods.update({str(self.epoch_number): data})
+                od.save_data(self.package_path + "/data/td3_tests.ods", param_history_ods)
+                self.param_history.clear()
+                self.step_number = 0
+            else:
+                rospy.logwarn('Nothing to save')
 
         # rimuovo gli oggetti della scena, riporto il robot nello stato iniziale e poi riaggiungo gli oggetti 
         # in una posizione casuale ma non sovrapposta
@@ -347,7 +353,8 @@ class ConnectionEnv(gym.Env):
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
         self.last_action = action.tolist()
         self.step_number += 1
-        print(' ' + str(self.step_number))
+        if self.step_print:
+            print(' ' + str(self.step_number))
         if self.debug_mode: self._print_action(action)
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
@@ -463,21 +470,7 @@ class ConnectionEnv(gym.Env):
         terminated = bool(self._is_success())
         truncated = False
         info = {"is_success": terminated}
-
-        # save data
-        if self.param_history:
-            data = []
-            data.append(self.all_param_names + ['reward','iteration'])
-            for index in range(len(self.param_history)):
-                data.append(self.param_history[index])
-            param_history_ods = od.get_data(self.package_path + "/data/" + self.data_file_name)
-            param_history_ods.update({str(self.epoch_number): data})
-            od.save_data(self.package_path + "/data/" + self.data_file_name, param_history_ods)
-        else:
-            rospy.logwarn('Nothing to save')
-
-
-
+        
         return observation, reward, terminated, truncated, info
 
     def render(self) -> Optional[np.array]:
