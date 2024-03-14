@@ -84,7 +84,7 @@ if __name__ == '__main__':
                 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
                 model = TD3("MlpPolicy", 
                             env, 
-                            verbose=0, 
+                            verbose=1, 
                             action_noise=action_noise,
                             learning_rate=learning_rate,
                             tensorboard_log=log_path,

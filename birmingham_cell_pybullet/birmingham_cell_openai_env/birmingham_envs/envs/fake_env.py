@@ -108,9 +108,9 @@ class FakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
    
     def _get_obs(self) -> Dict[str, np.array]:
-        print('param_values ' + str(self.param_values))
-        print('current_grasp_pos ' + str(self.current_grasp_pos))
-        print('current_insert_pos ' + str(self.current_insert_pos))
+#        print('param_values ' + str(self.param_values))
+#        print('current_grasp_pos ' + str(self.current_grasp_pos))
+#        print('current_insert_pos ' + str(self.current_insert_pos))
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         return observation
 
