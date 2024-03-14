@@ -181,7 +181,7 @@ class FakeEnv(gym.Env):
             grasp_zone = 'successfully_grasp'
         # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
         # centro per più di 2 cm lo considero in collisione
-        elif(self.current_grasp_pos-self.correct_grasp_pos < -0.01 and # 
+        elif(self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01 and # 
             self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.02):
             grasp_zone = 'collision'
         # in ogni altro caso non sono in presa ne in collisione
