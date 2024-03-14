@@ -11,7 +11,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 
 import rospkg
 import os
-
+import yaml
 
 class MyCheckpointCallback(CheckpointCallback):
     def __init__(self, save_freq: int, save_path: str, name_prefix: str = "rl_model"):
@@ -46,39 +46,37 @@ class MyCheckpointCallback(CheckpointCallback):
 
 if __name__ == '__main__':
 
-    env_type = sys.argv[1]
-    test_name = sys.argv[2]
+    params_path = sys.argv[1]
 
     possible_env_type = ['fake',]
 
-    if not env_type in possible_env_type:
+    rospack = rospkg.RosPack()
+    path = rospack.get_path('birmingham_cell_tests')
+    file_path = path + '/' + params_path
+
+    with open(file_path) as file:
+        params = yaml.safe_load(file)
+
+    if not params['env_type'] in possible_env_type:
         print('Env_type not in the possible env list.')
         exit(0)
 
-    rospack = rospkg.RosPack()
-    path = rospack.get_path('birmingham_cell_tests')
+    log_repo_path = path + '/log/' + params['test_name'] + '_logs'
+    models_repo_path = path + '/model/' + params['test_name'] + '_models'
 
-    log_repo_path = path + '/log/' + test_name + '_logs'
-    models_repo_path = path + '/model/' + test_name + '_models'
-
-    total_timesteps = 100000
-
-    max_epoch_steps_vec = [100, 150, 200, 250]
-    learning_rate_vec = [0.01, 0.0001, 0.00001]
-    gamma_vec = [0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
     test_number = 0
-    total_test = len(max_epoch_steps_vec) * len(learning_rate_vec) * len(gamma_vec)
+    total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
     print('Total tests: ' + str(total_test))
-    for max_epoch_steps in max_epoch_steps_vec:
-        for learning_rate in learning_rate_vec:
-            for gamma in gamma_vec:
+    for max_epoch_steps in params['max_epoch_steps']:
+        for learning_rate in params['learning_rate']:
+            for gamma in params['gamma']:
                 test_number += 1
                 print('Test ' + str(test_number))
-                model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                model_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                log_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
                 model_path = models_repo_path + '/' + model_name
                 log_path = log_repo_path + '/' + log_name
-                if env_type == 'fake':
+                if params['env_type'] == 'fake':
                     env = gym.make('FakeEnv-v0',
                                    action_type='increment_value', 
                                    max_episode_steps=max_epoch_steps)
@@ -92,5 +90,5 @@ if __name__ == '__main__':
                             tensorboard_log=log_path,
                             gamma=gamma,
                             )
-                model.learn(total_timesteps=total_timesteps, log_interval=1)
+                model.learn(total_timesteps=params['total_timesteps'], log_interval=1)
                 model.save(model_path)

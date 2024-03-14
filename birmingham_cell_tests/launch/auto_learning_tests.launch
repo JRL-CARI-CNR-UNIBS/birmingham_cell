@@ -1,9 +1,12 @@
 <?xml version="1.0"?>
 
 <launch>
-  <arg name="env_type" default="fake" />
-  <arg name="test_name" default="fake_1" />
+  <arg name="param_path" default="config/auto_learning_param.yaml" />
  
-  <node name="auto_learning_tests" pkg="birmingham_cell_tests" type="auto_learnin_tests.py" output="screen" args="$(arg env_type) $(arg test_name)"/>
+  <node name="auto_learning_tests" 
+        pkg="birmingham_cell_tests" 
+        type="auto_learnin_tests.py" 
+        output="screen" 
+        args="$(arg param_path)"/>
 
 </launch>

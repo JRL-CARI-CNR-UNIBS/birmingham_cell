@@ -58,8 +58,6 @@ class FakeEnv(gym.Env):
         self.epoch_number = start_epoch_number
         self.data_file_name = data_file_name + '.ods'
         self.step_number = 0
-        self.start_obj_pos = None
-        self.start_tar_pos = None
         self.last_action = None
         
         # arguments to define
@@ -69,8 +67,6 @@ class FakeEnv(gym.Env):
         self.param_to_avoid_index = {}
         self.param_values = [0,0,0,0,0,0]
         self.initial_param_values = [0,0,0,0,0,0]
-        self.obj_pos = []
-        self.obj_rot = []
         self.tar_pos = []
         self.tar_rot = []
         self.obj_to_grasp_pos = []
@@ -89,8 +85,8 @@ class FakeEnv(gym.Env):
         self.tar_to_insert_pos_default = np.array([0, 0, 0.07])
         self.relative_grasp_correction = np.array([0, 0, 0])
         self.relative_inser_correction = np.array([0, 0, 0])
-        self.relative_correct_grasp_pos = [0,0,0.07]
-        self.relative_correct_insert_pos = [0,0,0.07]
+        self.correct_grasp_pos = [0,0,0.07]
+        self.correct_insert_pos = [0,0,0.07]
 
         observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
@@ -112,6 +108,9 @@ class FakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
    
     def _get_obs(self) -> Dict[str, np.array]:
+        print('param_values ' + str(self.param_values))
+        print('current_grasp_pos ' + str(self.current_grasp_pos))
+        print('current_insert_pos ' + str(self.current_insert_pos))
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         return observation
 
@@ -119,16 +118,13 @@ class FakeEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
-        self.start_tar_pos = self._sample_target()
-        self.start_obj_pos = self._sample_object()
-
         low_limit = [-0.02, -0.02, 0.0]
         high_limit = [0.02, 0.02, 0.02]
 
         initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.relative_correct_grasp_pos,initial_error_grasp_pos))
-        self.initial_insert_pos = np.ndarray.tolist(np.add(self.relative_correct_insert_pos,initial_error_insert_pos))
+        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
+        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
 
         self.current_grasp_pos = self.initial_grasp_pos
         self.current_insert_pos = self.initial_insert_pos
@@ -137,27 +133,9 @@ class FakeEnv(gym.Env):
         info = {"is_success": False}
         return observation, info
     
-    def _sample_target(self) -> np.array:
-        """Sample a goal."""
-        goal = np.array([0.0, 0.0, 0.0])
-        noise = self.np_random.uniform(self.work_space_range_low, self.work_space_range_high)
-        goal += noise
-        return goal
-
-    def _sample_object(self) -> np.array:
-        """Randomize start position of object."""
-        finish = False
-        while not finish:
-            object_position = np.array([0.0, 0.0, 0.0])
-            noise = self.np_random.uniform(self.work_space_range_low, self.work_space_range_high)
-            object_position += noise
-            if (self._distance(self.start_tar_pos,object_position) > 0.25):
-                finish = True
-        return object_position
-
     def _is_success(self) -> np.array:
-        if (self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos) < 0.01 and
-            self._distance(self.current_insert_pos,self.relative_correct_insert_pos) < 0.01):
+        if (self._distance(self.current_grasp_pos,self.correct_grasp_pos) < 0.01 and
+            self._distance(self.current_insert_pos,self.correct_insert_pos) < 0.01):
             success = True
         else:
             success = False
@@ -196,36 +174,32 @@ class FakeEnv(gym.Env):
         return np.linalg.norm(np.array(pos1)-np.array(pos2))
     
     def _get_reward(self) -> float:
-        if (self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)<0.01):
-            dist1 = self._distance(self.current_grasp_pos, self.relative_correct_grasp_pos)
-            dist2 = self._distance(self.current_insert_pos, self.relative_correct_insert_pos)
-            reward = 1
-            reward -= dist1 * 25
-            reward -= dist2 * 25
-            # print('In dist < 0.1. Dist1: ' + str(dist1) + ', Dist2: ' + str(dist2))
-            # print('Reward: ' + str(reward))
-        else:
-            reward = 0.5
-            dist_grasp = self._distance(self.current_grasp_pos[0:2], self.relative_correct_grasp_pos[0:2])
-            dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
-            # print('In dist > 0.1. dist_grasp: ' + str(dist_grasp) + 'dist_equal_grasp_insert: ' + str(dist_equal_grasp_insert))
-            reward = 0.5
-            reward -= dist_grasp
-            reward -= dist_equal_grasp_insert
-            # print('Reward: ' + str(reward))
+        # if (self._distance(self.current_grasp_pos, self.correct_grasp_pos)<0.01):
+        #     dist1 = self._distance(self.current_grasp_pos, self.correct_grasp_pos)
+        #     dist2 = self._distance(self.current_insert_pos, self.correct_insert_pos)
+        #     reward = 1
+        #     reward -= dist1 * 25
+        #     reward -= dist2 * 25
+        # else:
+        #     dist_grasp = self._distance(self.current_grasp_pos[0:2], self.correct_grasp_pos[0:2])
+        #     dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
+        #     reward = 0.5
+        #     reward -= dist_grasp
+        #     reward -= dist_equal_grasp_insert
 
-        # reward = 1
-        # reward -= self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos) * 4
-        # reward -= self._distance(self.current_insert_pos,self.relative_correct_insert_pos) * 4
+        reward = 1
+        reward -= self._distance(self.current_grasp_pos,self.correct_grasp_pos) * 4
+        reward -= self._distance(self.current_insert_pos,self.correct_insert_pos) * 4
 
         # print('action ' + str(self.last_action))
+        # print('modification ' + str(np.multiply(self.last_action, self.max_variations)))
         # print('param ' + str(self.param_values))
         # print('current_grasp_pos ' + str(self.current_grasp_pos))
         # print('current_insert_pos ' + str(self.current_insert_pos))
-        # print('correct_grasp_pos ' + str(self.relative_correct_grasp_pos))
-        # print('correct_insert_pos ' + str(self.relative_correct_insert_pos))
-        # print('grasp distance ' + str(self._distance(self.current_grasp_pos,self.relative_correct_grasp_pos)))
-        # print('insert distance ' + str(self._distance(self.current_insert_pos,self.relative_correct_insert_pos)))
-        # print('reward')
+        # print('correct_grasp_pos ' + str(self.correct_grasp_pos))
+        # print('correct_insert_pos ' + str(self.correct_insert_pos))
+        # print('grasp distance ' + str(self._distance(self.current_grasp_pos,self.correct_grasp_pos)))
+        # print('insert distance ' + str(self._distance(self.current_insert_pos,self.correct_insert_pos)))
+        # print('reward ' + str(reward))
 
         return reward
