@@ -174,18 +174,44 @@ class FakeEnv(gym.Env):
         return np.linalg.norm(np.array(pos1)-np.array(pos2))
     
     def _get_reward(self) -> float:
-        if (self._distance(self.current_grasp_pos, self.correct_grasp_pos)<0.01):
+        grasp_zone = str()
+
+        # se il gripper è abbastanza vicino alla pos corretta lo considero in presa
+        if (self._distance(self.current_grasp_pos, self.correct_grasp_pos)<0.01): 
+            grasp_zone = 'successfully_grasp'
+        # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
+        # centro per più di 2 cm lo considero in collisione
+        elif(self.current_grasp_pos-self.correct_grasp_pos < -0.01 and # 
+            self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.02):
+            grasp_zone = 'collision'
+        # in ogni altro caso non sono in presa ne in collisione
+        else:
+            grasp_zone = 'free'
+
+        if (grasp_zone == 'successfully_grasp'):
+            # se sono in presa la bontà aumenta con l'allineamento gripper oggetto
             dist1 = self._distance(self.current_grasp_pos, self.correct_grasp_pos)
             dist2 = self._distance(self.current_insert_pos, self.correct_insert_pos)
             reward = 1
-            reward -= dist1 * 25
-            reward -= dist2 * 25
-        else:
-            dist_grasp = self._distance(self.current_grasp_pos[0:2], self.correct_grasp_pos[0:2])
-            dist_equal_grasp_insert = self._distance(self.current_grasp_pos[0:2], self.current_insert_pos[0:2])
+            reward -= dist1 * 15
+            reward -= dist2 * 15
+        elif(grasp_zone == 'collision'):
+            # se sono in collisione la bontà aumenta se sono allineato ma anche se mi sposto verso l'alto
+            # per l'insert si deve allineare
+            dist_xy_grasp = self._distance(self.current_grasp_pos[0:2], self.correct_grasp_pos[0:2])
+            insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
+            dist_flor_to_grasp = self.current_grasp_pos[2]
             reward = 0.5
+            reward += dist_flor_to_grasp/3
+            reward -= dist_xy_grasp * 4.4
+            reward -= insertion_movement * 4.4
+        elif(grasp_zone == 'free'):
+            # se sono libero la bontà aumenta se mi avvicino all'oggetto
+            insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
+            dist_grasp = np.linalg.norm(self.current_grasp_pos)
+            reward = 0.3
+            reward -= insertion_movement
             reward -= dist_grasp
-            reward -= dist_equal_grasp_insert
 
         # reward = 1
         # reward -= self._distance(self.current_grasp_pos,self.correct_grasp_pos) * 4
