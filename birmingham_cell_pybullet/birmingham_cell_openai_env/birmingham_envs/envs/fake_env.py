@@ -107,13 +107,8 @@ class FakeEnv(gym.Env):
             self.action_space = spaces.Box(-1, 1, shape=(len(self.max_variations),), dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
-
-        # self.old_task_eval = self._get_reward()
-   
+ 
     def _get_obs(self) -> Dict[str, np.array]:
-#        print('param_values ' + str(self.param_values))
-#        print('current_grasp_pos ' + str(self.current_grasp_pos))
-#        print('current_insert_pos ' + str(self.current_insert_pos))
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         return observation
 
@@ -183,27 +178,19 @@ class FakeEnv(gym.Env):
         if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.01) and
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.015)): 
             grasp_zone = 'successfully_grasp'
-            stri = 's'
         # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
         # centro per più di 2 cm lo considero in collisione
         elif((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01) and 
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < 0.02):
             grasp_zone = 'collision'
-            stri = 'c'
         else:
             grasp_zone = 'free'
-            stri = 'f'
         # in ogni altro caso non sono in presa ne in collisione
-
-        # print(stri + ' ', end='')
 
         if (grasp_zone == 'successfully_grasp'):
             # se sono in presa la bontà aumenta con l'allineamento gripper oggetto
             dist1 = self._distance(self.current_grasp_pos, self.correct_grasp_pos)
             dist2 = self._distance(self.current_insert_pos, self.correct_insert_pos)
-            # task_eval = 1
-            # task_eval -= dist1
-            # task_eval -= dist2
             reward = 1
             reward -= dist1 * 10# max 0.0180. x10 -> 0.18
             reward -= dist2 * 10 # max 0.05. x10 -> 0.5
@@ -214,55 +201,18 @@ class FakeEnv(gym.Env):
             dist_xy_grasp = self._distance(self.current_grasp_pos[0:2], self.correct_grasp_pos[0:2])
             insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
             dist_flor_to_grasp = self.current_grasp_pos[2]
-            # task_eval = 0.5
-            # task_eval += dist_flor_to_grasp * 3.3
-            # task_eval -= dist_xy_grasp * 4.4
-            # task_eval -= insertion_movement * 4.4
             reward = 0
             reward += dist_flor_to_grasp * 5 # max 0.06. x5 -> 0.3
             reward -= dist_xy_grasp * 7.5 # max 0.02. x7.5 -> 0.2
             reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
             # -0.3 < reward < 0.3
-            # dist_flor_to_grasp = dist_flor_to_grasp * 10
-            # print("%.1f" % dist_flor_to_grasp, end='')
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
-            # if self.old_task_eval is None:
-            #     insertion_movement = 0
-            # else:
             insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
             dist_grasp = np.linalg.norm(self.current_grasp_pos)
-            # task_eval = 0.3
-            # task_eval -= insertion_movement
-            # task_eval -= dist_grasp
             reward = -0.3
-            reward -= insertion_movement * 7 # max 0.018. x7.9 -> 0.15
-            reward -= dist_grasp * 7 # max 0.07. x7.9 -> 0.55
+            reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
+            reward -= dist_grasp * 6 # max 0.07. x7.9 -> 0.55  Not perfect
             # -1 < reward < -0.3
-
-        # if self.old_task_eval is None:
-        #     return task_eval
-
-        # reward = (task_eval - self.old_task_eval) * 100
-        
-        # print(f"{self.old_task_eval:.2f} {task_eval:.2f} {reward:.2f} ", end='')
-        # print(f"{reward:.6f} ", end='')
-
-        # self.old_task_eval = task_eval
-
-        # reward = 1
-        # reward -= self._distance(self.current_grasp_pos,self.correct_grasp_pos) * 4
-        # reward -= self._distance(self.current_insert_pos,self.correct_insert_pos) * 4
-
-        # print('action ' + str(self.last_action))
-        # print('modification ' + str(np.multiply(self.last_action, self.max_variations)))
-        # print('param ' + str(self.param_values))
-        # print('current_grasp_pos ' + str(self.current_grasp_pos))
-        # print('current_insert_pos ' + str(self.current_insert_pos))
-        # print('correct_grasp_pos ' + str(self.correct_grasp_pos))
-        # print('correct_insert_pos ' + str(self.correct_insert_pos))
-        # print('grasp distance ' + str(self._distance(self.current_grasp_pos,self.correct_grasp_pos)))
-        # print('insert distance ' + str(self._distance(self.current_insert_pos,self.correct_insert_pos)))
-        # print('reward ' + str(reward))
 
         return reward
