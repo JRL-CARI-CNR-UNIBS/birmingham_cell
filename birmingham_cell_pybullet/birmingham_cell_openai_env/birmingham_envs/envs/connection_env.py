@@ -95,6 +95,7 @@ class ConnectionEnv(gym.Env):
         self.gripper_grasp_pos = None
         self.gripper_grasp_rot = None
         self.initial_obj_to_grasp_pos = None
+        self.insertion_pos_param = '/exec_params/actions/can_peg_in_hole/skills/move_to_hole_insertion/relative_position'
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -531,9 +532,9 @@ class ConnectionEnv(gym.Env):
                 reward = 1 
                 reward -= missing_dist_perc * 1.4 # max value 0.7
                 # 0.3 < reward < 1
-                print('in grasp:')
-                print(' missing_dist_perc: ' + str(missing_dist_perc))
-                print(' reward: ' + str(reward))
+                # print('in grasp:')
+                # print(' missing_dist_perc: ' + str(missing_dist_perc))
+                # print(' reward: ' + str(reward))
             else:
                 missing_dist_perc = 1 - dist_perc # max value 0.5
                 self.max_wrench[0] # max 1000 
@@ -547,37 +548,45 @@ class ConnectionEnv(gym.Env):
                 reward -= self.max_wrench[3] * 0.00005 # max 0.05
                 reward -= self.max_wrench[4] * 0.00005 # max 0.05
                 # 0.3 < reward < 1
-                print('in grasp:')
-                print(' missing_dist_perc: ' + str(missing_dist_perc))
-                print(' max_wrench: ' + str(self.max_wrench[0]))
-                print(' max_wrench: ' + str(self.max_wrench[1]))
-                print(' max_wrench: ' + str(self.max_wrench[3]))
-                print(' max_wrench: ' + str(self.max_wrench[4]))
-                print(' reward: ' + str(reward))
+                # print('in grasp:')
+                # print(' missing_dist_perc: ' + str(missing_dist_perc))
+                # print(' max_wrench: ' + str(self.max_wrench[0]))
+                # print(' max_wrench: ' + str(self.max_wrench[1]))
+                # print(' max_wrench: ' + str(self.max_wrench[3]))
+                # print(' max_wrench: ' + str(self.max_wrench[4]))
+                # print(' reward: ' + str(reward))
         elif (grasp_zone == 'collision'):
+            insertion_movement = np.linalg.norm(
+                np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                                             self.param_names_to_value_index[self.insertion_pos_param][2]+1],
+                            self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                                                self.param_names_to_value_index[self.insertion_pos_param][2]+1]))            
             dist_xy_grasp = np.linalg.norm(self.obj_to_grasp_pos[0:2])
-            insertion_movement = self._distance(self.old_tar_pos,self.tar_pos)
             dist_flor_to_grasp = self.gripper_grasp_pos[2]
             reward = 0
             reward += dist_flor_to_grasp * 3 # max 0.1. x3 -> 0.3
             reward -= dist_xy_grasp * 2 # max 0.1. x2 -> 0.2
             reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
-            print('collision:')
-            print(' dist_xy_grasp: ' + str(dist_xy_grasp))
-            print(' insertion_movement: ' + str(insertion_movement))
-            print(' dist_flor_to_grasp: ' + str(dist_flor_to_grasp))
-            print(' reward: ' + str(reward))
+            # print('collision:')
+            # print(' dist_xy_grasp: ' + str(dist_xy_grasp))
+            # print(' insertion_movement: ' + str(insertion_movement))
+            # print(' dist_flor_to_grasp: ' + str(dist_flor_to_grasp))
+            # print(' reward: ' + str(reward))
             # -0.3 < reward < 0.3
         else:
-            insertion_movement = self._distance(self.old_tar_pos,self.tar_pos)
+            insertion_movement = np.linalg.norm(
+                np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                                             self.param_names_to_value_index[self.insertion_pos_param][2]+1],
+                            self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                                                self.param_names_to_value_index[self.insertion_pos_param][2]+1]))
             dist_grasp = np.linalg.norm(self.initial_obj_to_grasp_pos)
             reward = -0.3
             reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
             reward -= dist_grasp * 5.5 # max 0.1. x5.5 -> 0.55  Not perfect
-            print('free:')
-            print(' dist_grasp: ' + str(dist_grasp))
-            print(' insertion_movement: ' + str(insertion_movement))
-            print(' reward: ' + str(reward))
+            # print('free:')
+            # print(' dist_grasp: ' + str(dist_grasp))
+            # print(' insertion_movement: ' + str(insertion_movement))
+            # print(' reward: ' + str(reward))
             # -1 < reward < -0.3
 
 
