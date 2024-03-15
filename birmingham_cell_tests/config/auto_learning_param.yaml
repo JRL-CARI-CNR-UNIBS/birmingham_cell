@@ -1,6 +1,6 @@
  env_type: 'fake'
- test_name: fake_single_dist
- max_epoch_steps: [500]
+ test_name: last_tests_on_fake_env
+ max_epoch_steps: [500, 1000]
  learning_rate: [0.0001]
  gamma: [0.09]
- total_timesteps: 500000
+ total_timesteps: 1000000
