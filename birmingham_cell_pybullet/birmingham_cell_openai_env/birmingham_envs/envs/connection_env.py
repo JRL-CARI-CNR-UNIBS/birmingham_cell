@@ -35,13 +35,14 @@ class ConnectionEnv(gym.Env):
         distance_threshold: float = 0.02,
         force_threshold: float = 50,
         torque_threshold: float = 100,
-        action_type: str = 'target_value',
+        action_type: str = 'increment_value',
         randomized_tf: list = ['can_grasp', 'hole_insertion'],
         debug_mode: bool = False,
         start_epoch_number: int = 0,
         data_file_name: str = 'td3_tests',
         save_data: bool = False,
         step_print: bool = False,
+        only_pos_success: bool = True,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -61,6 +62,7 @@ class ConnectionEnv(gym.Env):
         self.data_file_name = data_file_name + '.ods'
         self.save_data = save_data
         self.step_print = step_print
+        self.only_pos_success = only_pos_success
         self.step_number = 0
         self.start_obj_pos = None
         self.start_tar_pos = None
@@ -73,10 +75,6 @@ class ConnectionEnv(gym.Env):
         self.param_to_avoid_index = {}
         self.param_values = []
         self.initial_param_values = {}
-        self.obj_pos = []
-        self.obj_rot = []
-        self.tar_pos = []
-        self.tar_rot = []
         self.obj_to_grasp_pos = []
         self.obj_to_grasp_rot = []
         self.tar_to_insertion_pos = []
@@ -85,7 +83,18 @@ class ConnectionEnv(gym.Env):
         self.final_distance = None
         self.all_param_names = []
         self.param_history = []
-        self.observ = None
+        self.observation = None
+        self.obj_pos = None
+        self.obj_rot = None
+        self.tar_pos = None
+        self.tar_rot = None
+        self.old_obj_pos = None
+        self.old_obj_rot = None
+        self.old_tar_pos = None
+        self.old_tar_rot = None
+        self.gripper_grasp_pos = None
+        self.gripper_grasp_rot = None
+        self.initial_obj_to_grasp_pos = None
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -192,9 +201,9 @@ class ConnectionEnv(gym.Env):
         self.tf_listener = tf.TransformListener()
         self.start_obj_pos = None
         self.start_tar_pos = None
-        observation, _ = self.reset()  # required for init; seed can be changed later
+        self.observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
-        observation_shape = observation.shape
+        observation_shape = self.observation.shape
         self.observation_space = spaces.Box(-1, 1, shape=observation_shape, dtype=np.float64)
 
         # Definizione dell'action space
@@ -266,11 +275,12 @@ class ConnectionEnv(gym.Env):
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
-        # observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
-        observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
-        self.observ = observation
-        if self.debug_mode: self._print_obs(observation)
-        return observation
+        if self.only_pos_success:
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+        else:
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
+        if self.debug_mode: self._print_obs()
+        return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
@@ -316,9 +326,9 @@ class ConnectionEnv(gym.Env):
 
         self.save_state_clnt(self.step_state_name)
 
-        observation = self._get_obs()
+        self.observation = self._get_obs()
         info = {"is_success": False}
-        return observation, info
+        return self.observation, info
     
     def _sample_target(self) -> np.array:
         """Sample a goal."""
@@ -340,14 +350,20 @@ class ConnectionEnv(gym.Env):
 
     def _is_success(self) -> np.array:
         self._update_info()
-        if (self.final_distance < self.distance_threshold and
-            self.max_wrench[0] < self.force_threshold and
-            self.max_wrench[1] < self.force_threshold and
-            self.max_wrench[3] < self.torque_threshold and
-            self.max_wrench[4] < self.torque_threshold):
-            success = True
+        if self.only_pos_success:
+            if (self.final_distance < self.distance_threshold):
+                success = True
+            else:
+                success = False
         else:
-            success = False
+            if (self.final_distance < self.distance_threshold and
+                self.max_wrench[0] < self.force_threshold and
+                self.max_wrench[1] < self.force_threshold and
+                self.max_wrench[3] < self.torque_threshold and
+                self.max_wrench[4] < self.torque_threshold):
+                success = True
+            else:
+                success = False
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
@@ -355,7 +371,7 @@ class ConnectionEnv(gym.Env):
         self.step_number += 1
         if self.step_print:
             print(' ' + str(self.step_number))
-        if self.debug_mode: self._print_action(action)
+        if self.debug_mode: self._print_action()
         # Settaggio dello stato 'step'.
         self.restore_state_clnt.call(self.step_state_name)
 
@@ -462,8 +478,9 @@ class ConnectionEnv(gym.Env):
         # Lancio del tree. Le distanze di inizio e fine vengono registrate. 
         self._update_info()
         self.initial_distance = self._distance(self.tar_pos,self.obj_pos)
+        self.initial_obj_to_grasp_pos = self.obj_to_grasp_pos
         self.run_tree_clnt.call(self.tree_name, self.trees_path)
-        observation = self._get_obs()
+        self.observation = self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
 
         reward = self._get_reward()
@@ -471,7 +488,7 @@ class ConnectionEnv(gym.Env):
         truncated = False
         info = {"is_success": terminated}
         
-        return observation, reward, terminated, truncated, info
+        return self.observation, reward, terminated, truncated, info
 
     def render(self) -> Optional[np.array]:
         return 
@@ -487,7 +504,6 @@ class ConnectionEnv(gym.Env):
             print('REWARD_____________________________________________________________________')
         try:
             move_to_grasp_fail = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail')
-            move_to_grasp_contant = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/contact')
         except:
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
             move_to_grasp_fail = True
@@ -498,62 +514,130 @@ class ConnectionEnv(gym.Env):
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/move_to_can_grasp/fail not found, it considered true')
             move_to_grasp_contant = False
 
-        if move_to_grasp_fail:
-            if (self.debug_mode):
-                print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
-                print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            reward = 0.1
-            obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-            if obj_to_grasp_distance > 0.1:
-                obj_to_grasp_distance = 0.1
-            reward -= obj_to_grasp_distance * 0.5
-            relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-            r_p_d_normalized = relative_poses_difference / 14
-            reward -= r_p_d_normalized * 0.5
-        elif move_to_grasp_contant:
-            (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
-            if (self.debug_mode):
-                print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
-                print('grasp_goal_pos: ' + str(grasp_goal_pos))
-                print('start_obj_pos: ' + str(self.start_obj_pos))
-            poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
-            reward = 0.1
-            obj_to_grasp_distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
-            if obj_to_grasp_distance > 0.1:
-                obj_to_grasp_distance = 0.1
-            reward -= obj_to_grasp_distance * 0.5
-            relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-            r_p_d_normalized = relative_poses_difference / 14 
-            reward -= r_p_d_normalized * 0.5
-        else:
-            if (dist_perc < 0.1):
-                if (self.debug_mode):
-                    print('dist_perc < 0.1')
-                    print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-                reward = 0.1
-                obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-                if obj_to_grasp_distance > 0.1:
-                    obj_to_grasp_distance = 0.1
-                reward -= obj_to_grasp_distance * 0.5
+        grasp_zone = str()
 
-                relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-                r_p_d_normalized = relative_poses_difference / 14
-                reward -= r_p_d_normalized * 0.5
+        if move_to_grasp_fail:
+            grasp_zone = 'collision'
+        elif move_to_grasp_contant:
+            grasp_zone = 'collision'
+        elif (dist_perc > 0.5):
+            grasp_zone = 'in_grasp'
+        else:
+            grasp_zone = 'out_grasp'
+
+        if (grasp_zone == 'in_grasp'):
+            if self.only_pos_success:
+                missing_dist_perc = 1 - dist_perc # max value 0.5
+                reward = 1 
+                reward -= missing_dist_perc * 1.4 # max value 0.7
+                # 0.3 < reward < 1
+                print('in grasp:')
+                print(' missing_dist_perc: ' + str(missing_dist_perc))
+                print(' reward: ' + str(reward))
             else:
-                if (self.debug_mode):
-                    print('Distance percentage: ' + str(dist_perc))
-                    print('Max wrench: [' + 
-                        str(self.max_wrench[0]) + ',' + 
-                        str(self.max_wrench[1]) + ',' + 
-                        str(self.max_wrench[2]) + ',' + 
-                        str(self.max_wrench[3]) + ',' + 
-                        str(self.max_wrench[4]) + ',' + 
-                        str(self.max_wrench[5]) + ']')
-                reward = dist_perc
-                reward -= (self.max_wrench[0] * 0.001)
-                reward -= (self.max_wrench[1] * 0.001)
-                reward -= (self.max_wrench[3] * 0.001)
-                reward -= (self.max_wrench[4] * 0.001)
+                missing_dist_perc = 1 - dist_perc # max value 0.5
+                self.max_wrench[0] # max 1000 
+                self.max_wrench[1] # max 1000
+                self.max_wrench[3] # max 1000
+                self.max_wrench[4] # max 1000   
+                reward = 1
+                reward -= missing_dist_perc # max 0.5
+                reward -= self.max_wrench[0] * 0.00005 # max 0.05
+                reward -= self.max_wrench[1] * 0.00005 # max 0.05
+                reward -= self.max_wrench[3] * 0.00005 # max 0.05
+                reward -= self.max_wrench[4] * 0.00005 # max 0.05
+                # 0.3 < reward < 1
+                print('in grasp:')
+                print(' missing_dist_perc: ' + str(missing_dist_perc))
+                print(' max_wrench: ' + str(self.max_wrench[0]))
+                print(' max_wrench: ' + str(self.max_wrench[1]))
+                print(' max_wrench: ' + str(self.max_wrench[3]))
+                print(' max_wrench: ' + str(self.max_wrench[4]))
+                print(' reward: ' + str(reward))
+        elif (grasp_zone == 'collision'):
+            dist_xy_grasp = np.linalg.norm(self.obj_to_grasp_pos[0:2])
+            insertion_movement = self._distance(self.old_tar_pos,self.tar_pos)
+            dist_flor_to_grasp = self.gripper_grasp_pos[2]
+            reward = 0
+            reward += dist_flor_to_grasp * 3 # max 0.1. x3 -> 0.3
+            reward -= dist_xy_grasp * 2 # max 0.1. x2 -> 0.2
+            reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
+            print('collision:')
+            print(' dist_xy_grasp: ' + str(dist_xy_grasp))
+            print(' insertion_movement: ' + str(insertion_movement))
+            print(' dist_flor_to_grasp: ' + str(dist_flor_to_grasp))
+            print(' reward: ' + str(reward))
+            # -0.3 < reward < 0.3
+        else:
+            insertion_movement = self._distance(self.old_tar_pos,self.tar_pos)
+            dist_grasp = np.linalg.norm(self.initial_obj_to_grasp_pos)
+            reward = -0.3
+            reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
+            reward -= dist_grasp * 5.5 # max 0.1. x5.5 -> 0.55  Not perfect
+            print('free:')
+            print(' dist_grasp: ' + str(dist_grasp))
+            print(' insertion_movement: ' + str(insertion_movement))
+            print(' reward: ' + str(reward))
+            # -1 < reward < -0.3
+
+
+
+        # if move_to_grasp_fail:
+        #     if (self.debug_mode):
+        #         print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
+        #         print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+        #     reward = 0.1
+        #     obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+        #     if obj_to_grasp_distance > 0.1:
+        #         obj_to_grasp_distance = 0.1
+        #     reward -= obj_to_grasp_distance * 0.5
+        #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+        #     r_p_d_normalized = relative_poses_difference / 14
+        #     reward -= r_p_d_normalized * 0.5
+        # elif move_to_grasp_contant:
+        #     (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
+        #     if (self.debug_mode):
+        #         print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
+        #         print('grasp_goal_pos: ' + str(grasp_goal_pos))
+        #         print('start_obj_pos: ' + str(self.start_obj_pos))
+        #     poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
+        #     reward = 0.1
+        #     obj_to_grasp_distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
+        #     if obj_to_grasp_distance > 0.1:
+        #         obj_to_grasp_distance = 0.1
+        #     reward -= obj_to_grasp_distance * 0.5
+        #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+        #     r_p_d_normalized = relative_poses_difference / 14 
+        #     reward -= r_p_d_normalized * 0.5
+        # else:
+            # if (dist_perc < 0.1):
+            #     if (self.debug_mode):
+            #         print('dist_perc < 0.1')
+            #         print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
+            #     reward = 0.1
+            #     obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
+            #     if obj_to_grasp_distance > 0.1:
+            #         obj_to_grasp_distance = 0.1
+            #     reward -= obj_to_grasp_distance * 0.5
+
+            #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
+            #     r_p_d_normalized = relative_poses_difference / 14
+            #     reward -= r_p_d_normalized * 0.5
+            # else:
+            #     if (self.debug_mode):
+            #         print('Distance percentage: ' + str(dist_perc))
+            #         print('Max wrench: [' + 
+            #             str(self.max_wrench[0]) + ',' + 
+            #             str(self.max_wrench[1]) + ',' + 
+            #             str(self.max_wrench[2]) + ',' + 
+            #             str(self.max_wrench[3]) + ',' + 
+            #             str(self.max_wrench[4]) + ',' + 
+            #             str(self.max_wrench[5]) + ']')
+            #     reward = dist_perc
+            #     reward -= (self.max_wrench[0] * 0.001)
+            #     reward -= (self.max_wrench[1] * 0.001)
+            #     reward -= (self.max_wrench[3] * 0.001)
+            #     reward -= (self.max_wrench[4] * 0.001)
 
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
         if (self.debug_mode):
@@ -562,7 +646,8 @@ class ConnectionEnv(gym.Env):
             print(' ')
 
         # Qua riempio lo storico dei parametri e il relativo reward
-        self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action + self.observ)
+        if self.save_data:
+            self.param_history.append(self.param_values + [float(reward),self.step_number] + self.last_action + self.observation)
 
         return reward
 
@@ -583,6 +668,11 @@ class ConnectionEnv(gym.Env):
                         if not i in self.param_to_avoid_index[param_name]:
                             self.param_values.append(param_value[i])
 
+        if not self.obj_pos is None:
+            self.old_obj_pos = self.obj_pos
+            self.old_obj_rot = self.obj_rot
+            self.old_tar_pos = self.tar_pos
+            self.old_tar_rot = self.tar_rot
         # leggo posizione oggetto e target
         (self.obj_pos, self.obj_rot) = self.tf_listener.lookupTransform(self.object_name, 'world', rospy.Time(0))
         (self.tar_pos, self.tar_rot) = self.tf_listener.lookupTransform(self.target_name, 'world', rospy.Time(0))
@@ -596,6 +686,11 @@ class ConnectionEnv(gym.Env):
             (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion_goal', rospy.Time(0))
         except:    
             (self.tar_to_insertion_pos, self.tar_to_insertion_rot) = self.tf_listener.lookupTransform(self.target_name, self.target_name + '_insertion', rospy.Time(0))
+
+        try:
+            (self.gripper_grasp_pos, self.gripper_grasp_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
+        except:
+            (self.gripper_grasp_pos, self.gripper_grasp_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp', rospy.Time(0))
 
         if self.debug_mode:
             print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
@@ -617,33 +712,33 @@ class ConnectionEnv(gym.Env):
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/executed not found, it considered false')
             self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
 
-    def _print_action(self, action) -> None:
+    def _print_action(self) -> None:
         print(' ')
         print('ACTION____________________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
             if len(self.param_names_to_value_index[param_name]) == 1:
-                print(param_name + ': ' + str(action[self.param_names_to_value_index[param_name][0]]))
+                print(param_name + ': ' + str(self.last_action[self.param_names_to_value_index[param_name][0]]))
             else:
                 param_len = len(self.param_names_to_value_index[param_name])
                 start_index = self.param_names_to_value_index[param_name][0]
-                print(param_name + ': ' + str(action[start_index:start_index+param_len]))
+                print(param_name + ': ' + str(self.last_action[start_index:start_index+param_len]))
         print('--------------------------------------------------------------------------')
         print(' ')
 
-    def _print_obs(self, observation) -> None:
+    def _print_obs(self) -> None:
         print(' ')
         print('OBSERVATION_______________________________________________________________')
         for param_name in self.param_names_to_value_index.keys():
             if len(self.param_names_to_value_index[param_name]) == 1:
-                print(param_name + ': ' + str(observation[self.param_names_to_value_index[param_name][0]]))
+                print(param_name + ': ' + str(self.observation[self.param_names_to_value_index[param_name][0]]))
             else:
                 param_len = len(self.param_names_to_value_index[param_name])
                 start_index = self.param_names_to_value_index[param_name][0]
-                print(param_name + ': ' + str(observation[start_index:start_index+param_len]))
+                print(param_name + ': ' + str(self.observation[start_index:start_index+param_len]))
 
         start_index = len(self.param_values)
-        print('obj_to_grasp_pos: ' + str(observation[start_index:start_index+3]))
-        print('tar_to_insertion_pos: ' + str(observation[start_index+3:start_index+6]))
-        # print('max_wrench: ' + str(observation[start_index+6:start_index+12]))
+        print('obj_to_grasp_pos: ' + str(self.observation[start_index:start_index+3]))
+        print('tar_to_insertion_pos: ' + str(self.observation[start_index+3:start_index+6]))
+        # print('max_wrench: ' + str(self.observation[start_index+6:start_index+12]))
         print('--------------------------------------------------------------------------')
         print(' ')
