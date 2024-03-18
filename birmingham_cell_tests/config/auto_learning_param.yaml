@@ -1,6 +1,6 @@
- env_type: 'connection'
- test_name: first_connection_train
- max_epoch_steps: [1500]
- learning_rate: [0.001]
- gamma: [0.09]
- total_timesteps: 1000000
+ env_type: 'fake'
+ test_name: hope_tests
+ max_epoch_steps: [25, 50, 75]
+ learning_rate: [0.01, 0.001, 0.0001]
+ gamma: [0.5, 0.7, 0.9, 0.99]
+ total_timesteps: 100000
