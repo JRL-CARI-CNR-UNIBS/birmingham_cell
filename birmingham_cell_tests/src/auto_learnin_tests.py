@@ -5,7 +5,7 @@ import numpy as np
 import birmingham_envs
 import sys
 
-from stable_baselines3 import TD3
+from stable_baselines3 import TD3, SAC, DDPG
 from stable_baselines3.common.noise import NormalActionNoise
 from stable_baselines3.common.callbacks import CheckpointCallback
 
@@ -49,6 +49,7 @@ if __name__ == '__main__':
     params_path = sys.argv[1]
 
     possible_env_type = ['fake','connection']
+    possible_model_type = ['td3','sac','ddpg']
 
     rospack = rospkg.RosPack()
     path = rospack.get_path('birmingham_cell_tests')
@@ -57,9 +58,18 @@ if __name__ == '__main__':
     with open(file_path) as file:
         params = yaml.safe_load(file)
 
+    if 'model_types' in params:
+        for model_type in params['model_types']:
+            if not model_type in possible_model_type:
+                print('Model_type not in the possible model list.')
+                exit(0)
+    else:
+        print('Model_types is empty')
+        exit(0)
+
     if not params['env_type'] in possible_env_type:
         print('Env_type not in the possible env list.')
-        exit(0)
+        exit(0)       
     elif params['env_type'] == 'connection':
         if 'distance_threshold' in params:
             distance_threshold = params['distance_threshold']
@@ -92,43 +102,63 @@ if __name__ == '__main__':
     for max_epoch_steps in params['max_epoch_steps']:
         for learning_rate in params['learning_rate']:
             for gamma in params['gamma']:
-                if 'model_save_freq' in params:
-                    model_save_freq = params['model_save_freq']
-                else:
-                    model_save_freq = max_epoch_steps
+                for model_type in params['model_types']:
+                    if 'model_save_freq' in params:
+                        model_save_freq = params['model_save_freq']
+                    else:
+                        model_save_freq = max_epoch_steps
 
-                test_number += 1
-                print('Test ' + str(test_number))
-                model_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                log_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                model_path = models_repo_path + '/' + model_name
-                log_path = log_repo_path + '/' + log_name
-                if params['env_type'] == 'fake':
-                    env = gym.make('FakeEnv-v0',
-                                   action_type='increment_value', 
-                                   max_episode_steps=max_epoch_steps)
-                elif params['env_type'] == 'connection':
-                    env = gym.make('ConnectionEnv-v0', 
-                                    distance_threshold=distance_threshold,
-                                    force_threshold=force_threshold,
-                                    debug_mode=debug_mode,
-                                    step_print=step_print,
-                                    only_pos_success=only_pos_success,
+                    test_number += 1
+                    print('Test ' + str(test_number))
+                    model_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    log_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    model_path = models_repo_path + '/' + model_name
+                    log_path = log_repo_path + '/' + log_name
+                    if params['env_type'] == 'fake':
+                        env = gym.make('FakeEnv-v0',
+                                    action_type='increment_value', 
                                     max_episode_steps=max_epoch_steps)
-                n_actions = env.action_space.shape[-1]
-                action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
-                model = TD3("MlpPolicy", 
-                            env, 
-                            verbose=1, 
-                            action_noise=action_noise,
-                            learning_rate=learning_rate,
-                            tensorboard_log=log_path,
-                            gamma=gamma,
-                            )
-                
-                checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
-                                           save_path=models_repo_path + '/', 
-                                           name_prefix=model_name)  
+                    elif params['env_type'] == 'connection':
+                        env = gym.make('ConnectionEnv-v0', 
+                                        distance_threshold=distance_threshold,
+                                        force_threshold=force_threshold,
+                                        debug_mode=debug_mode,
+                                        step_print=step_print,
+                                        only_pos_success=only_pos_success,
+                                        max_episode_steps=max_epoch_steps)
+                    n_actions = env.action_space.shape[-1]
+                    action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                    if (model_type == 'td3'):
+                        model = TD3("MlpPolicy", 
+                                    env, 
+                                    verbose=1, 
+                                    action_noise=action_noise,
+                                    learning_rate=learning_rate,
+                                    tensorboard_log=log_path,
+                                    gamma=gamma,
+                                    )
+                    if (model_type == 'sac'):
+                        model = SAC("MlpPolicy", 
+                                    env, 
+                                    verbose=1, 
+                                    action_noise=action_noise,
+                                    learning_rate=learning_rate,
+                                    tensorboard_log=log_path,
+                                    gamma=gamma,
+                                    )
+                    if (model_type == 'ddpg'):
+                        model = DDPG("MlpPolicy", 
+                                    env, 
+                                    verbose=1, 
+                                    action_noise=action_noise,
+                                    learning_rate=learning_rate,
+                                    tensorboard_log=log_path,
+                                    gamma=gamma,
+                                    )
+                    
+                    checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
+                                            save_path=models_repo_path + '/', 
+                                            name_prefix=model_name)  
 
-                model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback)
-                model.save(model_path)
+                    model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback)
+                    model.save(model_path)
