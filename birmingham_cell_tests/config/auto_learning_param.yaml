@@ -1,7 +1,6 @@
  env_type: 'fake'
- test_name: test_19_03
- max_epoch_steps: [100]
+ max_epoch_steps: [10]
  learning_rate: [0.00001]
  gamma: [0.9]
- total_timesteps: 500000
+ total_timesteps: 1000000
  model_types: ['td3']

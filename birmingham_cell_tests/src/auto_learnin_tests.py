@@ -12,6 +12,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 import rospkg
 import os
 import yaml
+import datetime
 
 class MyCheckpointCallback(CheckpointCallback):
     def __init__(self, save_freq: int, save_path: str, name_prefix: str = "rl_model"):
@@ -92,9 +93,11 @@ if __name__ == '__main__':
         else:
             only_pos_success = True
 
+    data = datetime.datetime.now()
+    test_name = str(data.month) + '_' + str(data.day) + '_' + str(data.hour) + '_' + str(data.minute) + '_' + 'tests'
     
-    log_repo_path = path + '/log/' + params['test_name'] + '_logs'
-    models_repo_path = path + '/model/' + params['test_name'] + '_models'
+    log_repo_path = path + '/log/' + test_name + '_logs'
+    models_repo_path = path + '/model/' + test_name + '_models'
 
     test_number = 0
     total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
@@ -110,8 +113,8 @@ if __name__ == '__main__':
 
                     test_number += 1
                     print('Test ' + str(test_number))
-                    model_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                    log_name = params['test_name'] + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
                     model_path = models_repo_path + '/' + model_name
                     log_path = log_repo_path + '/' + log_name
                     if params['env_type'] == 'fake':
@@ -132,7 +135,7 @@ if __name__ == '__main__':
                     if (model_type == 'td3'):
                         model = TD3("MlpPolicy", 
                                     env, 
-                                    verbose=0, 
+                                    verbose=1, 
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
