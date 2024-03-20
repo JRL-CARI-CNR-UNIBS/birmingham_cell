@@ -120,6 +120,7 @@ if __name__ == '__main__':
                                     max_episode_steps=max_epoch_steps)
                     elif params['env_type'] == 'connection':
                         env = gym.make('ConnectionEnv-v0', 
+                                        action_type='increment_value', 
                                         distance_threshold=distance_threshold,
                                         force_threshold=force_threshold,
                                         debug_mode=debug_mode,
