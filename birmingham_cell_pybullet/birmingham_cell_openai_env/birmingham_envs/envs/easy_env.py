@@ -69,6 +69,13 @@ class EasyEnv(gym.Env):
             # self.action_space = spaces.Box(low=np.array(self.param_lower_bound), high=np.array(self.param_upper_bound), dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
+
+        print(self.all_param_names)
+        print(self.param_lower_bound)
+        print(self.param_upper_bound)
+        print(self.initial_param_values)
+        print(self.action_space)
+        print(self.max_variations)
    
     def _get_obs(self) -> Dict[str, np.array]:
         observation = np.concatenate([np.array(self.param_values),np.subtract(self.correct_grasp_pos.tolist(),self.param_values)])

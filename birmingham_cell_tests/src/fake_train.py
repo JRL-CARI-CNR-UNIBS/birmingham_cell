@@ -6,7 +6,7 @@ import birmingham_envs
 
 from stable_baselines3 import TD3
 from stable_baselines3.common.noise import NormalActionNoise
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback
 
 import rospkg
 import os
@@ -42,8 +42,27 @@ class MyCheckpointCallback(CheckpointCallback):
 
         return True
 
-# from gymnasium import NormalizeObservation
-# from stable_baselines3.common.vec_env import VecNormalize
+class LearningRateCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+    def _on_step(self) -> bool:
+        # Calcolare il nuovo tasso di apprendimento in base al numero di passaggi
+        if (self.num_timesteps > 10000 and self.num_timesteps < 20000):
+            print('A1')
+            self.model.learning_rate = 0.001
+            # print(self.model.learning_rate)
+        elif (self.num_timesteps > 20000):
+            print('A2')
+            self.model.learning_rate = 0.0001
+            # print(self.model.learning_rate)
+        else:
+            print('A3')
+            self.model.learning_rate = 0.01
+            # print(self.model.learning_rate)
+
+        # Impostare il nuovo tasso di apprendimento per l'ottimizzatore del modello
+        return True
 
 
 test_name = "fake_1_"
@@ -76,9 +95,10 @@ env = gym.make('FakeEnv-v0',
                max_episode_steps=max_epoch_steps, 
                data_file_name=data_name)
 
-checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
+checkpoint_callback = [MyCheckpointCallback(save_freq=model_save_freq,
                                            save_path=models_repo_path + '/', 
-                                           name_prefix=model_name)  
+                                           name_prefix=model_name),
+                        LearningRateCallback(verbose=0)]
 
 n_actions = env.action_space.shape[-1]
 action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))

@@ -215,4 +215,8 @@ class FakeEnv(gym.Env):
             reward -= dist_grasp * 6 # max 0.07. x7.9 -> 0.55  Not perfect
             # -1 < reward < -0.3
 
+        # reward = 1
+        # reward -= self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 10
+        # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 10
+
         return reward

@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     params_path = sys.argv[1]
 
-    possible_env_type = ['fake','connection']
+    possible_env_type = ['fake','connection','easy']
     possible_model_type = ['td3','sac','ddpg']
 
     rospack = rospkg.RosPack()
@@ -121,6 +121,11 @@ if __name__ == '__main__':
                         env = gym.make('FakeEnv-v0',
                                     action_type='increment_value', 
                                     max_episode_steps=max_epoch_steps)
+                    elif params['env_type'] == 'easy':
+                        env = gym.make('EasyEnv-v0',
+                                    action_type='increment_value', 
+                                    env_dimension=1,
+                                    max_episode_steps=max_epoch_steps)
                     elif params['env_type'] == 'connection':
                         env = gym.make('ConnectionEnv-v0', 
                                         action_type='increment_value', 
@@ -164,5 +169,5 @@ if __name__ == '__main__':
                                             save_path=models_repo_path + '/', 
                                             name_prefix=model_name)  
 
-                    model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback)
+                    model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback, progress_bar=True)
                     model.save(model_path)

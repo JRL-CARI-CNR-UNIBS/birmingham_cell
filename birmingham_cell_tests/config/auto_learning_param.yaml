@@ -1,6 +1,6 @@
  env_type: 'fake'
- max_epoch_steps: [10]
- learning_rate: [0.00001]
- gamma: [0.9]
+ max_epoch_steps: [500]
+ learning_rate: [0.001]
+ gamma: [0.99]
  total_timesteps: 1000000
  model_types: ['td3']
