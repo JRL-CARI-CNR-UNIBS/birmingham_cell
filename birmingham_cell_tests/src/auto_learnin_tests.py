@@ -132,7 +132,7 @@ if __name__ == '__main__':
                     if (model_type == 'td3'):
                         model = TD3("MlpPolicy", 
                                     env, 
-                                    verbose=1, 
+                                    verbose=0, 
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
