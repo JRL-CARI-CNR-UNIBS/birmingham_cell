@@ -169,5 +169,6 @@ if __name__ == '__main__':
                                             save_path=models_repo_path + '/', 
                                             name_prefix=model_name)  
 
-                    model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback, progress_bar=True)
+                    model.learn(total_timesteps=params['total_timesteps'], log_interval=1, callback=checkpoint_callback)
+                    #, progress_bar=True)
                     model.save(model_path)
