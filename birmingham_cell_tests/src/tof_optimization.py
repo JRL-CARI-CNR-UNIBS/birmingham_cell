@@ -4,6 +4,7 @@ import gymnasium as gym
 import numpy as np
 import birmingham_envs
 import rospkg
+import rospy
 
 rospack = rospkg.RosPack()
 path = rospack.get_path('birmingham_cell_tests')
@@ -16,10 +17,9 @@ only_pos_success = True
 save_data = True
 tree_name = 'tof_can_peg_in_hole'
 test_name = 'tof_test'
-data_repo_path = path + '/data/' + test_name + '_logs'
+data_repo_path = path + '/data/' + test_name + '_data'
 
-env = gym.make('FakeEnv-v0',
-            action_type='increment_value')
+reward_param_name = '/exec_params/actions/can_peg_in_hole/total_reward'
 
 env = gym.make('ConnectionEnv-v0', 
                 action_type='increment_value', 
@@ -41,5 +41,6 @@ action = np.zeros(env.action_space.shape)
 while ((not success) and (step < max_step)):
     obs, rew, success, trunc, info = env.step(action)
     step += 1
+    rospy.set_param(reward_param_name,float(rew))
 
                     

@@ -2,13 +2,11 @@
 <root BTCPP_format="4">
   <BehaviorTree ID="tof_can_peg_in_hole">
     <Sequence name="tof_can_peg_in_hole">
+      <ActionLearningNode    action_name="can_peg_in_hole" type="standard"/>
       <ActionExploretionNode action_name="can_peg_in_hole" type="standard"/>
       <ForceSuccess>
         <SubTree ID='can_peg_in_hole'/>
       </ForceSuccess>
-      <ActionArbitrationNode action_name="can_peg_in_hole"/>
-      <ActionLearningNode    action_name="can_peg_in_hole" type="standard"/>
-      <SkillExecutionNode robot="panda" action_name="init" skill_name="open_gripper"/>
     </Sequence>
   </BehaviorTree>
 </root>

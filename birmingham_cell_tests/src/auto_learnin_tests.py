@@ -119,7 +119,8 @@ if __name__ == '__main__':
                     log_path = log_repo_path + '/' + log_name
                     if params['env_type'] == 'fake':
                         env = gym.make('FakeEnv-v0',
-                                    action_type='increment_value', 
+                                    action_type='increment_value',
+                                    epoch_len = max_epoch_steps,
                                     max_episode_steps=max_epoch_steps)
                     elif params['env_type'] == 'easy':
                         env = gym.make('EasyEnv-v0',
@@ -140,7 +141,7 @@ if __name__ == '__main__':
                     if (model_type == 'td3'):
                         model = TD3("MlpPolicy", 
                                     env, 
-                                    verbose=1, 
+                                    verbose=0, 
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
@@ -164,7 +165,6 @@ if __name__ == '__main__':
                                     tensorboard_log=log_path,
                                     gamma=gamma,
                                     )
-                    
                     checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
                                             save_path=models_repo_path + '/', 
                                             name_prefix=model_name)  

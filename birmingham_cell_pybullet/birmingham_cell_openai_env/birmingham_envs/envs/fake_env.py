@@ -38,8 +38,8 @@ class FakeEnv(gym.Env):
         action_type: str = 'target_value',
         randomized_tf: list = ['can_grasp', 'hole_insertion'],
         debug_mode: bool = False,
-        start_epoch_number: int = 0,
-        data_file_name: str = 'td3_tests'
+        data_file_name: str = 'td3_tests',
+        epoch_len: int = None
     ) -> None:
         rospy.init_node(node_name)
 
@@ -55,10 +55,10 @@ class FakeEnv(gym.Env):
         self.action_type = action_type   # currently available, target_value  increment_value  
         self.randomized_tf = randomized_tf
         self.debug_mode = debug_mode
-        self.epoch_number = start_epoch_number
         self.data_file_name = data_file_name + '.ods'
-        self.step_number = 0
         self.last_action = None
+        self.epoch_len = epoch_len
+        self.epoch_steps = 0
         
         # arguments to define
         self.param_lower_bound = []
@@ -116,6 +116,7 @@ class FakeEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
+        self.epoch_steps = 0
         low_limit = [-0.02, -0.02, 0.0]
         high_limit = [0.02, 0.02, 0.02]
 
@@ -141,7 +142,7 @@ class FakeEnv(gym.Env):
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
         self.last_action = action
-        self.step_number += 1
+        self.epoch_steps += 1
 
         # Settaggio dei nuovi parametri attraverso la action.
         # Se l'azione è il nuovo set di parametri
@@ -158,8 +159,21 @@ class FakeEnv(gym.Env):
 
         observation = self._get_obs()
 
-        reward = self._get_reward()
-        terminated = bool(self._is_success())
+        success = bool(self._is_success())
+
+        if ((self.epoch_len is not None) and success):
+            single_reward = self._get_reward()
+            remain_step = self.epoch_len - self.epoch_steps
+            # reward = remain_step * single_reward
+            reward = remain_step * 1
+            # print('Success!')
+            # print('  Single reward: ' + str(single_reward))
+            # print('  Remain step: ' + str(remain_step))
+            # print('  Reward: ' + str(reward))
+        else:
+            reward = self._get_reward()
+
+        terminated = success
         truncated = False
         info = {"is_success": terminated}
 
