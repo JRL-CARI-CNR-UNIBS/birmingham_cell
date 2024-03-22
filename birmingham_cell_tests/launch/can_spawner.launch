@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <node name="can_spawner_node" pkg="birmingham_cell_tests" type="object_spawner.py" output="screen"/>
-</launch>
