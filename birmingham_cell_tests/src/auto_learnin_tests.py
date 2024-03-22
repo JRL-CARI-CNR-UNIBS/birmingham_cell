@@ -68,6 +68,15 @@ if __name__ == '__main__':
         print('Model_types is empty')
         exit(0)
 
+    if 'name_space' in params:
+        name_space = params['name_space']
+    else:
+        name_space = 'generic_tests'
+    if 'verbose' in params:
+        verbose = params['verbose']
+    else:
+        verbose = 0
+
     if not params['env_type'] in possible_env_type:
         print('Env_type not in the possible env list.')
         exit(0)       
@@ -94,9 +103,9 @@ if __name__ == '__main__':
             only_pos_success = True
 
     data = datetime.datetime.now()
-    test_name = str(data.month) + '_' + str(data.day) + '_' + str(data.hour) + '_' + str(data.minute) + '_' + 'tests'
+    test_name = name_space + str(data.month) + '_' + str(data.day) + '_' + str(data.hour) + '_' + str(data.minute) + '_' + 'tests'
     
-    log_repo_path = path + '/log/' + test_name + '_logs'
+    log_repo_path = path + '/log/' + name_space + '_logs'
     models_repo_path = path + '/model/' + test_name + '_models'
 
     test_number = 0
@@ -141,7 +150,7 @@ if __name__ == '__main__':
                     if (model_type == 'td3'):
                         model = TD3("MlpPolicy", 
                                     env, 
-                                    verbose=0, 
+                                    verbose=verbose,
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
@@ -150,7 +159,7 @@ if __name__ == '__main__':
                     if (model_type == 'sac'):
                         model = SAC("MlpPolicy", 
                                     env, 
-                                    verbose=1, 
+                                    verbose=verbose,
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
@@ -159,7 +168,7 @@ if __name__ == '__main__':
                     if (model_type == 'ddpg'):
                         model = DDPG("MlpPolicy", 
                                     env, 
-                                    verbose=1, 
+                                    verbose=verbose,
                                     action_noise=action_noise,
                                     learning_rate=learning_rate,
                                     tensorboard_log=log_path,
@@ -172,7 +181,7 @@ if __name__ == '__main__':
                     model.learn(total_timesteps=params['total_timesteps'], 
                                 log_interval=1, 
                                 # callback=checkpoint_callback,
-                                # progress_bar=True,
+                                progress_bar=True,
                                 )
                     
                     # model.save(model_path)
