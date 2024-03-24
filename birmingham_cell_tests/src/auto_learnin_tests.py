@@ -181,7 +181,7 @@ if __name__ == '__main__':
                     model.learn(total_timesteps=params['total_timesteps'], 
                                 log_interval=1, 
                                 # callback=checkpoint_callback,
-                                progress_bar=True,
+                                # progress_bar=True,
                                 )
                     
                     # model.save(model_path)

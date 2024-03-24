@@ -5,4 +5,4 @@
  total_timesteps: 200000
  model_types: ['td3']
  name_space: 'casual_test_'
- verbose: 1
+ verbose: 0
