@@ -106,7 +106,8 @@ if __name__ == '__main__':
     test_name = name_space + 'tests'
     
 
-    log_repo_path = path + '/log/' + name_space + '_logs' 
+    # log_repo_path = path + '/log' + name_space + '_logs' 
+    log_repo_path = path + '/log' 
     models_repo_path = path + '/model/' + test_name + '_models'
 
     test_number = 0
