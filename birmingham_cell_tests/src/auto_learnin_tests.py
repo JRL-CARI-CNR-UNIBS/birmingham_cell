@@ -103,9 +103,10 @@ if __name__ == '__main__':
             only_pos_success = True
 
     data = datetime.datetime.now()
-    test_name = name_space + str(data.month) + '_' + str(data.day) + '_' + str(data.hour) + '_' + str(data.minute) + '_' + 'tests'
+    test_name = name_space + 'tests'
     
-    log_repo_path = path + '/log/' + name_space + '_logs'
+
+    log_repo_path = path + '/log/' + name_space + '_logs' 
     models_repo_path = path + '/model/' + test_name + '_models'
 
     test_number = 0
@@ -119,11 +120,12 @@ if __name__ == '__main__':
                         model_save_freq = params['model_save_freq']
                     else:
                         model_save_freq = max_epoch_steps
-
                     test_number += 1
                     print('Test ' + str(test_number))
-                    model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                    log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    # model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    # log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                    model_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+                    log_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
                     model_path = models_repo_path + '/' + model_name
                     log_path = log_repo_path + '/' + log_name
                     if params['env_type'] == 'fake':

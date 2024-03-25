@@ -1,7 +1,7 @@
  env_type: 'fake'
- max_epoch_steps: [10,15]
+ max_epoch_steps: [10,15,20]
  learning_rate: [0.01]
- gamma: [0.2,0.4,0.6,0.8]
+ gamma: [0.7,0.9,0.99]
  total_timesteps: 100000
  model_types: ['td3']
  name_space: 'casual_test_'
