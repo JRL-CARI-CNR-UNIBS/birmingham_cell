@@ -9,7 +9,7 @@ import rospy
 rospack = rospkg.RosPack()
 path = rospack.get_path('birmingham_cell_tests')
 
-obtimization_max_number = 10
+obtimization_max_number = 5
 distance_threshold = 0.02
 force_threshold = 100
 debug_mode = False
@@ -30,15 +30,17 @@ env = gym.make('ConnectionEnv-v0',
                 step_print=step_print,
                 only_pos_success=only_pos_success,
                 data_file_name=test_name,
+                save_data=save_data,
                 tree_name=tree_name)
     
 env.reset()
 
 success = False
 step = 0
-max_step = 500
+max_step = 200
 action = np.zeros(env.action_space.shape)
 obtimization_number = 0 
+steps = []
 
 while (obtimization_number < obtimization_max_number):
     obs, rew, success, trunc, info = env.step(action)
@@ -46,9 +48,11 @@ while (obtimization_number < obtimization_max_number):
     rospy.set_param(reward_param_name,float(rew))
     if (success or (step == max_step)):
         obtimization_number += 1
-        print(step)
+        steps.append(step)
+        # print(step)
         step = 0 
         env.reset()
+print(steps)
     
 
                     

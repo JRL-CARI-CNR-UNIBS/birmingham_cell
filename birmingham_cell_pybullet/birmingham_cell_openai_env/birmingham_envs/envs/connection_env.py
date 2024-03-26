@@ -299,7 +299,7 @@ class ConnectionEnv(gym.Env):
                     data.append(self.param_history[index])
                 param_history_ods = od.get_data(self.package_path + "/data/td3_tests.ods")
                 param_history_ods.update({str(self.epoch_number): data})
-                od.save_data(self.package_path + "/data/td3_tests.ods", param_history_ods)
+                od.save_data(self.package_path + "/data/" + self.data_file_name, param_history_ods)
                 self.param_history.clear()
                 self.step_number = 0
             else:
@@ -520,7 +520,7 @@ class ConnectionEnv(gym.Env):
         if move_to_grasp_fail:
             grasp_zone = 'collision'
         elif move_to_grasp_contant:
-            grasp_zone = 'collision'
+            grasp_zone = 'out_grasp'
         elif (dist_perc > 0.5):
             grasp_zone = 'in_grasp'
         else:
