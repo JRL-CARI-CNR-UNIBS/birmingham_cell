@@ -43,6 +43,7 @@ class ConnectionEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
+        epoch_len: int = None,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -67,6 +68,8 @@ class ConnectionEnv(gym.Env):
         self.start_obj_pos = None
         self.start_tar_pos = None
         self.last_action = None
+        self.epoch_len = epoch_len
+        self.epoch_steps = 0
         
         # arguments to define
         self.param_lower_bound = []
@@ -287,6 +290,8 @@ class ConnectionEnv(gym.Env):
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
         
+        self.epoch_steps = 0
+
         if self.step_print:
             print('epoch ' + self.epoch_number)
         # salvo i dati ottenuti dal'epoca precedente 
@@ -369,6 +374,7 @@ class ConnectionEnv(gym.Env):
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
         self.last_action = action.tolist()
+        self.epoch_steps += 1
         self.step_number += 1
         if self.step_print:
             print(' ' + str(self.step_number))
@@ -484,10 +490,18 @@ class ConnectionEnv(gym.Env):
         self.observation = self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
 
-        reward = self._get_reward()
-        terminated = bool(self._is_success())
+        success = bool(self._is_success())
+
+        if ((self.epoch_len is not None) and success):
+            single_reward = self._get_reward()
+            remain_step = self.epoch_len - self.epoch_steps
+            reward = single_reward + remain_step
+        else:
+            reward = self._get_reward()
+        
+        terminated = success
         truncated = False
-        info = {"is_success": terminated}
+        info = {"is_success": success}
         
         return self.observation, reward, terminated, truncated, info
 
@@ -588,65 +602,6 @@ class ConnectionEnv(gym.Env):
             # print(' insertion_movement: ' + str(insertion_movement))
             # print(' reward: ' + str(reward))
             # -1 < reward < -0.3
-
-
-
-        # if move_to_grasp_fail:
-        #     if (self.debug_mode):
-        #         print('move_to_grasp_fail: ' + str(move_to_grasp_fail))
-        #         print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-        #     reward = 0.1
-        #     obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-        #     if obj_to_grasp_distance > 0.1:
-        #         obj_to_grasp_distance = 0.1
-        #     reward -= obj_to_grasp_distance * 0.5
-        #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-        #     r_p_d_normalized = relative_poses_difference / 14
-        #     reward -= r_p_d_normalized * 0.5
-        # elif move_to_grasp_contant:
-        #     (grasp_goal_pos, grasp_goal_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp_goal', rospy.Time(0))
-        #     if (self.debug_mode):
-        #         print('move_to_grasp_contant: ' + str(move_to_grasp_contant))
-        #         print('grasp_goal_pos: ' + str(grasp_goal_pos))
-        #         print('start_obj_pos: ' + str(self.start_obj_pos))
-        #     poses_diff = np.subtract(grasp_goal_pos, self.start_obj_pos)
-        #     reward = 0.1
-        #     obj_to_grasp_distance = np.linalg.norm(poses_diff[0:2]) # - grasping position to object distance
-        #     if obj_to_grasp_distance > 0.1:
-        #         obj_to_grasp_distance = 0.1
-        #     reward -= obj_to_grasp_distance * 0.5
-        #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-        #     r_p_d_normalized = relative_poses_difference / 14 
-        #     reward -= r_p_d_normalized * 0.5
-        # else:
-            # if (dist_perc < 0.1):
-            #     if (self.debug_mode):
-            #         print('dist_perc < 0.1')
-            #         print('obj_to_grasp_pos: ' + str(self.obj_to_grasp_pos))
-            #     reward = 0.1
-            #     obj_to_grasp_distance = np.linalg.norm(self.obj_to_grasp_pos[0:2]) # - grasping position to object distance
-            #     if obj_to_grasp_distance > 0.1:
-            #         obj_to_grasp_distance = 0.1
-            #     reward -= obj_to_grasp_distance * 0.5
-
-            #     relative_poses_difference = np.linalg.norm(np.subtract(self.obj_to_grasp_pos[0:2],self.tar_to_insertion_pos[0:2]))
-            #     r_p_d_normalized = relative_poses_difference / 14
-            #     reward -= r_p_d_normalized * 0.5
-            # else:
-            #     if (self.debug_mode):
-            #         print('Distance percentage: ' + str(dist_perc))
-            #         print('Max wrench: [' + 
-            #             str(self.max_wrench[0]) + ',' + 
-            #             str(self.max_wrench[1]) + ',' + 
-            #             str(self.max_wrench[2]) + ',' + 
-            #             str(self.max_wrench[3]) + ',' + 
-            #             str(self.max_wrench[4]) + ',' + 
-            #             str(self.max_wrench[5]) + ']')
-            #     reward = dist_perc
-            #     reward -= (self.max_wrench[0] * 0.001)
-            #     reward -= (self.max_wrench[1] * 0.001)
-            #     reward -= (self.max_wrench[3] * 0.001)
-            #     reward -= (self.max_wrench[4] * 0.001)
 
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
         if (self.debug_mode):

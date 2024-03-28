@@ -105,10 +105,8 @@ if __name__ == '__main__':
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
     
-
-    # log_repo_path = path + '/log' + name_space + '_logs' 
     log_repo_path = path + '/log' 
-    models_repo_path = path + '/model/' + test_name + '_models'
+    models_repo_path = path + '/model/'
 
     test_number = 0
     total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
@@ -147,6 +145,7 @@ if __name__ == '__main__':
                                         debug_mode=debug_mode,
                                         step_print=step_print,
                                         only_pos_success=only_pos_success,
+                                        epoch_len = max_epoch_steps,
                                         max_episode_steps=max_epoch_steps)
                     n_actions = env.action_space.shape[-1]
                     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
@@ -178,13 +177,19 @@ if __name__ == '__main__':
                                     gamma=gamma,
                                     )
                     checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
-                                            save_path=models_repo_path + '/', 
-                                            name_prefix=model_name)  
+                                            save_path=model_path + '/', 
+                                            name_prefix=name_space)  
 
+                    checkpoint_callback = CheckpointCallback(
+                        save_freq=model_save_freq,
+                        save_path=model_path + '/',
+                        name_prefix=name_space,
+                    )
+                    
                     model.learn(total_timesteps=params['total_timesteps'], 
                                 log_interval=1, 
-                                # callback=checkpoint_callback,
-                                # progress_bar=True,
+                                callback=checkpoint_callback,
+                                progress_bar=True,
                                 )
                     
-                    # model.save(model_path)
+                    model.save(model_path)
