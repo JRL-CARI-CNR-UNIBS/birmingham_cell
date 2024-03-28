@@ -313,8 +313,12 @@ class ConnectionEnv(gym.Env):
         # rimuovo gli oggetti della scena, riporto il robot nello stato iniziale e poi riaggiungo gli oggetti 
         # in una posizione casuale ma non sovrapposta
         object_names = [self.target_name, self.object_name]
+        print('Wait to delete objects')
         self.delete_model_clnt.call(object_names)
+        print('Objects deleted')
+        print('Wait to delete step state')
         self.delete_state_clnt.call([self.step_state_name])
+        print('State deleted')
         rospy.loginfo("Model and step_state deleted")
 
         self.restore_state_clnt.call(self.reset_state_name)
