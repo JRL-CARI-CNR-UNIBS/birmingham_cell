@@ -32,7 +32,7 @@ class FakeEnv(gym.Env):
         tree_name: str = 'can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
-        distance_threshold: float = 0.02,
+        distance_threshold: float = 0.005,
         force_threshold: float = 50,
         torque_threshold: float = 100,
         action_type: str = 'target_value',
@@ -165,7 +165,11 @@ class FakeEnv(gym.Env):
             single_reward = self._get_reward()
             remain_step = self.epoch_len - self.epoch_steps
             # reward = remain_step * single_reward
-            reward = remain_step * 1
+            reward = single_reward + remain_step
+
+            print(self.current_grasp_pos)
+            print(self.current_insert_pos)
+
             # print('Success!')
             # print('  Single reward: ' + str(single_reward))
             # print('  Remain step: ' + str(remain_step))

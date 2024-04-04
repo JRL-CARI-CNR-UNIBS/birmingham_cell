@@ -4,14 +4,16 @@ pybullet_simulation:
       package_name: 'birmingham_cell_description'
       xacro_file_path: 'urdf/panda_pybullet.xacro'   # an urdf file with the same name will be generated
       controlled_joint_name: 
-      - 'panda_joint1'
-      - 'panda_joint2'
-      - 'panda_joint3'
-      - 'panda_joint4'
-      - 'panda_joint5'
-      - 'panda_joint6'
-      - 'panda_joint7'
-      - 'panda_left_joint_circle'
+        - 'panda_joint1'
+        - 'panda_joint2'
+        - 'panda_joint3'
+        - 'panda_joint4'
+        - 'panda_joint5'
+        - 'panda_joint6'
+        - 'panda_joint7'
+        - 'panda_left_joint_circle'
+      other_published_joints:
+        - 'panda_finger_joint1'
       joint_control_mode : 'position' # position (which is in fact POSITION_VELOCITY_PD), velocity, torque and pd.
       joint_control_integral_gain: [0,0,0,0,0,0,0,0]
       sensors: # define an array that containing the sensorized joints

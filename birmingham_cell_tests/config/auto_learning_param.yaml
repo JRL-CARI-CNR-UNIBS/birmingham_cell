@@ -1,9 +1,9 @@
- env_type: 'connection'
- max_epoch_steps: [15]
+ env_type: 'realistic_fake'
+ max_epoch_steps: [30]
  learning_rate: [0.01]
  gamma: [0.9]
  total_timesteps: 100000
  model_types: ['td3']
- name_space: 'connection_tests_'
+ name_space: 'realistic_tests_'
  verbose: 1
  model_save_freq: 1000
