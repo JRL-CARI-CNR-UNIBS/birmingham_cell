@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     params_path = sys.argv[1]
 
-    possible_env_type = ['fake','connection','easy']
+    possible_env_type = ['fake','connection','easy','realistic_fake']
     possible_model_type = ['td3','sac','ddpg']
 
     rospack = rospkg.RosPack()
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     if not params['env_type'] in possible_env_type:
         print('Env_type not in the possible env list.')
         exit(0)       
-    elif params['env_type'] == 'connection':
+    elif params['env_type'] == 'connection' or params['env_type'] == 'realistic_fake':
         if 'distance_threshold' in params:
             distance_threshold = params['distance_threshold']
         else:
@@ -101,6 +101,8 @@ if __name__ == '__main__':
             only_pos_success = params['only_pos_success']
         else:
             only_pos_success = True
+
+    print(params['env_type'])
 
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
@@ -141,6 +143,17 @@ if __name__ == '__main__':
                         env = gym.make('ConnectionEnv-v0', 
                                         action_type='increment_value', 
                                         distance_threshold=distance_threshold,
+                                        force_threshold=force_threshold,
+                                        debug_mode=debug_mode,
+                                        step_print=step_print,
+                                        only_pos_success=only_pos_success,
+                                        epoch_len = max_epoch_steps,
+                                        max_episode_steps=max_epoch_steps)
+                    elif params['env_type'] == 'realistic_fake':
+                        print('In realistic_fake')
+                        env = gym.make('RealisticFakeEnv-v0', 
+                                        action_type='increment_value', 
+                                        # distance_threshold=distance_threshold,
                                         force_threshold=force_threshold,
                                         debug_mode=debug_mode,
                                         step_print=step_print,

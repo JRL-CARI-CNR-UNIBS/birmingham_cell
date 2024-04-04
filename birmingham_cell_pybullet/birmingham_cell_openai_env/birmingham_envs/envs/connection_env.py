@@ -507,6 +507,8 @@ class ConnectionEnv(gym.Env):
         truncated = False
         info = {"is_success": success}
         
+        print(self.obj_to_grasp_pos)
+        print(self.tar_to_insertion_pos)
         return self.observation, reward, terminated, truncated, info
 
     def render(self) -> Optional[np.array]:
