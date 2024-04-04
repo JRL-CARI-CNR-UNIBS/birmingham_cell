@@ -1,8 +1,8 @@
  env_type: 'connection'
- max_epoch_steps: [2]
+ max_epoch_steps: [15]
  learning_rate: [0.01]
  gamma: [0.9]
- total_timesteps: 100
+ total_timesteps: 100000
  model_types: ['td3']
  name_space: 'connection_tests_'
  verbose: 1
