@@ -2,8 +2,8 @@
  max_epoch_steps: [26,31,36,41]
  learning_rate: [0.01]
  gamma: [0.9]
- total_timesteps: 200000
+ total_timesteps: 1000000
  model_types: ['td3']
  name_space: 'realistic_tests_'
- verbose: 1
- model_save_freq: 10000
+ verbose: 0
+ model_save_freq: 100000
