@@ -32,7 +32,7 @@ class RealisticFakeEnv(gym.Env):
         tree_name: str = 'can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
-        distance_threshold: float = 0.02,
+        distance_threshold: float = 0.01,
         force_threshold: float = 50,
         torque_threshold: float = 100,
         action_type: str = 'target_value',
