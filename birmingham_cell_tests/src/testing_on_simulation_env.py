@@ -30,7 +30,7 @@ model = TD3("MlpPolicy",
             action_noise=action_noise,
             )
 
-model = TD3.load("/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/model/realistic_fake/25/0.01/0.9/realistic_tests__100000_steps")
+model = TD3.load("/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/model/realistic_fake/25/0.01/0.9/realistic_tests__200000_steps")
 
 obs, info = env.reset()
 steps = 0

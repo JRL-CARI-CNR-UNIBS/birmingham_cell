@@ -361,10 +361,14 @@ class ConnectionEnv(gym.Env):
     def _is_success(self) -> np.array:
         self._update_info()
         if self.only_pos_success:
+            print('Final distance: ' + str(self.final_distance))
+            print('Distance threshold: ' + str(self.distance_threshold))
             if (self.final_distance < self.distance_threshold):
                 success = True
+                print('True')
             else:
                 success = False
+                print('False')
         else:
             if (self.final_distance < self.distance_threshold and
                 self.max_wrench[0] < self.force_threshold and
@@ -493,6 +497,7 @@ class ConnectionEnv(gym.Env):
         self.run_tree_clnt.call(self.tree_name, self.trees_path)
         self.observation = self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
+        print(self.final_distance)
 
         success = bool(self._is_success())
 

@@ -1,5 +1,5 @@
  env_type: 'realistic_fake'
- max_epoch_steps: [25,30,35,40]
+ max_epoch_steps: [26,31,36,41]
  learning_rate: [0.01]
  gamma: [0.9]
  total_timesteps: 200000
