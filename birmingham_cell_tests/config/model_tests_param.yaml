@@ -1,0 +1,4 @@
+env_type: 'realistic_fake'
+model_path: '/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/model/'
+model_name: 'test'
+max_epoch_steps: 25

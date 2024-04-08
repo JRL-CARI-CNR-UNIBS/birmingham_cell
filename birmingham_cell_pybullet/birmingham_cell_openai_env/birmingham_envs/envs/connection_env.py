@@ -21,6 +21,7 @@ from pybullet_simulation.srv import RestoreState
 from pybullet_simulation.srv import DeleteState
 from geometry_msgs.msg import Pose
 
+import copy
 
 class ConnectionEnv(gym.Env):
     
@@ -99,6 +100,10 @@ class ConnectionEnv(gym.Env):
         self.gripper_grasp_rot = None
         self.initial_obj_to_grasp_pos = None
         self.insertion_pos_param = '/exec_params/actions/can_peg_in_hole/skills/move_to_hole_insertion/relative_position'
+        self.default_grasp_pos = None
+        self.default_insert_pos = None
+        self.current_grasp_pos = None
+        self.current_insert_pos = None
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -272,6 +277,12 @@ class ConnectionEnv(gym.Env):
                 high_limit = [0.02, 0.02, 0.02]
                 noise = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
                 new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
+                if new_tf['name'] == 'can_grasp':
+                    self.default_grasp_pos = copy.copy(new_tf['position'])
+                    self.current_grasp_pos = copy.copy(new_tf['position'])
+                if new_tf['name'] == 'hole_insertion':
+                    self.default_insert_pos = copy.copy(new_tf['position'])
+                    self.current_insert_pos = copy.copy(new_tf['position'])
             new_tfs.append(new_tf)
         rospy.set_param('tf_params',new_tfs)
         rospy.sleep(0.5)
@@ -280,7 +291,8 @@ class ConnectionEnv(gym.Env):
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
         if self.only_pos_success:
-            self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+            # self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
         else:
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
         if self.debug_mode: self._print_obs()
@@ -512,8 +524,8 @@ class ConnectionEnv(gym.Env):
         truncated = False
         info = {"is_success": success}
         
-        print(self.obj_to_grasp_pos)
-        print(self.tar_to_insertion_pos)
+        # print(self.obj_to_grasp_pos)
+        # print(self.tar_to_insertion_pos)
         return self.observation, reward, terminated, truncated, info
 
     def render(self) -> Optional[np.array]:
@@ -556,10 +568,6 @@ class ConnectionEnv(gym.Env):
                 missing_dist_perc = 1 - dist_perc # max value 0.5
                 reward = 1 
                 reward -= missing_dist_perc * 1.4 # max value 0.7
-                # 0.3 < reward < 1
-                # print('in grasp:')
-                # print(' missing_dist_perc: ' + str(missing_dist_perc))
-                # print(' reward: ' + str(reward))
             else:
                 missing_dist_perc = 1 - dist_perc # max value 0.5
                 self.max_wrench[0] # max 1000 
@@ -572,47 +580,30 @@ class ConnectionEnv(gym.Env):
                 reward -= self.max_wrench[1] * 0.00005 # max 0.05
                 reward -= self.max_wrench[3] * 0.00005 # max 0.05
                 reward -= self.max_wrench[4] * 0.00005 # max 0.05
-                # 0.3 < reward < 1
-                # print('in grasp:')
-                # print(' missing_dist_perc: ' + str(missing_dist_perc))
-                # print(' max_wrench: ' + str(self.max_wrench[0]))
-                # print(' max_wrench: ' + str(self.max_wrench[1]))
-                # print(' max_wrench: ' + str(self.max_wrench[3]))
-                # print(' max_wrench: ' + str(self.max_wrench[4]))
-                # print(' reward: ' + str(reward))
         elif (grasp_zone == 'collision'):
             insertion_movement = np.linalg.norm(
                 np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
                                              self.param_names_to_value_index[self.insertion_pos_param][2]+1],
                             self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
                                                 self.param_names_to_value_index[self.insertion_pos_param][2]+1]))            
-            dist_xy_grasp = np.linalg.norm(self.obj_to_grasp_pos[0:2])
+            dist_xy_grasp = np.linalg.norm(self.current_grasp_pos[0:2])
+            # dist_xy_grasp = np.linalg.norm(self.obj_to_grasp_pos[0:2])
             dist_flor_to_grasp = self.gripper_grasp_pos[2]
             reward = 0
             reward += dist_flor_to_grasp * 3 # max 0.1. x3 -> 0.3
             reward -= dist_xy_grasp * 2 # max 0.1. x2 -> 0.2
             reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
-            # print('collision:')
-            # print(' dist_xy_grasp: ' + str(dist_xy_grasp))
-            # print(' insertion_movement: ' + str(insertion_movement))
-            # print(' dist_flor_to_grasp: ' + str(dist_flor_to_grasp))
-            # print(' reward: ' + str(reward))
-            # -0.3 < reward < 0.3
         else:
             insertion_movement = np.linalg.norm(
                 np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
                                              self.param_names_to_value_index[self.insertion_pos_param][2]+1],
                             self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
                                                 self.param_names_to_value_index[self.insertion_pos_param][2]+1]))
-            dist_grasp = np.linalg.norm(self.initial_obj_to_grasp_pos)
+            dist_grasp = np.linalg.norm(self.current_grasp_pos)
+            # dist_grasp = np.linalg.norm(self.initial_obj_to_grasp_pos)
             reward = -0.3
             reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
             reward -= dist_grasp * 5.5 # max 0.1. x5.5 -> 0.55  Not perfect
-            # print('free:')
-            # print(' dist_grasp: ' + str(dist_grasp))
-            # print(' insertion_movement: ' + str(insertion_movement))
-            # print(' reward: ' + str(reward))
-            # -1 < reward < -0.3
 
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
         if (self.debug_mode):
@@ -643,6 +634,17 @@ class ConnectionEnv(gym.Env):
                         if not i in self.param_to_avoid_index[param_name]:
                             self.param_values.append(param_value[i])
 
+        # print(self.current_grasp_pos)
+        # print(self.default_grasp_pos)
+        # print(self.param_values)
+
+        self.current_grasp_pos[0] = self.default_grasp_pos[0] + self.param_values[0]
+        self.current_grasp_pos[1] = self.default_grasp_pos[1] - self.param_values[1]
+        self.current_grasp_pos[2] = self.default_grasp_pos[2] - self.param_values[2]
+        self.current_insert_pos[0] = self.default_insert_pos[0] + self.param_values[3]
+        self.current_insert_pos[1] = self.default_insert_pos[1] - self.param_values[4]
+        self.current_insert_pos[2] = self.default_insert_pos[2] - self.param_values[5]
+
         if not self.obj_pos is None:
             self.old_obj_pos = self.obj_pos
             self.old_obj_rot = self.obj_rot
@@ -668,6 +670,8 @@ class ConnectionEnv(gym.Env):
             (self.gripper_grasp_pos, self.gripper_grasp_rot) = self.tf_listener.lookupTransform('world', self.object_name + '_grasp', rospy.Time(0))
 
         if self.debug_mode:
+            print('current_grasp_pos: ' +str(self.current_grasp_pos))
+            print('current_insert_pos: ' +str(self.current_insert_pos))
             print('obj_to_grasp_pos: ' +str(self.obj_to_grasp_pos))
             print('tar_to_insertion_pos: ' +str(self.tar_to_insertion_pos))
 

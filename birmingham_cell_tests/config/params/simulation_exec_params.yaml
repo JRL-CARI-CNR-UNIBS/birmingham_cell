@@ -84,4 +84,4 @@ exec_params:
           release_condition: 0
           relative_target: true
           goal_twist: [0, 0, 0.05, 0, 0, 0]
-          target_force: 200.0
+          target_force: 500.0

@@ -8,6 +8,8 @@ import rospy
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+
+import copy
 # from gymnasium.utils import seeding
 # import pyexcel_ods3 as od
 
@@ -26,7 +28,7 @@ class RealisticFakeEnv(gym.Env):
     
     def __init__(
         self,
-        node_name: str = 'Connection_env',
+        node_name: str = 'Realistic_fake_env',
         package_name: str = 'birmingham_cell_tests',
         trees_path: str = '/config/trees',
         tree_name: str = 'can_peg_in_hole',
@@ -208,9 +210,9 @@ class RealisticFakeEnv(gym.Env):
         self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
         self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
 
-        self.current_grasp_pos = self.initial_grasp_pos
-        self.current_insert_pos = self.initial_insert_pos
-        self.param_values = self.init_par_val
+        self.current_grasp_pos  = copy.copy(self.initial_grasp_pos)
+        self.current_insert_pos = copy.copy(self.initial_insert_pos)
+        self.param_values = copy.copy(self.init_par_val)
         # self.param_values = [0,0,0,0,0,0]
         observation = self._get_obs()
         info = {"is_success": False}
@@ -220,8 +222,8 @@ class RealisticFakeEnv(gym.Env):
         if (self._distance(self.current_grasp_pos,self.correct_grasp_pos) < (self.distance_threshold / 2) and
             self._distance(self.current_insert_pos,self.correct_insert_pos) < (self.distance_threshold / 2)):
             success = True
-            print('grasp ' + str(self.current_grasp_pos))
-            print('insert ' + str(self.current_insert_pos))
+            # print('grasp ' + str(self.current_grasp_pos))
+            # print('insert ' + str(self.current_insert_pos))
         else:
             success = False
         return np.array(success, dtype=bool)
