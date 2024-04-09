@@ -1,9 +1,9 @@
  env_type: 'realistic_fake'
- max_epoch_steps: [25,30,35]
+ max_epoch_steps: [25]
  learning_rate: [0.01]
  gamma: [0.9]
  total_timesteps: 1000000
  model_types: ['td3']
- name_space: 'fixed_realistic_tests_'
+ name_space: 'fixed_realistic_tests_2_'
  verbose: 1
  model_save_freq: 100000
