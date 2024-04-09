@@ -106,27 +106,27 @@ class RandomRealFakeEnv(gym.Env):
         self.current_insert_pos = None
 
         self.initial_param_history = [[0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],
-                              [0,0,0,0,0,0],]
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],
+                                      [0,0,0,0,0,0],]
         self.param_history = copy.copy(self.initial_param_history)
 
-        self.initial_reward_history = [-self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,
-                               -self.epoch_len,]
+        self.initial_reward_history = [-1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,
+                                       -1,]
         self.reward_history = copy.copy(self.initial_reward_history)
 
         # lettura dei parametri delle skill da modificare

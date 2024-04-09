@@ -5,5 +5,5 @@
  total_timesteps: 1000000
  model_types: ['td3']
  name_space: 'rand_real_fake_1'
- verbose: 1
+ verbose: 0
  model_save_freq: 100000
