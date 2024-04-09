@@ -23,3 +23,8 @@ register(
     id="RealisticFakeEnv-v0",
     entry_point="birmingham_envs.envs:RealisticFakeEnv",
 )
+
+register(
+    id="RandomRealFakeEnv-v0",
+    entry_point="birmingham_envs.envs:RandomRealFakeEnv",
+)

@@ -12,7 +12,7 @@ from stable_baselines3.common.callbacks import CheckpointCallback
 import rospkg
 import os
 import yaml
-
+import copy
 
 if __name__ == '__main__':
 
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     else:
         max_epoch_steps = 25
 
-# env = gym.make('ConnectionEnv-v0', 
+# env = gym.make('RandomRealFakeEnv-v0', 
 #                 action_type='increment_value', 
 #                 epoch_len = max_epoch_steps,
 #                 max_episode_steps=max_epoch_steps)
@@ -79,6 +79,7 @@ if __name__ == '__main__':
     steps = 0
     success = False
 
+    old_param = np.array(copy.copy(obs[0:6]))
     # while (not success) and (steps < max_epoch_steps):
     while (steps < max_epoch_steps):
         action, _states = model.predict(obs)
@@ -87,5 +88,11 @@ if __name__ == '__main__':
         print('action')
         print(action)
         print(' ')
+        old_param = np.array(copy.copy(obs[0:6]))
         obs, reward, success, truncated, info = env.step(action)
+        new_param = np.array(copy.copy(obs[0:6]))
+        diff = (new_param - old_param) * 100
+        print('calculated action')
+        print(diff)
         steps += 1  
+np.ndarray.tolist

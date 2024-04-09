@@ -3,3 +3,4 @@ from birmingham_envs.envs.connection_env import ConnectionEnv
 from birmingham_envs.envs.fake_env import FakeEnv
 from birmingham_envs.envs.easy_env import EasyEnv
 from birmingham_envs.envs.realistic_fake_env import RealisticFakeEnv
+from birmingham_envs.envs.random_realistic_fake_env import RandomRealFakeEnv
