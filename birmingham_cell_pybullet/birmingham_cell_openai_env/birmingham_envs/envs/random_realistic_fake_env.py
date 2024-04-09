@@ -87,7 +87,6 @@ class RandomRealFakeEnv(gym.Env):
         self.initial_distance = None
         self.final_distance = None
         self.all_param_names = []
-        self.param_history = []
         self.max_variations = []
         self.observation = None
         self.obj_pos = None
@@ -105,6 +104,30 @@ class RandomRealFakeEnv(gym.Env):
         self.init_par_val = []
         self.current_grasp_pos = None
         self.current_insert_pos = None
+
+        self.initial_param_history = [[0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],
+                              [0,0,0,0,0,0],]
+        self.param_history = copy.copy(self.initial_param_history)
+
+        self.initial_reward_history = [-self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,
+                               -self.epoch_len,]
+        self.reward_history = copy.copy(self.initial_reward_history)
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -198,7 +221,18 @@ class RandomRealFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        add_to_obs = []
+
+        for i in range(len(self.param_history)):
+            for j in range(len(self.param_history[i])):
+                add_to_obs.append(self.param_history[i][j])
+            add_to_obs.append(self.reward_history[i])
+
+        observation = np.concatenate([np.array(self.param_values),
+                                      np.array(self.current_grasp_pos),
+                                      np.array(self.current_insert_pos),
+                                      np.array(add_to_obs),
+                                      ])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -226,6 +260,10 @@ class RandomRealFakeEnv(gym.Env):
         self.current_insert_pos = copy.copy(self.initial_insert_pos)
         self.param_values = copy.copy(self.init_par_val)
         # self.param_values = [0,0,0,0,0,0]
+
+        self.param_history = copy.copy(self.initial_param_history)
+        self.reward_history = copy.copy(self.initial_reward_history)
+
         observation = self._get_obs()
         info = {"is_success": False}
 
@@ -235,6 +273,10 @@ class RandomRealFakeEnv(gym.Env):
         # print(self.current_grasp_pos)
         # print('correct_grasp_pos')
         # print(self.correct_grasp_pos)
+        # print('param_history')
+        # print(self.param_history)
+        # print('reward_history')
+        # print(self.reward_history)
 
         return observation, info
     
@@ -271,7 +313,9 @@ class RandomRealFakeEnv(gym.Env):
             self.current_insert_pos[2] = self.initial_insert_pos[2] - self.param_values[5]
             # self.current_insert_pos = np.add(self.initial_insert_pos, self.param_values[3:6])
 
-        observation = self._get_obs()
+        self.param_history = self.param_history[1:]
+
+        self.param_history.append(np.ndarray.tolist(self.param_values))
 
         success = bool(self._is_success())
 
@@ -287,6 +331,10 @@ class RandomRealFakeEnv(gym.Env):
         else:
             reward = self._get_reward()
 
+        self.reward_history = self.reward_history[1:]
+        self.reward_history.append(reward)
+
+        observation = self._get_obs()
         terminated = success
         truncated = False
         info = {"is_success": terminated}
@@ -297,6 +345,10 @@ class RandomRealFakeEnv(gym.Env):
         # print(self.current_grasp_pos)
         # print('correct_grasp_pos')
         # print(self.correct_grasp_pos)
+        # print('param_history')
+        # print(self.param_history)
+        # print('reward_history')
+        # print(self.reward_history)
 
         return observation, reward, terminated, truncated, info
 
