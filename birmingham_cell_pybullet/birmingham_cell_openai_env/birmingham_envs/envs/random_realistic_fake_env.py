@@ -71,7 +71,8 @@ class RandomRealFakeEnv(gym.Env):
         # arguments to define
         self.start_obj_pos = None
         self.start_tar_pos = None
-        self.last_action = None
+        self.last_action = [0,0,0,0,0,0]
+        self.last_reward = -1
         self.param_lower_bound = []
         self.param_upper_bound = []
         self.param_names_to_value_index = {}
@@ -212,7 +213,8 @@ class RandomRealFakeEnv(gym.Env):
         observation = np.concatenate([np.array(self.param_values),
                                       np.array(self.current_grasp_pos),
                                       np.array(self.current_insert_pos),
-                                      np.array(self.reward_history),
+                                      np.array(self.last_action),
+                                      np.array([self.last_reward])
                                       ])
         return observation
 
@@ -305,6 +307,7 @@ class RandomRealFakeEnv(gym.Env):
         else:
             reward = self._get_reward()
 
+        self.last_reward = copy.copy(reward)
         self.reward_history = self.reward_history[1:]
         self.reward_history.append(reward)
 
