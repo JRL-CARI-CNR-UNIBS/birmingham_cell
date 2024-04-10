@@ -105,18 +105,6 @@ class RandomRealFakeEnv(gym.Env):
         self.current_grasp_pos = None
         self.current_insert_pos = None
 
-        self.initial_param_history = [[0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],
-                                      [0,0,0,0,0,0],]
-        self.param_history = copy.copy(self.initial_param_history)
-
         self.initial_reward_history = [-1,
                                        -1,
                                        -1,
@@ -221,17 +209,10 @@ class RandomRealFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        add_to_obs = []
-
-        for i in range(len(self.param_history)):
-            for j in range(len(self.param_history[i])):
-                add_to_obs.append(self.param_history[i][j])
-            add_to_obs.append(self.reward_history[i])
-
         observation = np.concatenate([np.array(self.param_values),
                                       np.array(self.current_grasp_pos),
                                       np.array(self.current_insert_pos),
-                                      np.array(add_to_obs),
+                                      np.array(self.reward_history),
                                       ])
         return observation
 
@@ -261,7 +242,6 @@ class RandomRealFakeEnv(gym.Env):
         self.param_values = copy.copy(self.init_par_val)
         # self.param_values = [0,0,0,0,0,0]
 
-        self.param_history = copy.copy(self.initial_param_history)
         self.reward_history = copy.copy(self.initial_reward_history)
 
         observation = self._get_obs()
@@ -273,8 +253,6 @@ class RandomRealFakeEnv(gym.Env):
         # print(self.current_grasp_pos)
         # print('correct_grasp_pos')
         # print(self.correct_grasp_pos)
-        # print('param_history')
-        # print(self.param_history)
         # print('reward_history')
         # print(self.reward_history)
 
@@ -313,10 +291,6 @@ class RandomRealFakeEnv(gym.Env):
             self.current_insert_pos[2] = self.initial_insert_pos[2] - self.param_values[5]
             # self.current_insert_pos = np.add(self.initial_insert_pos, self.param_values[3:6])
 
-        self.param_history = self.param_history[1:]
-
-        self.param_history.append(np.ndarray.tolist(self.param_values))
-
         success = bool(self._is_success())
 
         if ((self.epoch_len is not None) and success):
@@ -345,8 +319,6 @@ class RandomRealFakeEnv(gym.Env):
         # print(self.current_grasp_pos)
         # print('correct_grasp_pos')
         # print(self.correct_grasp_pos)
-        # print('param_history')
-        # print(self.param_history)
         # print('reward_history')
         # print(self.reward_history)
 
