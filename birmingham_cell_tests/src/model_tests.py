@@ -79,9 +79,12 @@ if __name__ == '__main__':
     steps = 0
     success = False
 
+    action = np.array([0,0,0,0,0,0])
+    env.step(action)
+    
     old_param = np.array(copy.copy(obs[0:6]))
-    # while (not success) and (steps < max_epoch_steps):
-    while (steps < max_epoch_steps):
+    while (not success) and (steps < max_epoch_steps):
+    # while (steps < max_epoch_steps):
         action, _states = model.predict(obs)
         print('observation')
         print(obs)

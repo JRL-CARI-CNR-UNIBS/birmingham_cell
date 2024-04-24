@@ -4,35 +4,21 @@ from typing import Any, Dict, Optional, Tuple
 
 import rospkg
 import rospy
-# import copy
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
 
 import copy
-# from gymnasium.utils import seeding
-# import pyexcel_ods3 as od
 
-# import tf
-
-# from skills_util_msgs.srv import RunTree
-# from pybullet_simulation.srv import SpawnModel
-# from pybullet_simulation.srv import DeleteModel
-# from pybullet_simulation.srv import SaveState
-# from pybullet_simulation.srv import RestoreState
-# from pybullet_simulation.srv import DeleteState
-# from geometry_msgs.msg import Pose
-
-
-class RealisticFakeEnv(gym.Env):
+class GenericRealFakeEnv(gym.Env):
     
     def __init__(
         self,
         node_name: str = 'Realistic_fake_env',
         package_name: str = 'birmingham_cell_tests',
         trees_path: str = '/config/trees',
-        tree_name: str = 'can_peg_in_hole',
-        object_name: str = 'can',
+        tree_name: str = 'object_peg_in_hole',
+        object_name: str = 'object',
         target_name: str = 'hole',
         distance_threshold: float = 0.005,
         force_threshold: float = 50,
@@ -44,7 +30,7 @@ class RealisticFakeEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
-        epoch_len: int = None
+        epoch_len: int = None,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -67,8 +53,11 @@ class RealisticFakeEnv(gym.Env):
         self.step_number = 0
         self.epoch_len = epoch_len
         self.epoch_steps = 0
-        
-        # arguments to define
+        self.object_height = None
+        self.object_length = None
+        self.object_width = None
+
+        # arguments to define        # arguments to define
         self.start_obj_pos = None
         self.start_tar_pos = None
         self.last_action = None
@@ -105,7 +94,17 @@ class RealisticFakeEnv(gym.Env):
         self.init_par_val = []
         self.current_grasp_pos = None
         self.current_insert_pos = None
+        self.object_type = None
 
+        self.possible_obj_type = ['cylinder',
+                                  'box',
+                                  'cone',
+                                  'sphere']
+        
+        self.object_height_limit = [0.05, 0.2]
+        self.object_length_limit = [0.02,0.07]
+        self.object_width_limit =  [0.02,0.07]
+        
         # lettura dei parametri delle skill da modificare
         try:
             exec_ns = rospy.get_param('/skills_executer/skills_parameters_name_space')
@@ -195,10 +194,7 @@ class RealisticFakeEnv(gym.Env):
  
     def _get_obs(self) -> Dict[str, np.array]:
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
-
-        # come osservazione potrei usare in che tipo di stato è tra 'free' 'collision' e 'grasp' 
-        # la posizione del grasp rispetto all'oggetto e la posizione del target rispetto al foro (che teoricamente dovrebbero essere simili)
-
+        observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array(self.object_info)])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -208,6 +204,42 @@ class RealisticFakeEnv(gym.Env):
         self.epoch_steps = 0
         low_limit = [-0.02, -0.02, 0.0]
         high_limit = [0.02, 0.02, 0.02]
+
+        self.object_type = self.np_random.choice(self.possible_obj_type)
+
+        if self.object_type == 'cylinder':
+            self.object_type_ = 0
+            self.object_height = self.np_random.uniform(self.object_height_limit[0],self.object_height_limit[1])
+            self.object_length = 0
+            self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
+            correct_grasp_height = (self.object_height / 2) - 0.015
+            correct_insert_height = correct_grasp_height + self.object_height + 0.05
+        if self.object_type == 'box':
+            self.object_type_ = 1
+            self.object_height = self.np_random.uniform(self.object_height_limit[0],self.object_height_limit[1])
+            self.object_length = self.np_random.uniform(self.object_length_limit[0],self.object_length_limit[1])
+            self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
+            correct_grasp_height = (self.object_height / 2) - 0.015
+            correct_insert_height = correct_grasp_height + self.object_height + 0.05
+        if self.object_type == 'cone':
+            self.object_type_ = 2
+            self.object_height = self.np_random.uniform(self.object_height_limit[0],self.object_height_limit[1])
+            self.object_length = 0
+            self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])                                  
+            correct_grasp_height = (self.object_height / 2) - 0.03
+            correct_insert_height = correct_grasp_height + self.object_height + 0.05
+        if self.object_type == 'sphere':
+            self.object_type_ = 3
+            self.object_height = 0
+            self.object_length = 0
+            self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
+            correct_grasp_height = 0
+            correct_insert_height = correct_grasp_height + self.object_width + 0.05
+
+        self.object_info = [self.object_type_,self.object_height,self.object_length,self.object_width]
+
+        self.correct_grasp_pos = [0,0,correct_grasp_height]
+        self.correct_insert_pos = [0,0,correct_insert_height]
 
         initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
@@ -286,17 +318,19 @@ class RealisticFakeEnv(gym.Env):
     def _get_reward(self) -> float:
         grasp_zone = str()
 
-        # se il gripper è abbastanza vicino alla pos corretta lo considero in presa
-        if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.01) and
-            (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.015)): 
+
+        if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.02) and
+            (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < (0.04 - (self.object_width/2)))):
             grasp_zone = 'successfully_grasp'
-        # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
-        # centro per più di 2 cm lo considero in collisione
-        elif((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01) and 
-            (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < 0.02):
+        elif ((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.02) and 
+                (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < ((self.object_width/2) + 0.05)):
             grasp_zone = 'collision'
         else:
             grasp_zone = 'free'
+
+        # se il gripper è abbastanza vicino alla pos corretta lo considero in presa
+        # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
+        # centro per più di 2 cm lo considero in collisione
         # in ogni altro caso non sono in presa ne in collisione
 
         if (grasp_zone == 'successfully_grasp'):
@@ -332,36 +366,3 @@ class RealisticFakeEnv(gym.Env):
         # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 10
 
         return reward
-
-
-
-# quello che voglio definire è un oggetto di cui non conosco la forma ma che definisco presente un volume cilindrico, questo volume deve essere variabile all'interno di un certo range, per far si 
-# che non sia troppo grande ma neanche troppo piccolo, in ogni caso più generalizzo meglio dovrebbe essere perché il modello ipara di più anche se con più difficoltà 
-    def init(self):
-
-        self.collision_radius = None
-        self.c_r_max_val = 0.2
-        self.c_r_min_val = 0.02
-
-        self.collision_height = None
-        self.c_h_max_val = 0.3
-        self.c_h_min_val = 0.03
-
-        
-
-    def reset(self):
-        self.collision_radius = self.np_random.uniform(self.c_r_min_val,self.c_r_max_val)
-        self.collision_height = self.np_random.uniform(self.c_h_min_val,self.c_h_max_val)
-
-        g_p_low_limit = [-self.collision_radius - 0.02, -self.collision_radius - 0.02, self.collision_height - self.c_h_min_val]
-        g_p_high_limit = [self.collision_radius + 0.02, self.collision_radius + 0.02, self.collision_height + 0.1]
-        self.initial_grasp_pose = self.np_random.uniform(g_p_low_limit,g_p_high_limit)
-
-# seconda cosa, voglio che la posizione corretta di presa non sia definita nel centro ma resa randomica, x e y devono rimanere all'interno dell'area della base del cilindro, 
-# mentre la z deve stare nell'intorno dell'altezza del cilindro 
-
-# definisco poi le zone di collisione, quelle di libertà e quelle di presa.
-# Nella zona di libertà voglio che la posizione di presa cerchi di raggiungere l'oggetto
-# Posizione di collisione cerchi di centrarsi all'oggetto mentre si alza, così da mettersi in una posizione di presa.
-
-# Quello che mi esce difficile è poi di guidare il modello alla posizione corretta di presa, perché qua l'unico dato disponibile è il reward ma questo non lo fornisco nelle osservazioni

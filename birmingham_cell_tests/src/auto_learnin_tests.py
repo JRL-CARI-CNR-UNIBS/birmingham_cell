@@ -49,7 +49,6 @@ if __name__ == '__main__':
 
     params_path = sys.argv[1]
 
-    possible_env_type = ['fake','connection','easy','realistic_fake','random_real_fake']
     possible_model_type = ['td3','sac','ddpg']
 
     rospack = rospkg.RosPack()
@@ -76,10 +75,6 @@ if __name__ == '__main__':
         verbose = params['verbose']
     else:
         verbose = 0
-
-    if not params['env_type'] in possible_env_type:
-        print('Env_type not in the possible env list.')
-        exit(0)  
              
     if 'distance_threshold' in params:
         distance_threshold = params['distance_threshold']
@@ -171,6 +166,19 @@ if __name__ == '__main__':
                                         only_pos_success=only_pos_success,
                                         epoch_len = max_epoch_steps,
                                         max_episode_steps=max_epoch_steps)
+                    elif params['env_type'] == 'generic_real_fake':
+                        print('In generic_real_fake')
+                        env = gym.make('GenericRealFakeEnv-v0', 
+                                        action_type='increment_value', 
+                                        debug_mode=debug_mode,
+                                        step_print=step_print,
+                                        only_pos_success=only_pos_success,
+                                        epoch_len = max_epoch_steps,
+                                        max_episode_steps=max_epoch_steps)
+                    else:
+                        print('Env_type not in the possible env list.')
+                        exit(0)  
+
                     n_actions = env.action_space.shape[-1]
                     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
                     if (model_type == 'td3'):
