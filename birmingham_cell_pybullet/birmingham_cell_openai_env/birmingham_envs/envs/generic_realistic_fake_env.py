@@ -193,7 +193,7 @@ class GenericRealFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        # observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array(self.object_info)])
         return observation
 
@@ -210,7 +210,7 @@ class GenericRealFakeEnv(gym.Env):
         if self.object_type == 'cylinder':
             self.object_type_ = 0
             self.object_height = self.np_random.uniform(self.object_height_limit[0],self.object_height_limit[1])
-            self.object_length = 0
+            self.object_length = 0.0
             self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
             correct_grasp_height = (self.object_height / 2) - 0.015
             correct_insert_height = correct_grasp_height + self.object_height + 0.05
@@ -224,16 +224,16 @@ class GenericRealFakeEnv(gym.Env):
         if self.object_type == 'cone':
             self.object_type_ = 2
             self.object_height = self.np_random.uniform(self.object_height_limit[0],self.object_height_limit[1])
-            self.object_length = 0
+            self.object_length = 0.0
             self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])                                  
             correct_grasp_height = (self.object_height / 2) - 0.03
             correct_insert_height = correct_grasp_height + self.object_height + 0.05
         if self.object_type == 'sphere':
             self.object_type_ = 3
-            self.object_height = 0
-            self.object_length = 0
+            self.object_height = 0.0
+            self.object_length = 0.0
             self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
-            correct_grasp_height = 0
+            correct_grasp_height = 0.0
             correct_insert_height = correct_grasp_height + self.object_width + 0.05
 
         self.object_info = [self.object_type_,self.object_height,self.object_length,self.object_width]
