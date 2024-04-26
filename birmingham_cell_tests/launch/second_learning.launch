@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="param_path" default="config/second_learning_param.yaml" />
+  <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
+
+  <node name="second_learning" 
+        pkg="birmingham_cell_tests" 
+        type="second_learnin_phase.py" 
+        output="screen" 
+        args="$(arg param_path)"/>
+</launch>

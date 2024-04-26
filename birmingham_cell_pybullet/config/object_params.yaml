@@ -14,3 +14,43 @@ pybullet_simulation:
       mesh_position_offset: [0, 0, -0.0575] # pybullet return the position of object center of mass
       mesh_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
+    box:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/box.xacro'
+      xacro_args:
+        length: 1
+        width:  1
+        height: 1
+      solid_geometric_primitive: 'box'
+      sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      sgp_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    cylinder:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/cylinder.xacro'
+      xacro_args:
+        radius: 0.1
+        height: 0.1
+      solid_geometric_primitive: 'cylinder'
+      sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      sgp_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    cone:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/cone.xacro'
+      xacro_args:
+        radius:  1
+        height: 1
+      solid_geometric_primitive: 'cone'
+      sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      sgp_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    sphere:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/sphere.xacro'
+      xacro_args:
+        radius:  1
+      solid_geometric_primitive: 'sphere'
+      sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      sgp_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'

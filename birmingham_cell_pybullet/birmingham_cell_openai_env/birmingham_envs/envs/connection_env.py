@@ -33,6 +33,8 @@ class ConnectionEnv(gym.Env):
         tree_name: str = 'can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
+        obj_model_name: str = 'can',
+        tar_model_name: str = 'hole',
         distance_threshold: float = 0.02,
         force_threshold: float = 50,
         torque_threshold: float = 100,
@@ -54,6 +56,8 @@ class ConnectionEnv(gym.Env):
         self.tree_name = tree_name
         self.object_name = object_name
         self.target_name = target_name
+        self.obj_model_name = obj_model_name
+        self.tar_model_name = tar_model_name
         self.distance_threshold = distance_threshold
         self.force_threshold = force_threshold
         self.torque_threshold = torque_threshold
@@ -249,7 +253,7 @@ class ConnectionEnv(gym.Env):
         tar_pose.orientation.y = 0.0
         tar_pose.orientation.z = 0.0
         tar_pose.orientation.w = 1.0
-        model_name.append(self.target_name)
+        model_name.append(self.tar_model_name)
         pose.append(tar_pose)
         fixed.append(True)
 
@@ -263,7 +267,7 @@ class ConnectionEnv(gym.Env):
         obj_pose.orientation.y = 0.0
         obj_pose.orientation.z = 0.0
         obj_pose.orientation.w = 1.0
-        model_name.append(self.object_name)
+        model_name.append(self.obj_model_name)
         pose.append(obj_pose)
         fixed.append(False)
         self.spawn_model_clnt.call(object_names, model_name, pose, fixed)

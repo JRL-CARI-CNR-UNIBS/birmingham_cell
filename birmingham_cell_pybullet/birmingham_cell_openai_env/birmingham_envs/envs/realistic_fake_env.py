@@ -44,7 +44,8 @@ class RealisticFakeEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
-        epoch_len: int = None
+        epoch_len: int = None,
+        obj_pos_error: list = [0.0,0.0,0.0],
     ) -> None:
         rospy.init_node(node_name)
 
@@ -67,6 +68,7 @@ class RealisticFakeEnv(gym.Env):
         self.step_number = 0
         self.epoch_len = epoch_len
         self.epoch_steps = 0
+        self.obj_pos_error = obj_pos_error
         
         # arguments to define
         self.start_obj_pos = None
@@ -177,6 +179,10 @@ class RealisticFakeEnv(gym.Env):
 
         self.correct_grasp_pos = [0,0,0.04]
         self.correct_insert_pos = [0,0,0.15]
+        
+        self.correct_grasp_pos  = (np.array(self.correct_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
+        self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.obj_pos_error)).tolist()
+       
 
         observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
