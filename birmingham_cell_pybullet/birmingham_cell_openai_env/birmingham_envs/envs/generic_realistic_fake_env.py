@@ -230,13 +230,13 @@ class GenericRealFakeEnv(gym.Env):
             correct_insert_height = correct_grasp_height + self.object_height + 0.05
         if self.object_type == 'sphere':
             self.object_type_ = 3
-            self.object_height = 0.0
+            self.object_height = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
             self.object_length = 0.0
-            self.object_width = self.np_random.uniform(self.object_width_limit[0],self.object_width_limit[1])
+            self.object_width = 0.0
             correct_grasp_height = 0.0
-            correct_insert_height = correct_grasp_height + self.object_width + 0.05
+            correct_insert_height = correct_grasp_height + self.object_height + 0.05
 
-        self.object_info = [self.object_type_,self.object_height,self.object_length,self.object_width]
+        self.object_info = [self.object_type_,self.object_height]
 
         self.correct_grasp_pos = [0,0,correct_grasp_height]
         self.correct_insert_pos = [0,0,correct_insert_height]
