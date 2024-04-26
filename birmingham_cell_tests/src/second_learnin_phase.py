@@ -65,6 +65,10 @@ if __name__ == '__main__':
         obj_pos_error = params['obj_pos_error']
     else:
         only_pos_success = [0.0,0.0,0.0]
+    if 'model_name' in params:
+        model_name = params['model_name']
+    else:
+        model_name = 'test'
 
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
@@ -112,7 +116,7 @@ if __name__ == '__main__':
         print('Env_type not in the possible env list.')
         exit(0)  
           
-    model = TD3.load("/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/model/test")
+    model = TD3.load(models_repo_path + model_name)
 
     print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
     model.set_env(env)
