@@ -35,6 +35,9 @@ class ConnectionEnv(gym.Env):
         target_name: str = 'hole',
         obj_model_name: str = 'can',
         tar_model_name: str = 'hole',
+        obj_model_height: float = 0.1,
+        obj_model_length: float = 0.1,
+        obj_model_width:  float = 0.1,
         distance_threshold: float = 0.02,
         force_threshold: float = 50,
         torque_threshold: float = 100,
@@ -53,14 +56,17 @@ class ConnectionEnv(gym.Env):
         rospack = rospkg.RosPack()
         self.package_path = rospack.get_path(package_name)
         self.trees_path = [self.package_path + trees_path]
-        self.tree_name = tree_name
-        self.object_name = object_name
-        self.target_name = target_name
-        self.obj_model_name = obj_model_name
-        self.tar_model_name = tar_model_name
+        self.tree_name  = tree_name
+        self.object_name      = object_name
+        self.target_name      = target_name
+        self.obj_model_name   = obj_model_name
+        self.tar_model_name   = tar_model_name
+        self.obj_model_height = obj_model_height
+        self.obj_model_length = obj_model_length
+        self.obj_model_width  = obj_model_width
         self.distance_threshold = distance_threshold
-        self.force_threshold = force_threshold
-        self.torque_threshold = torque_threshold
+        self.force_threshold    = force_threshold
+        self.torque_threshold   = torque_threshold
         self.action_type = action_type   # currently available, target_value  increment_value  
         self.randomized_tf = randomized_tf
         self.debug_mode = debug_mode
@@ -259,6 +265,18 @@ class ConnectionEnv(gym.Env):
 
         self.start_obj_pos = obj_pos
 
+        # Qua guardo con che tipo di oggetto sto lavorando e nel caso di geometrie semplici 
+        # ne setto i parametri che trovo nei param
+        if self.obj_model_name == 'box':
+            rospy.set_param('pybullet_simulation/objects/box/xacro_args/length', self.obj_model_length)
+            rospy.set_param('pybullet_simulation/objects/box/xacro_args/width',  self.obj_model_width )
+            rospy.set_param('pybullet_simulation/objects/box/xacro_args/height', self.obj_model_height)
+        elif self.obj_model_name == 'cylinder':
+            rospy.set_param('pybullet_simulation/objects/cylinder/xacro_args/radius', (self.obj_model_width / 2) )
+            rospy.set_param('pybullet_simulation/objects/cylinder/xacro_args/height', self.obj_model_height)
+        elif self.obj_model_name == 'sphere':
+            rospy.set_param('pybullet_simulation/objects/sphere/xacro_args/radius', (self.obj_model_height / 2) )
+
         obj_pose = Pose()
         obj_pose.position.x = obj_pos[0]
         obj_pose.position.y = obj_pos[1]
@@ -295,7 +313,7 @@ class ConnectionEnv(gym.Env):
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
         if self.only_pos_success:
-            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array(self.object_info)])
             # self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
         else:
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
@@ -345,6 +363,18 @@ class ConnectionEnv(gym.Env):
             rospy.set_param(param_name,self.initial_param_values[param_name])
 
 
+        if self.obj_model_name == 'cylinder':
+            self.object_type = 0
+        if self.obj_model_name == 'box':
+            self.object_type = 1
+        if self.obj_model_name == 'cone':
+            self.object_type = 2
+        if self.obj_model_name == 'sphere':
+            self.object_type = 3
+
+        self.object_info = [self.object_type,self.obj_model_height]
+
+
         self.start_tar_pos = self._sample_target()
         self.start_obj_pos = self._sample_object()
         self._create_scene(self.start_obj_pos,self.start_tar_pos)
@@ -367,10 +397,14 @@ class ConnectionEnv(gym.Env):
         """Randomize start position of object."""
         finish = False
         while not finish:
-            object_position = np.array([0.0, 0.0, 0.0])
+            if self.obj_model_name == 'can':
+                object_position = np.array([0.0, 0.0, 0.0])
+            else :
+                object_position = np.array([0.0, 0.0, self.obj_model_height / 2])
+
             noise = self.np_random.uniform(self.work_space_range_low, self.work_space_range_high)
             object_position += noise
-            if (self._distance(self.start_tar_pos,object_position) > 0.25):
+            if (self._distance(self.start_tar_pos[0:2],object_position[0:2]) > 0.25):
                 finish = True
         return object_position
 
@@ -725,3 +759,10 @@ class ConnectionEnv(gym.Env):
         # print('max_wrench: ' + str(self.observation[start_index+6:start_index+12]))
         print('--------------------------------------------------------------------------')
         print(' ')
+
+    def clean_scene(self) -> None:
+        """Create the scene."""
+        object_names = []
+        object_names.append(self.target_name)  
+        object_names.append(self.object_name)
+        self.delete_model_clnt.call(object_names)

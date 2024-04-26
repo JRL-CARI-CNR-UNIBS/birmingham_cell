@@ -21,7 +21,8 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     path = rospack.get_path('birmingham_cell_tests')
     file_path = path + '/' + params_path
-
+    model_path = path + '/' + 'model/'
+    
     with open(file_path) as file:
         params = yaml.safe_load(file)
 
@@ -31,10 +32,10 @@ if __name__ == '__main__':
         print('env_type is empty')
         exit(0)
     if 'model_path' in params:
-        model_path = params['model_path']
+        model_path = model_path + params['model_path']
     else:
         print('model_path is empty')
-        exit(0)
+        model_path = model_path[:-1]
     if 'model_name' in params:
         model_name = params['model_name']
     else:
@@ -45,16 +46,36 @@ if __name__ == '__main__':
     else:
         max_epoch_steps = 25
 
-# env = gym.make('RandomRealFakeEnv-v0', 
-#                 action_type='increment_value', 
-#                 epoch_len = max_epoch_steps,
-#                 max_episode_steps=max_epoch_steps)
+
 
     if env_type == 'connection':
+        if 'obj_type' in params:
+            obj_model_name = params['obj_type']
+            if obj_model_name == 'can':
+                obj_model_height = 0.115
+                obj_model_width =  0.06
+                obj_model_length = 0.0
+            if obj_model_name == 'cylinder':
+                obj_model_height = params['obj_height']
+                obj_model_width =  params['obj_radius'] * 2
+                obj_model_length = 0.0
+            if obj_model_name == 'sphere':
+                obj_model_height = params['obj_radius'] * 2
+                obj_model_width =  0.0
+                obj_model_length = 0.0
+            if obj_model_name == 'box':
+                obj_model_height = params['obj_height']
+                obj_model_width =  params['obj_width']
+                obj_model_length = params['obj_length']
         env = gym.make('ConnectionEnv-v0', 
                        action_type='increment_value', 
                        epoch_len = max_epoch_steps,
-                       max_episode_steps=max_epoch_steps)
+                       max_episode_steps=max_epoch_steps,
+                       obj_model_name = obj_model_name,
+                       obj_model_height = obj_model_height,
+                       obj_model_width =  obj_model_width,
+                       obj_model_length = obj_model_length,
+                       )
     elif env_type == 'realistic_fake':
         env = gym.make('RealisticFakeEnv-v0', 
                        action_type='increment_value', 
@@ -67,20 +88,14 @@ if __name__ == '__main__':
     n_actions = env.action_space.shape[-1]
     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 
-    model = TD3("MlpPolicy", 
-                env, 
-                verbose=1,
-                action_noise=action_noise,
-                )
-
-    model = TD3.load("/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_tests/model/test")
+    model = TD3.load(model_path + "/" + model_name)
 
     obs, info = env.reset()
     steps = 0
     success = False
 
-    action = np.array([0,0,0,0,0,0])
-    env.step(action)
+    # action = np.array([0,0,0,0,0,0])
+    # env.step(action)
     
     old_param = np.array(copy.copy(obs[0:6]))
     while (not success) and (steps < max_epoch_steps):
