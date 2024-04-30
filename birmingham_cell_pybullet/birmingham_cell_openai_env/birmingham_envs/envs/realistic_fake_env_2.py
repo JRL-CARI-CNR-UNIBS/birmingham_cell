@@ -107,6 +107,8 @@ class RealisticFakeEnv2(gym.Env):
         self.init_par_val = []
         self.current_grasp_pos = None
         self.current_insert_pos = None
+        self.current_reward = -1
+        self.observation = None
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -200,8 +202,17 @@ class RealisticFakeEnv2(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
-        return observation
+        current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
+        if self.observation is None:
+            self.observation = copy.copy(current_observation)
+            for i in range(10):
+                self.observation = np.concatenate([self.observation, current_observation])
+        else:
+            self.observation = self.observation[len(current_observation):]
+            self.observation = np.concatenate([self.observation, current_observation])
+
+        # observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
