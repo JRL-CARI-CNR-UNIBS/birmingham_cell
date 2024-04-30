@@ -1,9 +1,9 @@
-env_type: 'realistic_fake_2'
-max_epoch_steps: [25]
+env_type: ['realistic_fake_param_and_pos','realistic_fake_param_pos_and_reward','realistic_fake_param_pos_and_reward_history']
+max_epoch_steps: [25,50,100,200,1000]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 1000000
+total_timesteps: 3000000
 model_types: ['td3']
-name_space: 'realistic_fake_2'
+name_space: 'multiple_real_fake_env_tests'
 verbose: 0
-model_save_freq: 100000
+model_save_freq: 3000000

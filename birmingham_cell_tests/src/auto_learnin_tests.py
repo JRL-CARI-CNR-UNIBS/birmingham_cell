@@ -97,8 +97,6 @@ if __name__ == '__main__':
     else:
         only_pos_success = True
 
-    print(params['env_type'])
-
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
     
@@ -108,131 +106,161 @@ if __name__ == '__main__':
     test_number = 0
     total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
     print('Total tests: ' + str(total_test))
-    for max_epoch_steps in params['max_epoch_steps']:
-        for learning_rate in params['learning_rate']:
-            for gamma in params['gamma']:
-                for model_type in params['model_types']:
-                    if 'model_save_freq' in params:
-                        model_save_freq = params['model_save_freq']
-                    else:
-                        model_save_freq = max_epoch_steps
-                    test_number += 1
-                    print('Test ' + str(test_number))
-                    # model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                    # log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
-                    model_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
-                    log_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
-                    model_path = models_repo_path + '/' + model_name
-                    log_path = log_repo_path + '/' + log_name
-                    if params['env_type'] == 'fake':
-                        env = gym.make('FakeEnv-v0',
-                                    action_type='increment_value',
-                                    epoch_len = max_epoch_steps,
-                                    max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'easy':
-                        env = gym.make('EasyEnv-v0',
-                                    action_type='increment_value', 
-                                    env_dimension=1,
-                                    max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'connection':
-                        env = gym.make('ConnectionEnv-v0', 
-                                        action_type='increment_value', 
-                                        distance_threshold=distance_threshold,
-                                        force_threshold=force_threshold,
-                                        debug_mode=debug_mode,
-                                        step_print=step_print,
-                                        only_pos_success=only_pos_success,
+    for env_type in params['env_type']:
+        for max_epoch_steps in params['max_epoch_steps']:
+            for learning_rate in params['learning_rate']:
+                for gamma in params['gamma']:
+                    for model_type in params['model_types']:
+                        if 'model_save_freq' in params:
+                            model_save_freq = params['model_save_freq']
+                        else:
+                            model_save_freq = max_epoch_steps
+                        test_number += 1
+                        print('Test ' + str(test_number))
+                        # model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                        # log_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
+                        if 'name_space' in params:
+                            name_space = params['name_space'] + '/'
+                        else:
+                            name_space = ''
+                        model_name = name_space + env_type + '/'  + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+                        log_name = name_space + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+                        model_path = models_repo_path + '/' + model_name
+                        log_path = log_repo_path + '/' + log_name
+                        if env_type == 'fake':
+                            env = gym.make('FakeEnv-v0',
+                                        action_type='increment_value',
                                         epoch_len = max_epoch_steps,
                                         max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'realistic_fake':
-                        print('In realistic_fake')
-                        env = gym.make('RealisticFakeEnv-v0', 
+                        elif env_type == 'easy':
+                            env = gym.make('EasyEnv-v0',
                                         action_type='increment_value', 
-                                        # distance_threshold=distance_threshold,
-                                        force_threshold=force_threshold,
-                                        debug_mode=debug_mode,
-                                        step_print=step_print,
-                                        only_pos_success=only_pos_success,
-                                        epoch_len = max_epoch_steps,
+                                        env_dimension=1,
                                         max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'realistic_fake_2':
-                        print('In realistic_fake_2')
-                        env = gym.make('RealisticFakeEnv2-v0', 
-                                        action_type='increment_value', 
-                                        # distance_threshold=distance_threshold,
-                                        force_threshold=force_threshold,
-                                        debug_mode=debug_mode,
-                                        step_print=step_print,
-                                        only_pos_success=only_pos_success,
-                                        epoch_len = max_epoch_steps,
-                                        max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'random_real_fake':
-                        print('In random_real_fake')
-                        env = gym.make('RandomRealFakeEnv-v0', 
-                                        action_type='increment_value', 
-                                        # distance_threshold=distance_threshold,
-                                        force_threshold=force_threshold,
-                                        debug_mode=debug_mode,
-                                        step_print=step_print,
-                                        only_pos_success=only_pos_success,
-                                        epoch_len = max_epoch_steps,
-                                        max_episode_steps=max_epoch_steps)
-                    elif params['env_type'] == 'generic_real_fake':
-                        print('In generic_real_fake')
-                        env = gym.make('GenericRealFakeEnv-v0', 
-                                        action_type='increment_value', 
-                                        debug_mode=debug_mode,
-                                        step_print=step_print,
-                                        only_pos_success=only_pos_success,
-                                        epoch_len = max_epoch_steps,
-                                        max_episode_steps=max_epoch_steps)
-                    else:
-                        print('Env_type not in the possible env list.')
-                        exit(0)  
+                        elif env_type == 'connection':
+                            env = gym.make('ConnectionEnv-v0', 
+                                            action_type='increment_value', 
+                                            distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake':
+                            print('In realistic_fake')
+                            env = gym.make('RealisticFakeEnv-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake_param_and_pos':
+                            print('In ' + env_type)
+                            env = gym.make('RealisticFakeEnv2-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            obs_type = 'param_and_pos',
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake_param_pos_and_reward':
+                            print('In ' + env_type)
+                            env = gym.make('RealisticFakeEnv2-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            obs_type = 'param_pos_and_reward',
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake_param_pos_and_reward_history':
+                            print('In ' + env_type)
+                            env = gym.make('RealisticFakeEnv2-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            obs_type = 'param_pos_and_reward_history',
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'random_real_fake':
+                            print('In random_real_fake')
+                            env = gym.make('RandomRealFakeEnv-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'generic_real_fake':
+                            print('In generic_real_fake')
+                            env = gym.make('GenericRealFakeEnv-v0', 
+                                            action_type='increment_value', 
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        else:
+                            print('Env_type not in the possible env list.')
+                            exit(0)  
 
-                    n_actions = env.action_space.shape[-1]
-                    action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
-                    if (model_type == 'td3'):
-                        model = TD3("MlpPolicy", 
-                                    env, 
-                                    verbose=verbose,
-                                    action_noise=action_noise,
-                                    learning_rate=learning_rate,
-                                    tensorboard_log=log_path,
-                                    gamma=gamma,
-                                    )
-                    if (model_type == 'sac'):
-                        model = SAC("MlpPolicy", 
-                                    env, 
-                                    verbose=verbose,
-                                    action_noise=action_noise,
-                                    learning_rate=learning_rate,
-                                    tensorboard_log=log_path,
-                                    gamma=gamma,
-                                    )
-                    if (model_type == 'ddpg'):
-                        model = DDPG("MlpPolicy", 
-                                    env, 
-                                    verbose=verbose,
-                                    action_noise=action_noise,
-                                    learning_rate=learning_rate,
-                                    tensorboard_log=log_path,
-                                    gamma=gamma,
-                                    )
-                    checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
-                                            save_path=model_path + '/', 
-                                            name_prefix=name_space)  
+                        n_actions = env.action_space.shape[-1]
+                        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                        if (model_type == 'td3'):
+                            model = TD3("MlpPolicy", 
+                                        env, 
+                                        verbose=verbose,
+                                        action_noise=action_noise,
+                                        learning_rate=learning_rate,
+                                        tensorboard_log=log_path,
+                                        gamma=gamma,
+                                        )
+                        if (model_type == 'sac'):
+                            model = SAC("MlpPolicy", 
+                                        env, 
+                                        verbose=verbose,
+                                        action_noise=action_noise,
+                                        learning_rate=learning_rate,
+                                        tensorboard_log=log_path,
+                                        gamma=gamma,
+                                        )
+                        if (model_type == 'ddpg'):
+                            model = DDPG("MlpPolicy", 
+                                        env, 
+                                        verbose=verbose,
+                                        action_noise=action_noise,
+                                        learning_rate=learning_rate,
+                                        tensorboard_log=log_path,
+                                        gamma=gamma,
+                                        )
+                        checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
+                                                save_path=model_path + '/', 
+                                                name_prefix=name_space)  
 
-                    checkpoint_callback = CheckpointCallback(
-                        save_freq=model_save_freq,
-                        save_path=model_path + '/',
-                        name_prefix=name_space,
-                    )
-                    
-                    model.learn(total_timesteps=params['total_timesteps'], 
-                                log_interval=1, 
-                                callback=checkpoint_callback,
-                                # progress_bar=True,
-                                )
-                    
-                    model.save(model_path)
+                        checkpoint_callback = CheckpointCallback(
+                            save_freq=model_save_freq,
+                            save_path=model_path + '/',
+                            name_prefix=name_space,
+                        )
+                        
+                        model.learn(total_timesteps=params['total_timesteps'], 
+                                    log_interval=1, 
+                                    callback=checkpoint_callback,
+                                    # progress_bar=True,
+                                    )
+                        
+                        model.save(model_path)

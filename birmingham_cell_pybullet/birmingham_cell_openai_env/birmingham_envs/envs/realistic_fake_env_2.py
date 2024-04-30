@@ -46,6 +46,7 @@ class RealisticFakeEnv2(gym.Env):
         only_pos_success: bool = True,
         epoch_len: int = None,
         obj_pos_error: list = [0.0,0.0,0.0],
+        obs_type: str = 'param_and_pos'
     ) -> None:
         rospy.init_node(node_name)
 
@@ -69,6 +70,7 @@ class RealisticFakeEnv2(gym.Env):
         self.epoch_len = epoch_len
         self.epoch_steps = 0
         self.obj_pos_error = obj_pos_error
+        self.obs_type = obs_type
         
         # arguments to define
         self.start_obj_pos = None
@@ -202,16 +204,20 @@ class RealisticFakeEnv2(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
-        if self.observation is None:
-            self.observation = copy.copy(current_observation)
-            for i in range(10):
-                self.observation = np.concatenate([self.observation, current_observation])
-        else:
-            self.observation = self.observation[len(current_observation):]
-            self.observation = np.concatenate([self.observation, current_observation])
+        if self.obs_type == 'param_and_pos':
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        elif self.obs_type == 'param_pos_and_reward':
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
+        elif self.obs_type == 'param_pos_and_reward_history':
+            current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
+            if self.observation is None:
+                obs = np.zeros(len(current_observation) * 9)
+                self.observation = np.concatenate([obs,current_observation])
+            else:
+                obs = self.observation[len(current_observation):]
+                self.observation = np.concatenate([obs,current_observation])
 
-        # observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        print(self.observation)
         return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -343,5 +349,6 @@ class RealisticFakeEnv2(gym.Env):
         # reward = 1
         # reward -= self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 10
         # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 10
-
+        self.current_reward = reward
+        
         return reward
