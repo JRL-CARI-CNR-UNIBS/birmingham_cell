@@ -155,6 +155,17 @@ if __name__ == '__main__':
                                         only_pos_success=only_pos_success,
                                         epoch_len = max_epoch_steps,
                                         max_episode_steps=max_epoch_steps)
+                    elif params['env_type'] == 'realistic_fake_2':
+                        print('In realistic_fake_2')
+                        env = gym.make('RealisticFakeEnv2-v0', 
+                                        action_type='increment_value', 
+                                        # distance_threshold=distance_threshold,
+                                        force_threshold=force_threshold,
+                                        debug_mode=debug_mode,
+                                        step_print=step_print,
+                                        only_pos_success=only_pos_success,
+                                        epoch_len = max_epoch_steps,
+                                        max_episode_steps=max_epoch_steps)
                     elif params['env_type'] == 'random_real_fake':
                         print('In random_real_fake')
                         env = gym.make('RandomRealFakeEnv-v0', 

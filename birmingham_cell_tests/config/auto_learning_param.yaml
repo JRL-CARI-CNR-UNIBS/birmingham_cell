@@ -1,9 +1,9 @@
-env_type: 'generic_real_fake'
+env_type: 'realistic_fake_2'
 max_epoch_steps: [25]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 3000000
+total_timesteps: 1000000
 model_types: ['td3']
-name_space: 'generic_real_fake_1'
+name_space: 'realistic_fake_2'
 verbose: 0
 model_save_freq: 100000
