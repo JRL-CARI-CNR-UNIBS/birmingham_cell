@@ -217,7 +217,6 @@ class RealisticFakeEnv2(gym.Env):
                 obs = self.observation[len(current_observation):]
                 self.observation = np.concatenate([obs,current_observation])
 
-        print(self.observation)
         return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
