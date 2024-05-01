@@ -1,9 +1,11 @@
-env_type: ['realistic_fake_param_pos_and_reward','realistic_fake_param_pos_and_reward_history','realistic_fake_param_and_pos']
-max_epoch_steps: [50,200,1000]
+# env_type: ['realistic_fake_param_pos_and_reward','realistic_fake_param_pos_and_reward_history','realistic_fake_param_and_pos']
+env_type: ['realistic_fake_param_and_reward_history']
+max_epoch_steps: [50,100]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 2000000
+total_timesteps: 3000000
 model_types: ['td3']
-name_space: 'multiple_real_fake_env_tests'
+name_space: 'random_tests'
 verbose: 0
-model_save_freq: 2000000
+history_len: 10
+# model_save_freq: 2000000

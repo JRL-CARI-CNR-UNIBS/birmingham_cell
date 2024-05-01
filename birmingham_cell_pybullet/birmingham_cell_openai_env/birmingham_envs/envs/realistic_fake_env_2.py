@@ -34,7 +34,7 @@ class RealisticFakeEnv2(gym.Env):
         tree_name: str = 'can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
-        distance_threshold: float = 0.005,
+        distance_threshold: float = 0.01,
         force_threshold: float = 50,
         torque_threshold: float = 100,
         action_type: str = 'target_value',
@@ -46,7 +46,8 @@ class RealisticFakeEnv2(gym.Env):
         only_pos_success: bool = True,
         epoch_len: int = None,
         obj_pos_error: list = [0.0,0.0,0.0],
-        obs_type: str = 'param_and_pos'
+        obs_type: str = 'param_and_pos',
+        history_len: int = 10,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -71,6 +72,7 @@ class RealisticFakeEnv2(gym.Env):
         self.epoch_steps = 0
         self.obj_pos_error = obj_pos_error
         self.obs_type = obs_type
+        self.history_len = history_len
         
         # arguments to define
         self.start_obj_pos = None
@@ -206,12 +208,24 @@ class RealisticFakeEnv2(gym.Env):
     def _get_obs(self) -> Dict[str, np.array]:
         if self.obs_type == 'param_and_pos':
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        elif self.obs_type == 'param':
+            self.observation = np.concatenate([np.array(self.param_values)])
+        elif self.obs_type == 'param_and_reward':
+            self.observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
         elif self.obs_type == 'param_pos_and_reward':
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
         elif self.obs_type == 'param_pos_and_reward_history':
             current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
             if self.observation is None:
-                obs = np.zeros(len(current_observation) * 9)
+                obs = np.zeros(len(current_observation) * (self.history_len -1))
+                self.observation = np.concatenate([obs,current_observation])
+            else:
+                obs = self.observation[len(current_observation):]
+                self.observation = np.concatenate([obs,current_observation])
+        elif self.obs_type == 'param_and_reward_history':
+            current_observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
+            if self.observation is None:
+                obs = np.zeros(len(current_observation) * (self.history_len -1))
                 self.observation = np.concatenate([obs,current_observation])
             else:
                 obs = self.observation[len(current_observation):]
