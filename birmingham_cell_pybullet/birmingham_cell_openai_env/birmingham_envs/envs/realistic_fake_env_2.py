@@ -217,7 +217,6 @@ class RealisticFakeEnv2(gym.Env):
                 obs = self.observation[len(current_observation):]
                 self.observation = np.concatenate([obs,current_observation])
 
-        print(self.observation)
         return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -350,5 +349,5 @@ class RealisticFakeEnv2(gym.Env):
         # reward -= self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 10
         # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 10
         self.current_reward = reward
-        
+
         return reward

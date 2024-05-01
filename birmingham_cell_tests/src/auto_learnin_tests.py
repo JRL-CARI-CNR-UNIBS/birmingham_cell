@@ -111,10 +111,6 @@ if __name__ == '__main__':
             for learning_rate in params['learning_rate']:
                 for gamma in params['gamma']:
                     for model_type in params['model_types']:
-                        if 'model_save_freq' in params:
-                            model_save_freq = params['model_save_freq']
-                        else:
-                            model_save_freq = max_epoch_steps
                         test_number += 1
                         print('Test ' + str(test_number))
                         # model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
@@ -247,20 +243,24 @@ if __name__ == '__main__':
                                         tensorboard_log=log_path,
                                         gamma=gamma,
                                         )
-                        checkpoint_callback = MyCheckpointCallback(save_freq=model_save_freq,
-                                                save_path=model_path + '/', 
-                                                name_prefix=name_space)  
-
-                        checkpoint_callback = CheckpointCallback(
-                            save_freq=model_save_freq,
-                            save_path=model_path + '/',
-                            name_prefix=name_space,
-                        )
-                        
-                        model.learn(total_timesteps=params['total_timesteps'], 
+                            
+                        if 'model_save_freq' in params:
+                            # checkpoint_callback = MyCheckpointCallback(save_freq=params['model_save_freq'],
+                            #                         save_path=model_path + '/', 
+                            #                         name_prefix=name_space)
+                            checkpoint_callback = CheckpointCallback(
+                                save_freq=params['model_save_freq'],
+                                save_path=model_path + '/',
+                                name_prefix=name_space,
+                            )
+                            model.learn(total_timesteps=params['total_timesteps'], 
+                                        log_interval=1, 
+                                        callback=checkpoint_callback,
+                                        )
+                            model.save(model_path)
+                            
+                        else:
+                            model.learn(total_timesteps=params['total_timesteps'], 
                                     log_interval=1, 
-                                    callback=checkpoint_callback,
-                                    # progress_bar=True,
                                     )
-                        
-                        model.save(model_path)
+                           
