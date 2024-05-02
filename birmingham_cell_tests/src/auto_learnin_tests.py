@@ -205,37 +205,69 @@ if __name__ == '__main__':
                         elif env_type == 'realistic_fake_param_pos_and_reward_history':
                             print('In ' + env_type)
                             if 'history_len' in params:
-                                history_len = params['history_len']
+                                history_len_vec = params['history_len']
                             else:
-                                history_len = 10
-                            env = gym.make('RealisticFakeEnv2-v0', 
-                                            action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
-                                            epoch_len = max_epoch_steps,
-                                            obs_type = 'param_pos_and_reward_history',
-                                            max_episode_steps=max_epoch_steps,
-                                            history_len=history_len)
+                                history_len_vec = [10]
+                            for history_len in history_len_vec:
+                                env = gym.make('RealisticFakeEnv2-v0', 
+                                                action_type='increment_value', 
+                                                # distance_threshold=distance_threshold,
+                                                force_threshold=force_threshold,
+                                                debug_mode=debug_mode,
+                                                step_print=step_print,
+                                                only_pos_success=only_pos_success,
+                                                epoch_len = max_epoch_steps,
+                                                obs_type = 'param_pos_and_reward_history',
+                                                max_episode_steps=max_epoch_steps,
+                                                history_len=history_len)
+                                n_actions = env.action_space.shape[-1]
+                                action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                                log_path = log_path + '/' + str(history_len)
+                                model = TD3("MlpPolicy", 
+                                            env, 
+                                            verbose=verbose,
+                                            action_noise=action_noise,
+                                            learning_rate=learning_rate,
+                                            tensorboard_log=log_path,
+                                            gamma=gamma,
+                                            ) 
+                                model.learn(total_timesteps=params['total_timesteps'], 
+                                            log_interval=1, 
+                                            )
+                            continue
                         elif env_type == 'realistic_fake_param_and_reward_history':
                             print('In ' + env_type)
                             if 'history_len' in params:
-                                history_len = params['history_len']
+                                history_len_vec = params['history_len']
                             else:
-                                history_len = 10
-                            env = gym.make('RealisticFakeEnv2-v0', 
-                                            action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
-                                            epoch_len = max_epoch_steps,
-                                            obs_type = 'param_and_reward_history',
-                                            max_episode_steps=max_epoch_steps,
-                                            history_len=history_len)
+                                history_len_vec = [10]
+                            for history_len in history_len_vec:
+                                env = gym.make('RealisticFakeEnv2-v0', 
+                                                action_type='increment_value', 
+                                                # distance_threshold=distance_threshold,
+                                                force_threshold=force_threshold,
+                                                debug_mode=debug_mode,
+                                                step_print=step_print,
+                                                only_pos_success=only_pos_success,
+                                                epoch_len = max_epoch_steps,
+                                                obs_type = 'param_and_reward_history',
+                                                max_episode_steps=max_epoch_steps,
+                                                history_len=history_len)
+                                n_actions = env.action_space.shape[-1]
+                                action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                                log_path = log_path + '/' + str(history_len)
+                                model = TD3("MlpPolicy", 
+                                            env, 
+                                            verbose=verbose,
+                                            action_noise=action_noise,
+                                            learning_rate=learning_rate,
+                                            tensorboard_log=log_path,
+                                            gamma=gamma,
+                                            ) 
+                                model.learn(total_timesteps=params['total_timesteps'], 
+                                            log_interval=1, 
+                                            )
+                            continue
                         elif env_type == 'random_real_fake':
                             print('In random_real_fake')
                             env = gym.make('RandomRealFakeEnv-v0', 
@@ -306,7 +338,7 @@ if __name__ == '__main__':
                             model.save(model_path)
 
                         else:
-                            model.learn(total_timesteps=params['total_timesteps'], 
-                                    log_interval=1, 
-                                    )
+                                model.learn(total_timesteps=params['total_timesteps'], 
+                                        log_interval=1, 
+                                        )
                            
