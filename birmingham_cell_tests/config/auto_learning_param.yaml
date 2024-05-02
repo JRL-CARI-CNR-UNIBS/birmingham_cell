@@ -1,7 +1,7 @@
 # env_type: ['realistic_fake_param_pos_and_reward','realistic_fake_param_pos_and_reward_history','realistic_fake_param_and_pos']
 env_type: ['realistic_fake_param_and_reward_history']
-max_epoch_steps: [50,100]
-learning_rate: [0.01]
+max_epoch_steps: [25,50,100]
+learning_rate: [0.01,0.05]
 gamma: [0.9]
 total_timesteps: 3000000
 model_types: ['td3']
