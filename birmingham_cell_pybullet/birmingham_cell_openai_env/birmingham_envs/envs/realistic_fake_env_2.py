@@ -48,6 +48,7 @@ class RealisticFakeEnv2(gym.Env):
         obj_pos_error: list = [0.0,0.0,0.0],
         obs_type: str = 'param_and_pos',
         history_len: int = 10,
+        randomized: bool = True,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -73,7 +74,8 @@ class RealisticFakeEnv2(gym.Env):
         self.obj_pos_error = obj_pos_error
         self.obs_type = obs_type
         self.history_len = history_len
-        
+        self.randomized = randomized
+
         # arguments to define
         self.start_obj_pos = None
         self.start_tar_pos = None
@@ -95,7 +97,6 @@ class RealisticFakeEnv2(gym.Env):
         self.all_param_names = []
         self.param_history = []
         self.max_variations = []
-        self.observation = None
         self.obj_pos = None
         self.obj_rot = None
         self.tar_pos = None
@@ -113,7 +114,10 @@ class RealisticFakeEnv2(gym.Env):
         self.current_insert_pos = None
         self.current_reward = -1
         self.observation = None
+        self.history = None
 
+        self.grasp_zone = 0
+        
         # lettura dei parametri delle skill da modificare
         try:
             exec_ns = rospy.get_param('/skills_executer/skills_parameters_name_space')
@@ -183,11 +187,18 @@ class RealisticFakeEnv2(gym.Env):
         self.work_space_range_low  = np.array([0.3, -0.4, 0])
         self.work_space_range_high = np.array([0.6,  0.4, 0])
 
-        self.correct_grasp_pos = [0,0,0.04]
-        self.correct_insert_pos = [0,0,0.15]
-        
-        self.correct_grasp_pos  = (np.array(self.correct_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
-        self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.obj_pos_error)).tolist()
+        if self.randomized:
+            self.central_grasp_pos = [0,0,0.04]
+            self.central_insert_pos = [0,0,0.15]
+            self.central_grasp_pos  = (np.array(self.central_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
+            self.central_grasp_pos = (np.array(self.central_grasp_pos) + np.array(self.obj_pos_error)).tolist()
+            self.correct_grasp_pos = None
+            self.correct_insert_pos = None
+        else:
+            self.correct_grasp_pos = [0,0,0.04]
+            self.correct_insert_pos = [0,0,0.15]
+            self.correct_grasp_pos  = (np.array(self.correct_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
+            self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.obj_pos_error)).tolist()
        
 
         observation, _ = self.reset()  # required for init; seed can be changed later
@@ -206,15 +217,19 @@ class RealisticFakeEnv2(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        if self.obs_type == 'param_and_pos':
+        if self.obs_type   == 'param_pos':
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        elif self.obs_type == 'pos_param':
+            self.observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array(self.param_values)])
+        elif self.obs_type == 'pos':
+            self.observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
         elif self.obs_type == 'param':
             self.observation = np.concatenate([np.array(self.param_values)])
-        elif self.obs_type == 'param_and_reward':
+        elif self.obs_type == 'param_reward':
             self.observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
-        elif self.obs_type == 'param_pos_and_reward':
+        elif self.obs_type == 'param_pos_reward':
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
-        elif self.obs_type == 'param_pos_and_reward_history':
+        elif self.obs_type == 'param_pos_reward_history':
             current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
             if self.observation is None:
                 obs = np.zeros(len(current_observation) * (self.history_len -1))
@@ -222,7 +237,7 @@ class RealisticFakeEnv2(gym.Env):
             else:
                 obs = self.observation[len(current_observation):]
                 self.observation = np.concatenate([obs,current_observation])
-        elif self.obs_type == 'param_and_reward_history':
+        elif self.obs_type == 'param_reward_history':
             current_observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
             if self.observation is None:
                 obs = np.zeros(len(current_observation) * (self.history_len -1))
@@ -230,7 +245,16 @@ class RealisticFakeEnv2(gym.Env):
             else:
                 obs = self.observation[len(current_observation):]
                 self.observation = np.concatenate([obs,current_observation])
-
+        elif self.obs_type == 'param_pos_and_reward_history':
+            current_observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
+            if self.history is None:
+                obs = np.zeros(len(current_observation) * (self.history_len -1))
+                self.history = np.concatenate([obs,current_observation])
+            else:
+                obs = self.history[len(current_observation):]
+                self.history = np.concatenate([obs,current_observation])
+            current_observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+            self.observation = np.concatenate([current_observation,self.history])
         return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -243,14 +267,26 @@ class RealisticFakeEnv2(gym.Env):
 
         initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
-        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
+        if self.randomized: 
+            self.initial_grasp_pos = np.ndarray.tolist(np.add(self.central_grasp_pos,initial_error_grasp_pos))
+            self.initial_insert_pos = np.ndarray.tolist(np.add(self.central_insert_pos,initial_error_insert_pos))
+        else:
+            self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
+            self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
+
+        if self.randomized: 
+            relative_corr_grasp_pose = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+            relative_corr_insert_pose = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+            self.correct_grasp_pos = np.ndarray.tolist(np.add(self.central_grasp_pos,relative_corr_grasp_pose))
+            self.correct_insert_pos = np.ndarray.tolist(np.add(self.central_insert_pos,relative_corr_insert_pose))
 
         self.current_grasp_pos  = copy.copy(self.initial_grasp_pos)
         self.current_insert_pos = copy.copy(self.initial_insert_pos)
         self.param_values = copy.copy(self.init_par_val)
         # self.param_values = [0,0,0,0,0,0]
         observation = self._get_obs()
+        self.observation = None
+        self.history = None
         info = {"is_success": False}
         return observation, info
     
@@ -294,12 +330,7 @@ class RealisticFakeEnv2(gym.Env):
         if ((self.epoch_len is not None) and success):
             single_reward = self._get_reward()
             remain_step = self.epoch_len - self.epoch_steps
-            # reward = remain_step * single_reward
             reward = single_reward + remain_step
-            # print('Success!')
-            # print('  Single reward: ' + str(single_reward))
-            # print('  Remain step: ' + str(remain_step))
-            # print('  Reward: ' + str(reward))
         else:
             reward = self._get_reward()
 
@@ -322,13 +353,16 @@ class RealisticFakeEnv2(gym.Env):
         if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.01) and
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.015)): 
             grasp_zone = 'successfully_grasp'
+            self.grasp_zone = 2
         # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
         # centro per più di 2 cm lo considero in collisione
         elif((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01) and 
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < 0.02):
             grasp_zone = 'collision'
+            self.grasp_zone = 1
         else:
             grasp_zone = 'free'
+            self.grasp_zone = 0
         # in ogni altro caso non sono in presa ne in collisione
 
         if (grasp_zone == 'successfully_grasp'):

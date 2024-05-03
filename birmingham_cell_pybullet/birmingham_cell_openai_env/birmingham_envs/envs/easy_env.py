@@ -20,7 +20,9 @@ class EasyEnv(gym.Env):
         package_name: str = 'birmingham_cell_tests',
         action_type: str = 'target_value',
         data_file_name: str = 'td3_tests',
-        env_dimension: int = 1
+        env_dimension: int = 1,
+        obs_type: str = 'normal',
+        history_len: int = 10,
     ) -> None:
         rospy.init_node(node_name)
 
@@ -33,23 +35,19 @@ class EasyEnv(gym.Env):
         self.last_action = None
         self.param_history = []
         self.action_type = action_type
-
+        self.current_reward = -1
+        self.obs_type = obs_type
+        self.observation = None
+        self.history_len = history_len
+        
         self.env_dimension = env_dimension
 
         self.all_param_names = np.full((self.env_dimension,), 'x')
-        # self.all_param_names = ['x1','y1','z1','x2','y2','z2']
-        # self.all_param_names = ['x']
 
         self.param_lower_bound = np.full((self.env_dimension,), -0.05)
         self.param_upper_bound = np.full((self.env_dimension,),  0.05)
-        # self.param_lower_bound = [-0.05,-0.05,-0.05,-0.05,-0.05,-0.05]
-        # self.param_upper_bound = [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
-        # self.param_lower_bound = [-0.05]
-        # self.param_upper_bound = [ 0.05]
 
         self.initial_param_values = np.full((self.env_dimension,), 0.0)
-        # self.initial_param_values = [0,0,0,0,0,0]
-        # self.initial_param_values = [0]
         self.epoch_number = 0
 
 
@@ -69,18 +67,20 @@ class EasyEnv(gym.Env):
             # self.action_space = spaces.Box(low=np.array(self.param_lower_bound), high=np.array(self.param_upper_bound), dtype=np.float64)
         else:
             rospy.logerr('The action type ' + action_type + ' is not supported.')
-
-        print(self.all_param_names)
-        print(self.param_lower_bound)
-        print(self.param_upper_bound)
-        print(self.initial_param_values)
-        print(self.action_space)
-        print(self.max_variations)
    
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.param_values),np.subtract(self.correct_grasp_pos.tolist(),self.param_values)])
-        self.obs = observation
-        return observation
+        if self.obs_type == 'normal':
+            self.observation = np.concatenate([np.array(self.param_values),np.subtract(self.correct_grasp_pos.tolist(),self.param_values)])
+        elif self.obs_type == 'history':
+            current_observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
+            if self.observation is None:
+                obs = np.zeros(len(current_observation) * (self.history_len -1))
+                self.observation = np.concatenate([obs,current_observation])
+            else:
+                obs = self.observation[len(current_observation):]
+                self.observation = np.concatenate([obs,current_observation])
+
+        return self.observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
@@ -148,5 +148,7 @@ class EasyEnv(gym.Env):
 #        print('values ' + str(self.param_values))
 #        print('action ' + str(self.last_action))
 #        print('reward ' + str(reward))
+
+        self.current_reward = reward
 
         return reward

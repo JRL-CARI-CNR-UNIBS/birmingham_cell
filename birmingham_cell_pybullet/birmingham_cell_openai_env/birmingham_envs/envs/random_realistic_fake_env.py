@@ -213,8 +213,6 @@ class RandomRealFakeEnv(gym.Env):
         observation = np.concatenate([np.array(self.param_values),
                                       np.array(self.current_grasp_pos),
                                       np.array(self.current_insert_pos),
-                                      np.array(self.last_action),
-                                      np.array([self.last_reward])
                                       ])
         return observation
 

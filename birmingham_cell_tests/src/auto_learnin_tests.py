@@ -132,6 +132,8 @@ if __name__ == '__main__':
                             env = gym.make('EasyEnv-v0',
                                         action_type='increment_value', 
                                         env_dimension=1,
+                                        obs_type='history',
+                                        history_len=10,
                                         max_episode_steps=max_epoch_steps)
                         elif env_type == 'connection':
                             env = gym.make('ConnectionEnv-v0', 
@@ -154,7 +156,7 @@ if __name__ == '__main__':
                                             only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
-                        elif env_type == 'realistic_fake_param_and_pos':
+                        elif env_type == 'realistic_fake_pos':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
@@ -164,7 +166,31 @@ if __name__ == '__main__':
                                             step_print=step_print,
                                             only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
-                                            obs_type = 'param_and_pos',
+                                            obs_type = 'pos',
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake_param_pos':
+                            print('In ' + env_type)
+                            env = gym.make('RealisticFakeEnv2-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            obs_type = 'param_pos',
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_fake_pos_param':
+                            print('In ' + env_type)
+                            env = gym.make('RealisticFakeEnv2-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            obs_type = 'pos_param',
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_fake_param':
                             print('In ' + env_type)
@@ -178,7 +204,7 @@ if __name__ == '__main__':
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'param',
                                             max_episode_steps=max_epoch_steps)
-                        elif env_type == 'realistic_fake_param_and_reward':
+                        elif env_type == 'realistic_fake_param_reward':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
@@ -188,9 +214,9 @@ if __name__ == '__main__':
                                             step_print=step_print,
                                             only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
-                                            obs_type = 'param_and_reward',
+                                            obs_type = 'param_reward',
                                             max_episode_steps=max_epoch_steps)
-                        elif env_type == 'realistic_fake_param_pos_and_reward':
+                        elif env_type == 'realistic_fake_param_pos_reward':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
@@ -200,9 +226,9 @@ if __name__ == '__main__':
                                             step_print=step_print,
                                             only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
-                                            obs_type = 'param_pos_and_reward',
+                                            obs_type = 'param_pos_reward',
                                             max_episode_steps=max_epoch_steps)
-                        elif env_type == 'realistic_fake_param_pos_and_reward_history':
+                        elif env_type == 'realistic_fake_param_pos_reward_history':
                             print('In ' + env_type)
                             if 'history_len' in params:
                                 history_len_vec = params['history_len']
@@ -217,7 +243,7 @@ if __name__ == '__main__':
                                                 step_print=step_print,
                                                 only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
-                                                obs_type = 'param_pos_and_reward_history',
+                                                obs_type = 'param_pos_reward_history',
                                                 max_episode_steps=max_epoch_steps,
                                                 history_len=history_len)
                                 n_actions = env.action_space.shape[-1]
@@ -235,7 +261,7 @@ if __name__ == '__main__':
                                             log_interval=1, 
                                             )
                             continue
-                        elif env_type == 'realistic_fake_param_and_reward_history':
+                        elif env_type == 'realistic_fake_param_reward_history':
                             print('In ' + env_type)
                             if 'history_len' in params:
                                 history_len_vec = params['history_len']
@@ -250,7 +276,40 @@ if __name__ == '__main__':
                                                 step_print=step_print,
                                                 only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
-                                                obs_type = 'param_and_reward_history',
+                                                obs_type = 'param_reward_history',
+                                                max_episode_steps=max_epoch_steps,
+                                                history_len=history_len)
+                                n_actions = env.action_space.shape[-1]
+                                action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                                log_path = log_path + '/' + str(history_len)
+                                model = TD3("MlpPolicy", 
+                                            env, 
+                                            verbose=verbose,
+                                            action_noise=action_noise,
+                                            learning_rate=learning_rate,
+                                            tensorboard_log=log_path,
+                                            gamma=gamma,
+                                            ) 
+                                model.learn(total_timesteps=params['total_timesteps'], 
+                                            log_interval=1, 
+                                            )
+                            continue
+                        elif env_type == 'realistic_fake_param_pos_and_reward_history':
+                            print('In ' + env_type)
+                            if 'history_len' in params:
+                                history_len_vec = params['history_len']
+                            else:
+                                history_len_vec = [10]
+                            for history_len in history_len_vec:
+                                env = gym.make('RealisticFakeEnv2-v0', 
+                                                action_type='increment_value', 
+                                                # distance_threshold=distance_threshold,
+                                                force_threshold=force_threshold,
+                                                debug_mode=debug_mode,
+                                                step_print=step_print,
+                                                only_pos_success=only_pos_success,
+                                                epoch_len = max_epoch_steps,
+                                                obs_type = 'param_pos_and_reward_history',
                                                 max_episode_steps=max_epoch_steps,
                                                 history_len=history_len)
                                 n_actions = env.action_space.shape[-1]
