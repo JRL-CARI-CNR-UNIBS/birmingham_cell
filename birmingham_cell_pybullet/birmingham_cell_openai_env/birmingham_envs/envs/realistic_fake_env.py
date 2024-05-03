@@ -309,6 +309,10 @@ class RealisticFakeEnv(gym.Env):
             reward -= dist1 * 10# max 0.0180. x10 -> 0.18
             reward -= dist2 * 10 # max 0.05. x10 -> 0.5
             # 0.32 < reward < 1
+
+            reward = (reward * 0.5) + 0.5
+            # 0.66 < reward < 1
+
         elif(grasp_zone == 'collision'):
             # se sono in collisione la bontà aumenta se sono allineato ma anche se mi sposto verso l'alto
             # per l'insert si deve allineare
@@ -320,6 +324,9 @@ class RealisticFakeEnv(gym.Env):
             reward -= dist_xy_grasp * 7.5 # max 0.02. x7.5 -> 0.2
             reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
             # -0.3 < reward < 0.3
+
+            reward = reward * 0.5
+            # -0.15 < reward < 0.15
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
             insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
@@ -332,5 +339,7 @@ class RealisticFakeEnv(gym.Env):
         # reward = 1
         # reward -= self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 10
         # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 10
+            reward = (reward * 0.5) - 0.4
+            # -0.9 < reward < -0.55
 
         return reward
