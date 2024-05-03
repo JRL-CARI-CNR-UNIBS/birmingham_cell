@@ -284,9 +284,9 @@ class RealisticFakeEnv2(gym.Env):
         self.current_insert_pos = copy.copy(self.initial_insert_pos)
         self.param_values = copy.copy(self.init_par_val)
         # self.param_values = [0,0,0,0,0,0]
-        observation = self._get_obs()
         self.observation = None
         self.history = None
+        observation = self._get_obs()
         info = {"is_success": False}
         return observation, info
     
