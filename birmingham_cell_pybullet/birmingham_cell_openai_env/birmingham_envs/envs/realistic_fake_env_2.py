@@ -237,6 +237,14 @@ class RealisticFakeEnv2(gym.Env):
             else:
                 obs = self.observation[len(current_observation):]
                 self.observation = np.concatenate([obs,current_observation])
+        elif self.obs_type == 'pos_reward_history':
+            current_observation = np.concatenate([np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.current_reward])])
+            if self.observation is None:
+                obs = np.zeros(len(current_observation) * (self.history_len -1))
+                self.observation = np.concatenate([obs,current_observation])
+            else:
+                obs = self.observation[len(current_observation):]
+                self.observation = np.concatenate([obs,current_observation])
         elif self.obs_type == 'param_reward_history':
             current_observation = np.concatenate([np.array(self.param_values),np.array([self.current_reward])])
             if self.observation is None:

@@ -38,3 +38,8 @@ register(
     id="RealisticFakeEnv2-v0",
     entry_point="birmingham_envs.envs:RealisticFakeEnv2",
 )
+
+register(
+    id="RealisticForceFakeEnv-v0",
+    entry_point="birmingham_envs.envs:RealisticForceFakeEnv",
+)

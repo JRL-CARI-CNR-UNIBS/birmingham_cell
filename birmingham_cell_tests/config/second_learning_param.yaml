@@ -1,9 +1,10 @@
 env_type: 'realistic_fake'
-max_epoch_steps: 25
+max_epoch_steps: 5
 learning_rate: 0.01
 gamma: 0.9
-total_timesteps: 3000000
-saving_name_space: 'second_real_fake'
+total_timesteps: 100000
+name_space: 'second_real_fake'
 verbose: 1
 model_save_freq: 100000
 obj_pos_error: [0.0,0.02,0.0]
+noise_sigma: 0.1

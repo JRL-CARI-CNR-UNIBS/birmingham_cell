@@ -88,7 +88,7 @@ if __name__ == '__main__':
     n_actions = env.action_space.shape[-1]
     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
 
-    model = TD3.load(model_path + "/" + model_name)
+    model = TD3.load(model_path + "/" + model_name, action_noise=action_noise)
 
     obs, info = env.reset()
     steps = 0

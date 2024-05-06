@@ -1,5 +1,5 @@
-env_type: 'connection'
-model_name: 'generic_test'
+env_type: 'realistic_fake'
+model_name: 'test'
 max_epoch_steps: 25
 obj_type: 'box'
 obj_radius: 0.03

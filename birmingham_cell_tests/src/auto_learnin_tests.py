@@ -96,6 +96,10 @@ if __name__ == '__main__':
         only_pos_success = params['only_pos_success']
     else:
         only_pos_success = True
+    if 'noise_sigma' in params:
+        noise_sigma = params['noise_sigma']
+    else:
+        noise_sigma = 0.1
 
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
@@ -148,6 +152,17 @@ if __name__ == '__main__':
                         elif env_type == 'realistic_fake':
                             print('In realistic_fake')
                             env = gym.make('RealisticFakeEnv-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_force_fake':
+                            print('In realistic_fake')
+                            env = gym.make('RealisticForceFakeEnv-v0', 
                                             action_type='increment_value', 
                                             # distance_threshold=distance_threshold,
                                             force_threshold=force_threshold,
@@ -261,6 +276,39 @@ if __name__ == '__main__':
                                             log_interval=1, 
                                             )
                             continue
+                        elif env_type == 'realistic_fake_pos_reward_history':
+                            print('In ' + env_type)
+                            if 'history_len' in params:
+                                history_len_vec = params['history_len']
+                            else:
+                                history_len_vec = [10]
+                            for history_len in history_len_vec:
+                                env = gym.make('RealisticFakeEnv2-v0', 
+                                                action_type='increment_value', 
+                                                # distance_threshold=distance_threshold,
+                                                force_threshold=force_threshold,
+                                                debug_mode=debug_mode,
+                                                step_print=step_print,
+                                                only_pos_success=only_pos_success,
+                                                epoch_len = max_epoch_steps,
+                                                obs_type = 'pos_reward_history',
+                                                max_episode_steps=max_epoch_steps,
+                                                history_len=history_len)
+                                n_actions = env.action_space.shape[-1]
+                                action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                                log_path = log_path + '/' + str(history_len)
+                                model = TD3("MlpPolicy", 
+                                            env, 
+                                            verbose=verbose,
+                                            action_noise=action_noise,
+                                            learning_rate=learning_rate,
+                                            tensorboard_log=log_path,
+                                            gamma=gamma,
+                                            ) 
+                                model.learn(total_timesteps=params['total_timesteps'], 
+                                            log_interval=1, 
+                                            )
+                            continue
                         elif env_type == 'realistic_fake_param_reward_history':
                             print('In ' + env_type)
                             if 'history_len' in params:
@@ -352,7 +400,7 @@ if __name__ == '__main__':
                             exit(0)  
 
                         n_actions = env.action_space.shape[-1]
-                        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions))
+                        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=noise_sigma * np.ones(n_actions))
                         if (model_type == 'td3'):
                             model = TD3("MlpPolicy", 
                                         env, 

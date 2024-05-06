@@ -6,3 +6,4 @@ from birmingham_envs.envs.realistic_fake_env import RealisticFakeEnv
 from birmingham_envs.envs.random_realistic_fake_env import RandomRealFakeEnv
 from birmingham_envs.envs.generic_realistic_fake_env import GenericRealFakeEnv
 from birmingham_envs.envs.realistic_fake_env_2 import RealisticFakeEnv2
+from birmingham_envs.envs.realistic_force_fake_env import RealisticForceFakeEnv

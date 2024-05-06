@@ -22,6 +22,7 @@ if __name__ == '__main__':
     rospack = rospkg.RosPack()
     path = rospack.get_path('birmingham_cell_tests')
     file_path = path + '/' + params_path
+    model_path = path + '/' + 'model/'
 
     with open(file_path) as file:
         params = yaml.safe_load(file)
@@ -44,10 +45,10 @@ if __name__ == '__main__':
     else:
         gamma = 0.9
 
-    if 'saving_name_space' in params:
-        name_space = params['saving_name_space']
+    if 'name_space' in params:
+        name_space = params['name_space'] + '/'
     else:
-        name_space = 'generic_tests'
+        name_space = ''
     if 'verbose' in params:
         verbose = params['verbose']
     else:
@@ -65,10 +66,19 @@ if __name__ == '__main__':
         obj_pos_error = params['obj_pos_error']
     else:
         only_pos_success = [0.0,0.0,0.0]
+    if 'model_path' in params:
+        model_path = model_path + params['model_path']
+    else:
+        print('model_path is empty')
+        model_path = model_path[:-1]
     if 'model_name' in params:
         model_name = params['model_name']
     else:
         model_name = 'test'
+    if 'noise_sigma' in params:
+        noise_sigma = params['noise_sigma']
+    else:
+        noise_sigma = 0.1
 
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
@@ -115,20 +125,22 @@ if __name__ == '__main__':
     else:
         print('Env_type not in the possible env list.')
         exit(0)  
-          
-    model = TD3.load(models_repo_path + model_name)
 
-    print('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+    n_actions = env.action_space.shape[-1]
+    action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=noise_sigma * np.ones(n_actions))
+
+    log_name = name_space + '/' + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+    log_path = log_repo_path + '/second_' + log_name
+
+    model = TD3.load(model_path + "/" + model_name, tensorboard_log=log_path, action_noise=action_noise)
     model.set_env(env)
 
-    model_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
-    log_name = params['env_type'] + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
-    model_path = models_repo_path + '/second_' + model_name
-    log_path = log_repo_path + '/second_' + log_name
+    save_model_name = name_space + '/' + env_type + '/'  + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+    save_model_path = models_repo_path + '/second_' + save_model_name
 
     checkpoint_callback = CheckpointCallback(
         save_freq=model_save_freq,
-        save_path=model_path + '/',
+        save_path=save_model_path + '/',
         name_prefix=name_space,
     )
 
