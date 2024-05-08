@@ -365,13 +365,15 @@ class ConnectionEnv(gym.Env):
 
         if self.obj_model_name == 'cylinder':
             self.object_type = 0
-        if self.obj_model_name == 'box':
+        elif self.obj_model_name == 'box':
             self.object_type = 1
-        if self.obj_model_name == 'cone':
+        elif self.obj_model_name == 'cone':
             self.object_type = 2
-        if self.obj_model_name == 'sphere':
+        elif self.obj_model_name == 'sphere':
             self.object_type = 3
-
+        elif self.obj_model_name == 'can':
+            self.object_type = 0
+            self.obj_model_height = 0.11
         self.object_info = [self.object_type,self.obj_model_height]
 
 

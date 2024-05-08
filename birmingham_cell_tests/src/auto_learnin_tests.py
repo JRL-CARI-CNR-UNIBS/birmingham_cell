@@ -161,8 +161,19 @@ if __name__ == '__main__':
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_force_fake':
-                            print('In realistic_fake')
+                            print('In realistic_force_fake')
                             env = gym.make('RealisticForceFakeEnv-v0', 
+                                            action_type='increment_value', 
+                                            # distance_threshold=distance_threshold,
+                                            force_threshold=force_threshold,
+                                            debug_mode=debug_mode,
+                                            step_print=step_print,
+                                            only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'generic_real_force_fake':
+                            print('In generic_real_force_fake')
+                            env = gym.make('GenericRealForceFakeEnv-v0', 
                                             action_type='increment_value', 
                                             # distance_threshold=distance_threshold,
                                             force_threshold=force_threshold,
