@@ -1,10 +1,11 @@
-env_type: 'realistic_fake'
-max_epoch_steps: 5
+env_type: 'realistic_history_fake'
+max_epoch_steps: 25
 learning_rate: 0.01
 gamma: 0.9
-total_timesteps: 100000
-name_space: 'second_real_fake'
-verbose: 1
+total_timesteps: 1000000
+name_space: 'history_tests'
+verbose: 0
 model_save_freq: 100000
-obj_pos_error: [0.0,0.02,0.0]
 noise_sigma: 0.1
+
+model_name: history_first

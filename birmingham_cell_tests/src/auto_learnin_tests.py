@@ -14,36 +14,6 @@ import os
 import yaml
 import datetime
 
-class MyCheckpointCallback(CheckpointCallback):
-    def __init__(self, save_freq: int, save_path: str, name_prefix: str = "rl_model"):
-        super(MyCheckpointCallback, self).__init__(save_freq=save_freq, save_path=save_path, name_prefix=name_prefix)
-
-    def _on_step(self) -> bool:
-        if self.n_calls % self.save_freq == 0:
-            for filename in os.listdir(self.save_path):
-                if filename.startswith(self.name_prefix):
-                    os.remove(os.path.join(self.save_path, filename))
-            model_path = self._checkpoint_path(extension="zip")
-            self.model.save(model_path)
-            if self.verbose >= 2:
-                print(f"Saving model checkpoint to {model_path}")
-
-            if self.save_replay_buffer and hasattr(self.model, "replay_buffer") and self.model.replay_buffer is not None:
-                # If model has a replay buffer, save it too
-                replay_buffer_path = self._checkpoint_path("replay_buffer_", extension="pkl")
-                self.model.save_replay_buffer(replay_buffer_path)  # type: ignore[attr-defined]
-                if self.verbose > 1:
-                    print(f"Saving model replay buffer checkpoint to {replay_buffer_path}")
-
-            if self.save_vecnormalize and self.model.get_vec_normalize_env() is not None:
-                # Save the VecNormalize statistics
-                vec_normalize_path = self._checkpoint_path("vecnormalize_", extension="pkl")
-                self.model.get_vec_normalize_env().save(vec_normalize_path)  # type: ignore[union-attr]
-                if self.verbose >= 2:
-                    print(f"Saving model VecNormalize to {vec_normalize_path}")
-
-        return True
-
 
 if __name__ == '__main__':
 
@@ -58,48 +28,68 @@ if __name__ == '__main__':
     with open(file_path) as file:
         params = yaml.safe_load(file)
 
-    if 'model_types' in params:
-        for model_type in params['model_types']:
-            if not model_type in possible_model_type:
-                print('Model_type not in the possible model list.')
-                exit(0)
-    else:
-        print('Model_types is empty')
-        exit(0)
-
     if 'name_space' in params:
         name_space = params['name_space']
     else:
-        name_space = 'generic_tests'
+        name_space = 'learning_tests'
+        print('name_space: learning_tests')
     if 'verbose' in params:
         verbose = params['verbose']
     else:
-        verbose = 0
-             
+        verbose = 0          
+        print('verbose: 0')
     if 'distance_threshold' in params:
         distance_threshold = params['distance_threshold']
     else:
         distance_threshold = 0.02
+        print('distance_threshold: 0.02')
     if 'force_threshold' in params:
         force_threshold = params['force_threshold']
     else:
         force_threshold = 100
+        print('force_threshold: 100')
     if 'debug_mode' in params:
         debug_mode = params['debug_mode']
     else:
         debug_mode = False
+        print('debug_mode: False')
     if 'step_print' in params:
         step_print = params['step_print']
     else:
         step_print = False
+        print('step_print: False')
     if 'only_pos_success' in params:
         only_pos_success = params['only_pos_success']
     else:
         only_pos_success = True
+        print('only_pos_success: True')
     if 'noise_sigma' in params:
-        noise_sigma = params['noise_sigma']
+        noise_sigma_vec = params['noise_sigma']
     else:
-        noise_sigma = 0.1
+        noise_sigma_vec = [0.1]
+        print('noise_sigma: [0.1]')
+
+    if 'max_epoch_steps' in params:
+        max_epoch_steps_vec = params['max_epoch_steps']
+    else:
+        max_epoch_steps_vec = [25]
+        print('max_epoch_steps: [25]')
+    if 'learning_rate' in params:
+        learning_rate_vec = params['learning_rate']
+    else:
+        learning_rate_vec = [0.01]
+        print('learning_rate: [0.01]')
+    if 'gamma' in params:
+        gamma_vec = params['gamma']
+    else:
+        gamma_vec = [0.9]
+        print('gamma: [0.9]')
+    if 'env_type' in params:
+        env_type_vec = params['env_type']
+    else:
+        print('No env_type')
+        exit(1)
+   
 
     data = datetime.datetime.now()
     test_name = name_space + 'tests'
@@ -111,10 +101,10 @@ if __name__ == '__main__':
     total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
     print('Total tests: ' + str(total_test))
     for env_type in params['env_type']:
-        for max_epoch_steps in params['max_epoch_steps']:
-            for learning_rate in params['learning_rate']:
-                for gamma in params['gamma']:
-                    for model_type in params['model_types']:
+        for max_epoch_steps in max_epoch_steps_vec:
+            for learning_rate in learning_rate_vec:
+                for gamma in gamma_vec:
+                    for noise_sigma in noise_sigma_vec:
                         test_number += 1
                         print('Test ' + str(test_number))
                         # model_name = test_name + '_' + str(max_epoch_steps) + '_' + str(learning_rate) + '_' + str(gamma)
@@ -123,8 +113,8 @@ if __name__ == '__main__':
                             name_space = params['name_space'] + '/'
                         else:
                             name_space = ''
-                        model_name = name_space + env_type + '/'  + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
-                        log_name = name_space + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma)
+                        model_name = name_space + env_type + '/'  + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma) + '/' + str(noise_sigma)
+                        log_name = name_space + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma) + '/' + str(noise_sigma)
                         model_path = models_repo_path + '/' + model_name
                         log_path = log_repo_path + '/' + log_name
                         if env_type == 'fake':
@@ -158,6 +148,12 @@ if __name__ == '__main__':
                                             debug_mode=debug_mode,
                                             step_print=step_print,
                                             only_pos_success=only_pos_success,
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'realistic_history_fake':
+                            print('In realistic_history_fake')
+                            env = gym.make('RealHistoryFakeEnv-v0', 
+                                            action_type='increment_value', 
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_force_fake':
@@ -412,38 +408,15 @@ if __name__ == '__main__':
 
                         n_actions = env.action_space.shape[-1]
                         action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=noise_sigma * np.ones(n_actions))
-                        if (model_type == 'td3'):
-                            model = TD3("MlpPolicy", 
-                                        env, 
-                                        verbose=verbose,
-                                        action_noise=action_noise,
-                                        learning_rate=learning_rate,
-                                        tensorboard_log=log_path,
-                                        gamma=gamma,
-                                        )
-                        if (model_type == 'sac'):
-                            model = SAC("MlpPolicy", 
-                                        env, 
-                                        verbose=verbose,
-                                        action_noise=action_noise,
-                                        learning_rate=learning_rate,
-                                        tensorboard_log=log_path,
-                                        gamma=gamma,
-                                        )
-                        if (model_type == 'ddpg'):
-                            model = DDPG("MlpPolicy", 
-                                        env, 
-                                        verbose=verbose,
-                                        action_noise=action_noise,
-                                        learning_rate=learning_rate,
-                                        tensorboard_log=log_path,
-                                        gamma=gamma,
-                                        )
-                            
+                        model = TD3("MlpPolicy", 
+                                    env, 
+                                    verbose=verbose,
+                                    action_noise=action_noise,
+                                    learning_rate=learning_rate,
+                                    tensorboard_log=log_path,
+                                    gamma=gamma,
+                                    )
                         if 'model_save_freq' in params:
-                            # checkpoint_callback = MyCheckpointCallback(save_freq=params['model_save_freq'],
-                            #                         save_path=model_path + '/', 
-                            #                         name_prefix=name_space)
                             checkpoint_callback = CheckpointCallback(
                                 save_freq=params['model_save_freq'],
                                 save_path=model_path + '/',

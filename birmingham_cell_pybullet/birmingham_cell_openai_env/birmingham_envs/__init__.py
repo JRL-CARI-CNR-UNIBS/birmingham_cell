@@ -48,3 +48,8 @@ register(
     id="GenericRealForceFakeEnv-v0",
     entry_point="birmingham_envs.envs:GenericRealForceFakeEnv",
 )
+
+register(
+    id="RealHistoryFakeEnv-v0",
+    entry_point="birmingham_envs.envs:RealHistoryFakeEnv",
+)

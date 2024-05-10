@@ -31,7 +31,7 @@ if __name__ == '__main__':
         env_type = params['env_type']
     else:
         print('env_type is empty')
-        exit(0)
+        exit(1)
     if 'max_epoch_steps' in params:
         max_epoch_steps = params['max_epoch_steps']
     else:
@@ -106,6 +106,13 @@ if __name__ == '__main__':
                         max_episode_steps=max_epoch_steps,
                         obj_pos_error=obj_pos_error,
                         )
+    elif params['env_type'] == 'realistic_history_fake':
+        print('In realistic_history_fake')
+        env = gym.make('RealHistoryFakeEnv-v0', 
+                        action_type='increment_value', 
+                        epoch_len = max_epoch_steps,
+                        max_episode_steps=max_epoch_steps,
+                        )
     elif params['env_type'] == 'random_real_fake':
         print('In random_real_fake')
         env = gym.make('RandomRealFakeEnv-v0', 
@@ -124,7 +131,7 @@ if __name__ == '__main__':
                         max_episode_steps=max_epoch_steps)
     else:
         print('Env_type not in the possible env list.')
-        exit(0)  
+        exit(1)  
 
     n_actions = env.action_space.shape[-1]
     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=noise_sigma * np.ones(n_actions))
