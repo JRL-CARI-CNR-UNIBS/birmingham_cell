@@ -33,59 +33,81 @@ if __name__ == '__main__':
     else:
         name_space = 'learning_tests'
         print('name_space: learning_tests')
+
     if 'verbose' in params:
         verbose = params['verbose']
     else:
         verbose = 0          
         print('verbose: 0')
-    if 'distance_threshold' in params:
-        distance_threshold = params['distance_threshold']
-    else:
-        distance_threshold = 0.02
-        print('distance_threshold: 0.02')
-    if 'force_threshold' in params:
-        force_threshold = params['force_threshold']
-    else:
-        force_threshold = 100
-        print('force_threshold: 100')
-    if 'debug_mode' in params:
-        debug_mode = params['debug_mode']
-    else:
-        debug_mode = False
-        print('debug_mode: False')
-    if 'step_print' in params:
-        step_print = params['step_print']
-    else:
-        step_print = False
-        print('step_print: False')
-    if 'only_pos_success' in params:
-        only_pos_success = params['only_pos_success']
-    else:
-        only_pos_success = True
-        print('only_pos_success: True')
+
     if 'noise_sigma' in params:
         noise_sigma_vec = params['noise_sigma']
+        if isinstance(noise_sigma_vec, float):
+            noise_sigma_vec = [noise_sigma_vec]
+        elif isinstance(noise_sigma_vec, list):
+            if not isinstance(noise_sigma_vec[0], float):
+                print('noise_sigma_vec is not a list of float')
+                exit(1)
+        else:
+            print('noise_sigma_vec is not a float or a list of float')
+            exit(1)
     else:
         noise_sigma_vec = [0.1]
         print('noise_sigma: [0.1]')
 
     if 'max_epoch_steps' in params:
         max_epoch_steps_vec = params['max_epoch_steps']
+        if isinstance(max_epoch_steps_vec, int):
+            env_tymax_epoch_steps_vecpe_vec = [max_epoch_steps_vec]
+        elif isinstance(max_epoch_steps_vec, list):
+            if not isinstance(max_epoch_steps_vec[0], int):
+                print('max_epoch_steps_vec is not a list of int')
+                exit(1)
+        else:
+            print('max_epoch_steps_vec is not a int or a list of int')
+            exit(1)
     else:
         max_epoch_steps_vec = [25]
         print('max_epoch_steps: [25]')
     if 'learning_rate' in params:
         learning_rate_vec = params['learning_rate']
+        if isinstance(learning_rate_vec, float):
+            learning_rate_vec = [learning_rate_vec]
+        elif isinstance(learning_rate_vec, list):
+            if not isinstance(learning_rate_vec[0], float):
+                print('learning_rate_vec is not a list of float')
+                exit(1)
+        else:
+            print('learning_rate_vec is not a float or a list of float')
+            exit(1)
     else:
         learning_rate_vec = [0.01]
         print('learning_rate: [0.01]')
     if 'gamma' in params:
         gamma_vec = params['gamma']
+        if isinstance(gamma_vec, float):
+            gamma_vec = [gamma_vec]
+        elif isinstance(gamma_vec, list):
+            if not isinstance(gamma_vec[0], float):
+                print('gamma_vec is not a list of float')
+                exit(1)
+        else:
+            print('gamma_vec is not a float or a list of float')
+            exit(1)
     else:
         gamma_vec = [0.9]
         print('gamma: [0.9]')
     if 'env_type' in params:
         env_type_vec = params['env_type']
+        if isinstance(env_type_vec, str):
+            env_type_vec = [env_type_vec]
+        elif isinstance(env_type_vec, list):
+            if not isinstance(env_type_vec[0], str):
+                print('env_type_vec is not a list of string')
+                exit(1)
+        else:
+            print('env_type_vec is not a string or a list of string')
+            exit(1)
     else:
         print('No env_type')
         exit(1)
@@ -132,22 +154,12 @@ if __name__ == '__main__':
                         elif env_type == 'connection':
                             env = gym.make('ConnectionEnv-v0', 
                                             action_type='increment_value', 
-                                            distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_fake':
                             print('In realistic_fake')
                             env = gym.make('RealisticFakeEnv-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_history_fake':
@@ -160,33 +172,18 @@ if __name__ == '__main__':
                             print('In realistic_force_fake')
                             env = gym.make('RealisticForceFakeEnv-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'generic_real_force_fake':
                             print('In generic_real_force_fake')
                             env = gym.make('GenericRealForceFakeEnv-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_fake_pos':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'pos',
                                             max_episode_steps=max_epoch_steps)
@@ -194,11 +191,6 @@ if __name__ == '__main__':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'param_pos',
                                             max_episode_steps=max_epoch_steps)
@@ -206,11 +198,6 @@ if __name__ == '__main__':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'pos_param',
                                             max_episode_steps=max_epoch_steps)
@@ -218,11 +205,6 @@ if __name__ == '__main__':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'param',
                                             max_episode_steps=max_epoch_steps)
@@ -230,11 +212,6 @@ if __name__ == '__main__':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'param_reward',
                                             max_episode_steps=max_epoch_steps)
@@ -242,11 +219,6 @@ if __name__ == '__main__':
                             print('In ' + env_type)
                             env = gym.make('RealisticFakeEnv2-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             obs_type = 'param_pos_reward',
                                             max_episode_steps=max_epoch_steps)
@@ -259,11 +231,6 @@ if __name__ == '__main__':
                             for history_len in history_len_vec:
                                 env = gym.make('RealisticFakeEnv2-v0', 
                                                 action_type='increment_value', 
-                                                # distance_threshold=distance_threshold,
-                                                force_threshold=force_threshold,
-                                                debug_mode=debug_mode,
-                                                step_print=step_print,
-                                                only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
                                                 obs_type = 'param_pos_reward_history',
                                                 max_episode_steps=max_epoch_steps,
@@ -292,11 +259,6 @@ if __name__ == '__main__':
                             for history_len in history_len_vec:
                                 env = gym.make('RealisticFakeEnv2-v0', 
                                                 action_type='increment_value', 
-                                                # distance_threshold=distance_threshold,
-                                                force_threshold=force_threshold,
-                                                debug_mode=debug_mode,
-                                                step_print=step_print,
-                                                only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
                                                 obs_type = 'pos_reward_history',
                                                 max_episode_steps=max_epoch_steps,
@@ -325,11 +287,6 @@ if __name__ == '__main__':
                             for history_len in history_len_vec:
                                 env = gym.make('RealisticFakeEnv2-v0', 
                                                 action_type='increment_value', 
-                                                # distance_threshold=distance_threshold,
-                                                force_threshold=force_threshold,
-                                                debug_mode=debug_mode,
-                                                step_print=step_print,
-                                                only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
                                                 obs_type = 'param_reward_history',
                                                 max_episode_steps=max_epoch_steps,
@@ -358,11 +315,6 @@ if __name__ == '__main__':
                             for history_len in history_len_vec:
                                 env = gym.make('RealisticFakeEnv2-v0', 
                                                 action_type='increment_value', 
-                                                # distance_threshold=distance_threshold,
-                                                force_threshold=force_threshold,
-                                                debug_mode=debug_mode,
-                                                step_print=step_print,
-                                                only_pos_success=only_pos_success,
                                                 epoch_len = max_epoch_steps,
                                                 obs_type = 'param_pos_and_reward_history',
                                                 max_episode_steps=max_epoch_steps,
@@ -386,20 +338,12 @@ if __name__ == '__main__':
                             print('In random_real_fake')
                             env = gym.make('RandomRealFakeEnv-v0', 
                                             action_type='increment_value', 
-                                            # distance_threshold=distance_threshold,
-                                            force_threshold=force_threshold,
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         elif env_type == 'generic_real_fake':
                             print('In generic_real_fake')
                             env = gym.make('GenericRealFakeEnv-v0', 
                                             action_type='increment_value', 
-                                            debug_mode=debug_mode,
-                                            step_print=step_print,
-                                            only_pos_success=only_pos_success,
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         else:
