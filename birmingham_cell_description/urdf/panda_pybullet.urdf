@@ -291,7 +291,8 @@
         <color rgba="1 1 1 1"/>
       </material>
     </visual>
-    <collision>
+    <!-- <collision> -->
+    <collision concave="yes">
       <geometry>
         <mesh filename="/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_description/meshes/leftfinger_collision.STL"/>
       </geometry>
@@ -319,7 +320,8 @@
         <color rgba="1 1 1 1"/>
       </material>
     </visual>
-    <collision>
+    <!-- <collision> -->
+    <collision concave="yes">
       <geometry>
         <mesh filename="/home/gauss/projects/personal_ws/src/birmingham_cell/birmingham_cell_description/meshes/rightfinger_collision.STL"/>
       </geometry>

@@ -54,3 +54,24 @@ pybullet_simulation:
       sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
       sgp_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
+    box_hole:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/box_hole.xacro'
+      xacro_args:
+        length: 1
+        width:  1
+        height: 1
+      mesh_file_path: 'meshes/Box_hole.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    cylinder_hole:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/cylinder_hole.xacro'
+      xacro_args:
+        radius: 0.01
+        height: 0.01
+      mesh_file_path: 'meshes/Cylinder_hole.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'

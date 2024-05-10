@@ -38,6 +38,9 @@ class ConnectionEnv(gym.Env):
         obj_model_height: float = 0.1,
         obj_model_length: float = 0.1,
         obj_model_width:  float = 0.1,
+        tar_model_height: float = 0.1,
+        tar_model_length: float = 0.1,
+        tar_model_width:  float = 0.1,
         distance_threshold: float = 0.02,
         force_threshold: float = 50,
         torque_threshold: float = 100,
@@ -49,6 +52,7 @@ class ConnectionEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
+        observation_type: str = 'param_pos_obj',
         epoch_len: int = None,
     ) -> None:
         rospy.init_node(node_name)
@@ -64,6 +68,9 @@ class ConnectionEnv(gym.Env):
         self.obj_model_height = obj_model_height
         self.obj_model_length = obj_model_length
         self.obj_model_width  = obj_model_width
+        self.tar_model_height = tar_model_height
+        self.tar_model_length = tar_model_length
+        self.tar_model_width  = tar_model_width
         self.distance_threshold = distance_threshold
         self.force_threshold    = force_threshold
         self.torque_threshold   = torque_threshold
@@ -75,12 +82,14 @@ class ConnectionEnv(gym.Env):
         self.save_data = save_data
         self.step_print = step_print
         self.only_pos_success = only_pos_success
+        self.obs_type = observation_type
         self.step_number = 0
         self.start_obj_pos = None
         self.start_tar_pos = None
         self.last_action = None
         self.epoch_len = epoch_len
         self.epoch_steps = 0
+        self.grasp_zone = 0 
         
         # arguments to define
         self.param_lower_bound = []
@@ -241,6 +250,15 @@ class ConnectionEnv(gym.Env):
 
     def _create_scene(self,obj_pos,tar_pos) -> None:
         """Create the scene."""
+
+        if self.tar_model_name == 'box_hole':
+            rospy.set_param('pybullet_simulation/objects/box_hole/xacro_args/length', self.tar_model_length)
+            rospy.set_param('pybullet_simulation/objects/box_hole/xacro_args/width',  self.tar_model_width )
+            rospy.set_param('pybullet_simulation/objects/box_hole/xacro_args/height', self.tar_model_height)
+        elif self.tar_model_name == 'cylinder_hole':
+            rospy.set_param('pybullet_simulation/objects/cylinder_hole/xacro_args/radius', (self.tar_model_width / 2) )
+            rospy.set_param('pybullet_simulation/objects/cylinder_hole/xacro_args/height', self.tar_model_height)
+
         object_names = []
         object_names.append(self.target_name)  
         object_names.append(self.object_name)
@@ -265,8 +283,6 @@ class ConnectionEnv(gym.Env):
 
         self.start_obj_pos = obj_pos
 
-        # Qua guardo con che tipo di oggetto sto lavorando e nel caso di geometrie semplici 
-        # ne setto i parametri che trovo nei param
         if self.obj_model_name == 'box':
             rospy.set_param('pybullet_simulation/objects/box/xacro_args/length', self.obj_model_length)
             rospy.set_param('pybullet_simulation/objects/box/xacro_args/width',  self.obj_model_width )
@@ -312,11 +328,15 @@ class ConnectionEnv(gym.Env):
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri
         self._update_info()
-        if self.only_pos_success:
+        if self.obs_type == 'param_pos':
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos)])
+        elif self.obs_type == 'param_pos_obj':
             self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array(self.object_info)])
-            # self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos)])
+        elif self.obs_type == 'param_pos_zone_force_obj':
+            self.observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.grasp_zone]),np.array(self.grasp_max_wrench[:2]),np.array(self.insertion_max_wrench[:2]),np.array(self.object_info)])
         else:
-            self.observation = np.concatenate([np.array(self.param_values),np.array(self.obj_to_grasp_pos),np.array(self.tar_to_insertion_pos),np.array(self.max_wrench)])
+            rospy.logerr('Observation type param_pos_zone_force_obj does not exist')
+            exit(0)
         if self.debug_mode: self._print_obs()
         return self.observation
 
@@ -423,10 +443,10 @@ class ConnectionEnv(gym.Env):
                 print('False')
         else:
             if (self.final_distance < self.distance_threshold and
-                self.max_wrench[0] < self.force_threshold and
-                self.max_wrench[1] < self.force_threshold and
-                self.max_wrench[3] < self.torque_threshold and
-                self.max_wrench[4] < self.torque_threshold):
+                self.insertion_max_wrench[0] < self.force_threshold and
+                self.insertion_max_wrench[1] < self.force_threshold and
+                self.insertion_max_wrench[3] < self.torque_threshold and
+                self.insertion_max_wrench[4] < self.torque_threshold):
                 success = True
             else:
                 success = False
@@ -547,7 +567,7 @@ class ConnectionEnv(gym.Env):
         self.initial_distance = self._distance(self.tar_pos,self.obj_pos)
         self.initial_obj_to_grasp_pos = self.obj_to_grasp_pos
         self.run_tree_clnt.call(self.tree_name, self.trees_path)
-        self.observation = self._get_obs()
+        self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
         print(self.final_distance)
 
@@ -560,6 +580,7 @@ class ConnectionEnv(gym.Env):
         else:
             reward = self._get_reward()
         
+        self._get_obs()
         terminated = success
         truncated = False
         info = {"is_success": success}
@@ -596,12 +617,16 @@ class ConnectionEnv(gym.Env):
 
         if move_to_grasp_fail:
             grasp_zone = 'collision'
+            self.grasp_zone = 1 
         elif move_to_grasp_contant:
             grasp_zone = 'out_grasp'
+            self.grasp_zone = 0
         elif (dist_perc > 0.5):
             grasp_zone = 'in_grasp'
+            self.grasp_zone = 2
         else:
             grasp_zone = 'out_grasp'
+            self.grasp_zone = 0
 
         if (grasp_zone == 'in_grasp'):
             if self.only_pos_success:
@@ -610,16 +635,16 @@ class ConnectionEnv(gym.Env):
                 reward -= missing_dist_perc * 1.4 # max value 0.7
             else:
                 missing_dist_perc = 1 - dist_perc # max value 0.5
-                self.max_wrench[0] # max 1000 
-                self.max_wrench[1] # max 1000
-                self.max_wrench[3] # max 1000
-                self.max_wrench[4] # max 1000   
+                self.insertion_max_wrench[0] # max 1000 
+                self.insertion_max_wrench[1] # max 1000
+                self.insertion_max_wrench[3] # max 1000
+                self.insertion_max_wrench[4] # max 1000   
                 reward = 1
                 reward -= missing_dist_perc # max 0.5
-                reward -= self.max_wrench[0] * 0.00005 # max 0.05
-                reward -= self.max_wrench[1] * 0.00005 # max 0.05
-                reward -= self.max_wrench[3] * 0.00005 # max 0.05
-                reward -= self.max_wrench[4] * 0.00005 # max 0.05
+                reward -= self.insertion_max_wrench[0] * 0.00005 # max 0.05
+                reward -= self.insertion_max_wrench[1] * 0.00005 # max 0.05
+                reward -= self.insertion_max_wrench[3] * 0.00005 # max 0.05
+                reward -= self.insertion_max_wrench[4] * 0.00005 # max 0.05
         elif (grasp_zone == 'collision'):
             insertion_movement = np.linalg.norm(
                 np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
@@ -721,15 +746,33 @@ class ConnectionEnv(gym.Env):
             insert_executed = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed')
             if insert_executed:
                 try:
-                    self.max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
+                    self.insertion_max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench')
                 except:
                     rospy.logerr('/exec_params/actions/can_peg_in_hole/skills/insert/max_wrench not found')
-                    self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]                
+                    self.insertion_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]                
             else:
-                self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
+                self.insertion_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
         except:
             rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/insert/executed not found, it considered false')
-            self.max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
+            self.insertion_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
+
+        try:
+            grasp_executed = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed')
+            if grasp_executed:
+                try:
+                    self.grasp_max_wrench = rospy.get_param('/exec_params/actions/can_peg_in_hole/skills/close_gripper/max_wrench')
+                except:
+                    rospy.logerr('/exec_params/actions/can_peg_in_hole/skills/close_gripper/max_wrench not found')
+                    self.grasp_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]                
+            else:
+                self.grasp_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
+        except:
+            rospy.logwarn('/exec_params/actions/can_peg_in_hole/skills/close_gripper/executed not found, it considered false')
+            self.grasp_max_wrench = [m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value,m_w_p_value]
+
+        if self.grasp_zone != 2:
+            self.grasp_max_wrench = [0,0,0,0,0,0]
+            self.insertion_max_wrench = [0,0,0,0,0,0]
 
     def _print_action(self) -> None:
         print(' ')
