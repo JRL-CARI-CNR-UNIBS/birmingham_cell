@@ -108,6 +108,8 @@ class RealisticForceFakeEnv(gym.Env):
         self.current_grasp_pos = None
         self.current_insert_pos = None
         self.insertion_forces = [0,0]
+        self.grasp_forces = [0,0]
+        self.grasp_zone = 0
 
         # lettura dei parametri delle skill da modificare
         try:
@@ -201,7 +203,7 @@ class RealisticForceFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.insertion_forces)])
+        observation = np.concatenate([np.array(self.param_values),np.array(self.current_grasp_pos),np.array(self.current_insert_pos),np.array([self.grasp_zone]),np.array(self.grasp_forces),np.array(self.insertion_forces)])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -221,6 +223,7 @@ class RealisticForceFakeEnv(gym.Env):
         self.current_insert_pos = copy.copy(self.initial_insert_pos)
         self.param_values = copy.copy(self.init_par_val)
         self.insertion_forces = [0,0]
+        self.grasp_forces = [0,0]
         # self.param_values = [0,0,0,0,0,0]
         observation = self._get_obs()
         info = {"is_success": False}
@@ -294,13 +297,16 @@ class RealisticForceFakeEnv(gym.Env):
         if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.01) and
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.015)): 
             grasp_zone = 'successfully_grasp'
+            self.grasp_zone = 2
         # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
         # centro per più di 2 cm lo considero in collisione
         elif((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01) and 
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < 0.02):
             grasp_zone = 'collision'
+            self.grasp_zone = 1
         else:
             grasp_zone = 'free'
+            self.grasp_zone = 0
         # in ogni altro caso non sono in presa ne in collisione
 
         if (grasp_zone == 'successfully_grasp'):
@@ -311,11 +317,14 @@ class RealisticForceFakeEnv(gym.Env):
             reward -= dist1 * 10# max 0.0180. x10 -> 0.18
             reward -= dist2 * 10 # max 0.05. x10 -> 0.5
 
-            self.insertion_forces = [(self.current_grasp_pos[0] - self.correct_grasp_pos[0]) * 100 * 50, (self.current_grasp_pos[1] - self.correct_grasp_pos[1]) * 100 * 50]
+            self.grasp_forces = [(self.current_grasp_pos[0] - self.correct_grasp_pos[0]) * 5, (self.current_grasp_pos[1] - self.correct_grasp_pos[1]) * 5]
+            self.insertion_forces = [(self.current_insert_pos[0] - self.correct_insert_pos[0]) * 5, (self.current_insert_pos[1] - self.correct_insert_pos[1]) * 5]
+
+
             # 0.32 < reward < 1
 
 
-            # reward = (reward * 0.5) + 0.5
+            reward = (reward * 0.5) + 0.5
             # 0.66 < reward < 1
 
         elif(grasp_zone == 'collision'):
@@ -333,7 +342,7 @@ class RealisticForceFakeEnv(gym.Env):
             # -0.3 < reward < 0.3
 
 
-            # reward = reward * 0.5
+            reward = reward * 0.5
             # -0.15 < reward < 0.15
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
@@ -347,7 +356,7 @@ class RealisticForceFakeEnv(gym.Env):
             # -1 < reward < -0.3
 
 
-            # reward = (reward * 0.5) - 0.4
+            reward = (reward * 0.5) - 0.4
             # -0.9 < reward < -0.55
 
         return reward
