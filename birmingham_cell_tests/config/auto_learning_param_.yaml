@@ -1,0 +1,10 @@
+env_type: ['realistic_force_fake']
+max_epoch_steps: [25]
+learning_rate: [0.01]
+gamma: [0.9]
+total_timesteps: 5000000
+model_types: ['td3']
+name_space: 'force_tests_2'
+verbose: 0
+model_save_freq: 100000
+noise_sigma: 0.2
