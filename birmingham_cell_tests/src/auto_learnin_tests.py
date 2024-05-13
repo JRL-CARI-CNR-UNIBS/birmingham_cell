@@ -168,6 +168,12 @@ if __name__ == '__main__':
                                             action_type='increment_value', 
                                             epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
+                        elif env_type == 'action_param_history_fake':
+                            print('In action_param_history_fake')
+                            env = gym.make('RealHistoryFakeEnv-v0', 
+                                            action_type='target_value', 
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
                         elif env_type == 'realistic_force_fake':
                             print('In realistic_force_fake')
                             env = gym.make('RealisticForceFakeEnv-v0', 

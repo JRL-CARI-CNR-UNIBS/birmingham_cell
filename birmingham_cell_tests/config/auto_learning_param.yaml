@@ -1,9 +1,9 @@
-env_type: ['realistic_history_fake']
+env_type: ['action_param_history_fake']
 max_epoch_steps: [25]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 5000000
-name_space: 'history_tests_2'
+total_timesteps: 2000000
+name_space: 'history_tests_3'
 verbose: 0
 model_save_freq: 1000000
-noise_sigma: [0.2,0.3,0.4,0.5]
+noise_sigma: [0.1,0.2,0.3,0.4]
