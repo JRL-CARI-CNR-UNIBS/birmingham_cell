@@ -331,7 +331,10 @@ class RealHistoryFakeEnv(gym.Env):
             # se sono in collisione la bontà aumenta se sono allineato ma anche se mi sposto verso l'alto
             # per l'insert si deve allineare
             dist_xy_grasp = self._distance(self.current_grasp_pos[0:2], self.correct_grasp_pos[0:2])
-            insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
+            if self.action_type == 'target_value':
+                insertion_movement = np.linalg.norm(self.last_action[3:6])
+            elif self.action_type == 'increment_value':
+                insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
             dist_flor_to_grasp = self.current_grasp_pos[2]
             reward = 0
             reward += dist_flor_to_grasp * 5 # max 0.06. x5 -> 0.3
@@ -344,7 +347,10 @@ class RealHistoryFakeEnv(gym.Env):
             # -0.15 < reward < 0.15
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
-            insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
+            if self.action_type == 'target_value':
+                insertion_movement = np.linalg.norm(self.last_action[3:6])
+            elif self.action_type == 'increment_value':
+                insertion_movement = np.linalg.norm(np.multiply(self.last_action[3:6],self.max_variations[3:6]))
             dist_grasp = np.linalg.norm(self.current_grasp_pos)
             reward = -0.3
             reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
