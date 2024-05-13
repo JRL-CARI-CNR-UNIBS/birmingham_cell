@@ -73,6 +73,7 @@ class RealHistoryFakeEnv(gym.Env):
         self.param_value_history = []
         self.reward_history = []
         self.history_len = history_len
+        self.grasp_zone = 0
         
         # arguments to define
         self.start_obj_pos = None
@@ -204,7 +205,7 @@ class RealHistoryFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array(self.param_value_history),np.array(self.reward_history)])
+        observation = np.concatenate([np.array([self.grasp_zone]),np.array(self.param_value_history),np.array(self.reward_history)])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -305,13 +306,16 @@ class RealHistoryFakeEnv(gym.Env):
         if ((self._distance(self.current_grasp_pos[2], self.correct_grasp_pos[2]) < 0.01) and
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2]) < 0.015)): 
             grasp_zone = 'successfully_grasp'
+            self.grasp_zone = 2
         # se il gripper è sotto la posizione corretta per più di un cm e non si allontana dal 
         # centro per più di 2 cm lo considero in collisione
         elif((self.current_grasp_pos[2]-self.correct_grasp_pos[2] < -0.01) and 
             (self._distance(self.current_grasp_pos[0:2],self.correct_grasp_pos[0:2])) < 0.02):
             grasp_zone = 'collision'
+            self.grasp_zone = 1
         else:
             grasp_zone = 'free'
+            self.grasp_zone = 0
         # in ogni altro caso non sono in presa ne in collisione
 
         if (grasp_zone == 'successfully_grasp'):
@@ -324,7 +328,7 @@ class RealHistoryFakeEnv(gym.Env):
             # 0.32 < reward < 1
 
 
-            # reward = (reward * 0.5) + 0.5
+            reward = (reward * 0.5) + 0.5
             # 0.66 < reward < 1
 
         elif(grasp_zone == 'collision'):
@@ -343,7 +347,7 @@ class RealHistoryFakeEnv(gym.Env):
             # -0.3 < reward < 0.3
 
 
-            # reward = reward * 0.5
+            reward = reward * 0.5
             # -0.15 < reward < 0.15
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
@@ -358,7 +362,7 @@ class RealHistoryFakeEnv(gym.Env):
             # -1 < reward < -0.3
 
 
-            # reward = (reward * 0.5) - 0.4
+            reward = (reward * 0.5) - 0.4
             # -0.9 < reward < -0.55
 
         return reward
