@@ -120,9 +120,9 @@ if __name__ == '__main__':
     models_repo_path = path + '/model/'
 
     test_number = 0
-    total_test = len(params['max_epoch_steps']) * len(params['learning_rate']) * len(params['gamma'])
+    total_test = len(env_type_vec) * len(max_epoch_steps_vec) * len(learning_rate_vec) * len(gamma_vec) * len(noise_sigma_vec)
     print('Total tests: ' + str(total_test))
-    for env_type in params['env_type']:
+    for env_type in env_type_vec:
         for max_epoch_steps in max_epoch_steps_vec:
             for learning_rate in learning_rate_vec:
                 for gamma in gamma_vec:
