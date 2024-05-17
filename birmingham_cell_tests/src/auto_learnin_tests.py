@@ -351,6 +351,17 @@ if __name__ == '__main__':
                             env = gym.make('GenericRealFakeEnv-v0', 
                                             action_type='increment_value', 
                                             epoch_len = max_epoch_steps,
+                                            # learning_starts = 100000,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'real_pos_feedback':
+                            print('In real_pos_feedback')
+                            env = gym.make('RealPosFeedbackFakeEnv-v0', 
+                                            epoch_len = max_epoch_steps,
+                                            max_episode_steps=max_epoch_steps)
+                        elif env_type == 'general':
+                            print('In general')
+                            env = gym.make('GeneralEnv-v0', 
+                                            epoch_len = max_epoch_steps,
                                             max_episode_steps=max_epoch_steps)
                         else:
                             print('Env_type not in the possible env list.')

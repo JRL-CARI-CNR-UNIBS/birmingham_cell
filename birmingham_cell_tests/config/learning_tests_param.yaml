@@ -1,0 +1,9 @@
+env_type: ['random_real_fake']
+max_epoch_steps: 25
+learning_rate: 0.01
+gamma: 0.9
+total_timesteps: 2000000
+name_space: 'VecFrameStack_tests'
+verbose: 1
+model_save_freq: 1000000
+noise_sigma: 0.1

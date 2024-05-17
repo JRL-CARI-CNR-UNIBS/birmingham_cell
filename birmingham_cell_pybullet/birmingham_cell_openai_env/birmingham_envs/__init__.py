@@ -53,3 +53,13 @@ register(
     id="RealHistoryFakeEnv-v0",
     entry_point="birmingham_envs.envs:RealHistoryFakeEnv",
 )
+
+register(
+    id="RealPosFeedbackFakeEnv-v0",
+    entry_point="birmingham_envs.envs:RealPosFeedbackFakeEnv",
+)
+
+register(
+    id="GeneralEnv-v0",
+    entry_point="birmingham_envs.envs:GeneralEnv",
+)

@@ -27,3 +27,10 @@ env = gym.make('ConnectionEnv-v0',
                tar_model_width =0.045,
                debug_mode=False)
 
+env.reset()
+
+action = [0.0,0.0,0.0,0.0,0.0,0.0]
+
+os.system('roslaunch birmingham_cell_tests load_test_params.launch')
+
+env.step(np.array(action))

@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="param_path" default="config/general_env_learning_param.yaml" />
+  <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
+
+  <node name="general_env_learning_tests" 
+        pkg="birmingham_cell_tests" 
+        type="general_env_learnin_tests.py" 
+        output="screen" 
+        args="$(arg param_path)"/>
+
+</launch>

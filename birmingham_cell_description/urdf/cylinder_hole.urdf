@@ -16,7 +16,7 @@
         <mesh filename="package://birmingham_cell_description/meshes/Cylinder_hole.STL" scale="0.045 0.045 0.06"/>
       </geometry>
     </visual>
-    <collision>
+    <collision concave="yes">
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
         <mesh filename="package://birmingham_cell_description/meshes/Cylinder_hole.STL" scale="0.045 0.045 0.06"/>

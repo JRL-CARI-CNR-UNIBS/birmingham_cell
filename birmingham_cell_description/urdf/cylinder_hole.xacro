@@ -20,7 +20,7 @@
               scale="${radius * 2} ${radius * 2} ${height}"/>
       </geometry>
     </visual>
-    <collision>
+    <collision concave="yes">
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh filename="package://birmingham_cell_description/meshes/Cylinder_hole.STL" 

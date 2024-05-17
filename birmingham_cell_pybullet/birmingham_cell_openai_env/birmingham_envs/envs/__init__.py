@@ -9,4 +9,5 @@ from birmingham_envs.envs.realistic_fake_env_2 import RealisticFakeEnv2
 from birmingham_envs.envs.realistic_force_fake_env import RealisticForceFakeEnv
 from birmingham_envs.envs.generic_real_force_fake_env import GenericRealForceFakeEnv
 from birmingham_envs.envs.realistic_history_fake_env import RealHistoryFakeEnv
-
+from birmingham_envs.envs.real_pos_feedback_env import RealPosFeedbackFakeEnv
+from birmingham_envs.envs.general_env import GeneralEnv

@@ -328,7 +328,7 @@ class RealHistoryFakeEnv(gym.Env):
             # 0.32 < reward < 1
 
 
-            reward = (reward * 0.5) + 0.5
+            # reward = (reward * 0.5) + 0.5
             # 0.66 < reward < 1
 
         elif(grasp_zone == 'collision'):
@@ -347,7 +347,7 @@ class RealHistoryFakeEnv(gym.Env):
             # -0.3 < reward < 0.3
 
 
-            reward = reward * 0.5
+            # reward = reward * 0.5
             # -0.15 < reward < 0.15
         else:
             # se sono libero la bontà aumenta se mi avvicino all'oggetto
@@ -362,7 +362,7 @@ class RealHistoryFakeEnv(gym.Env):
             # -1 < reward < -0.3
 
 
-            reward = (reward * 0.5) - 0.4
+            # reward = (reward * 0.5) - 0.4
             # -0.9 < reward < -0.55
 
         return reward

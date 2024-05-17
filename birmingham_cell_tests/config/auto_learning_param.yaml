@@ -1,9 +1,9 @@
-env_type: ['action_param_history_fake']
-max_epoch_steps: [25]
-learning_rate: [0.01]
+env_type: ['general']
+max_epoch_steps: [200]
+learning_rate: [0.001]
 gamma: [0.9]
-total_timesteps: 2000000
-name_space: 'history_tests_3'
-verbose: 0
-model_save_freq: 1000000
-noise_sigma: [0.1,0.2,0.3,0.4]
+total_timesteps: 1000000
+name_space: 'general_diff_dim4'
+verbose: 1
+# model_save_freq: 1000000
+noise_sigma: [0.1]
