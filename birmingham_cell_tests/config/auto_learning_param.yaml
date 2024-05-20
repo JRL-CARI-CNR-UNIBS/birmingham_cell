@@ -1,9 +1,9 @@
-env_type: ['general']
-max_epoch_steps: [200]
+env_type: ['realistic_history_fake']
+max_epoch_steps: [50]
 learning_rate: [0.001]
 gamma: [0.9]
 total_timesteps: 1000000
-name_space: 'general_diff_dim4'
+name_space: 'real_history_diff'
 verbose: 1
 # model_save_freq: 1000000
 noise_sigma: [0.1]

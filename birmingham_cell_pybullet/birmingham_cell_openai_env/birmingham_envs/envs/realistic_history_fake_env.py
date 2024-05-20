@@ -47,8 +47,12 @@ class RealHistoryFakeEnv(gym.Env):
         epoch_len: int = None,
         history_len: int = 10,
         obj_pos_error: list = [0.0,0.0,0.0],
+        use_reward: bool = False
     ) -> None:
         rospy.init_node(node_name)
+
+        self.use_reward = use_reward
+        self.current_reward = 0
 
         rospack = rospkg.RosPack()
         self.package_path = rospack.get_path(package_name)
@@ -74,7 +78,8 @@ class RealHistoryFakeEnv(gym.Env):
         self.reward_history = []
         self.history_len = history_len
         self.grasp_zone = 0
-        
+        self.previous_reward = 0
+
         # arguments to define
         self.start_obj_pos = None
         self.start_tar_pos = None
@@ -205,7 +210,11 @@ class RealHistoryFakeEnv(gym.Env):
             rospy.logerr('The action type ' + action_type + ' is not supported.')
  
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([np.array([self.grasp_zone]),np.array(self.param_value_history),np.array(self.reward_history)])
+        # observation = np.concatenate([np.array([self.grasp_zone]),np.array(self.param_value_history),np.array(self.reward_history)])
+        if self.use_reward:
+            observation = np.concatenate([np.array([self.current_reward]),np.array(self.param_value_history),np.array(self.reward_diff_history)])
+        else:
+            observation = np.concatenate([np.array(self.param_value_history),np.array(self.reward_diff_history)])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -213,6 +222,8 @@ class RealHistoryFakeEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         self.epoch_steps = 0
+        self.previous_reward = 0
+
         low_limit = [-0.02, -0.02, 0.0]
         high_limit = [0.02, 0.02, 0.02]
 
@@ -227,7 +238,8 @@ class RealHistoryFakeEnv(gym.Env):
 
         self.param_value_history = np.ndarray.tolist(np.zeros(self.history_len * len(self.param_values)))
         self.reward_history = np.ndarray.tolist(np.zeros(self.history_len))
-        
+        self.reward_diff_history = np.ndarray.tolist(np.zeros(self.history_len))
+
         observation = self._get_obs()
         info = {"is_success": False}
         return observation, info
@@ -282,8 +294,13 @@ class RealHistoryFakeEnv(gym.Env):
         self.param_value_history = self.param_value_history[len(self.param_values):]
         self.param_value_history = np.ndarray.tolist(np.concatenate([np.array(self.param_value_history),np.array(self.param_values)]))
 
+        self.current_reward = reward
         self.reward_history = self.reward_history[1:]
         self.reward_history.append(reward)
+
+        reward_diff = reward - self.previous_reward
+        self.reward_diff_history = self.reward_diff_history[1:]
+        self.reward_diff_history.append(reward_diff)
 
         observation = self._get_obs()
 

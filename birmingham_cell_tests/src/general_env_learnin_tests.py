@@ -177,14 +177,20 @@ if __name__ == '__main__':
                                     model_path = models_repo_path + '/' + saving_name
                                     log_path   = log_repo_path + '/' + saving_name
 
-                                    env = gym.make('GeneralEnv-v0', 
+                                    # env = gym.make('GeneralEnv-v0', 
+                                    #                 epoch_len = max_episode_steps,
+                                    #                 max_episode_steps=max_episode_steps,
+                                    #                 space_dimension=space_dimension,
+                                    #                 history_len=history_len,
+                                    #                 single_threshold=single_threshold,
+                                    #                 use_reward=use_reward,
+                                    #                 )
+                                    env = gym.make('RealHistoryFakeEnv-v0', 
+                                                    action_type='increment_value', 
                                                     epoch_len = max_episode_steps,
-                                                    max_episode_steps=max_episode_steps,
-                                                    space_dimension=space_dimension,
                                                     history_len=history_len,
-                                                    single_threshold=single_threshold,
                                                     use_reward=use_reward,
-                                                    )
+                                                    max_episode_steps=max_episode_steps)
 
                                     n_actions = env.action_space.shape[-1]
                                     action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=noise_sigma * np.ones(n_actions))
