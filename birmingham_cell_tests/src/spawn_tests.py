@@ -12,6 +12,14 @@ from stable_baselines3.common.env_util import make_vec_env
 import rospkg
 import os
 
+env = gym.make('GeneralEnv-v0', 
+                epoch_len = 25,
+                max_episode_steps=10000,
+                space_dimension=6,
+                history_len=10,
+                single_threshold=0.01,
+                use_reward=False,
+                )
 
 
 env = gym.make('ConnectionEnv-v0',

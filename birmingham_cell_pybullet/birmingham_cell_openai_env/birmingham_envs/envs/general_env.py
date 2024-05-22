@@ -33,8 +33,11 @@ class GeneralEnv(gym.Env):
         self.param_upper_bound    = [ 1] * space_dimension
         self.param_values = copy.copy(self.initial_param_values)
         self.correct_param_value = copy.copy(self.initial_param_values)
-        self.previous_reward = 0
+        self.previous_reward = None
         self.current_reward = 0
+
+        self.new_evaluation = 0
+        self.old_evaluation = None
 
         self.threshold_vec = [single_threshold] * space_dimension
 
@@ -56,18 +59,23 @@ class GeneralEnv(gym.Env):
             observation = np.concatenate([np.array([self.current_reward]),np.array(self.param_value_history),np.array(self.reward_diff_history)])
         else:
             observation = np.concatenate([np.array(self.param_value_history),np.array(self.reward_diff_history)])
+            # observation = np.concatenate([np.array(self.param_value_history),np.array(self.reward_history)])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
               ) -> Tuple[Dict[str, np.array], Dict[str, Any]]:
         super().reset(seed=seed, options=options)
+        self.reward_variation_weight = self.np_random.uniform(0.1,1)
+        self.new_evaluation = 0
+        self.old_evaluation = None
         self.epoch_steps = 0
-        self.previous_reward = 0
+        self.previous_reward = None
         self.param_values = copy.copy(self.initial_param_values)
         self.param_value_history = np.ndarray.tolist(np.zeros(self.history_len * len(self.param_values)))
         self.reward_history = np.ndarray.tolist(np.zeros(self.history_len))
         self.reward_diff_history = np.ndarray.tolist(np.zeros(self.history_len))
         self.correct_param_value = np.ndarray.tolist(self.np_random.uniform(self.param_lower_bound, self.param_upper_bound))
+        self.initial_distance = self._distance(self.correct_param_value,self.param_values)
         observation = self._get_obs()
         info = {"is_success": False}
         return observation, info
@@ -84,7 +92,7 @@ class GeneralEnv(gym.Env):
         return np.array(success, dtype=bool)
 
     def step(self, action: np.array) -> Tuple[Dict[str, np.array], float, bool, bool, Dict[str, Any]]:
-        self.last_action = action
+        self.last_action = copy.copy(action)
         self.epoch_steps += 1
         self.param_values = np.add(self.param_values, np.multiply(action, self.max_variations))
         self.param_values = np.clip(self.param_values, self.param_lower_bound, self.param_upper_bound)
@@ -100,11 +108,15 @@ class GeneralEnv(gym.Env):
         else:
             reward = self._get_reward()
 
-        self.current_reward = reward
+        self.current_reward = copy.copy(reward)
         self.reward_history = self.reward_history[1:]
         self.reward_history.append(reward)
 
-        reward_diff = reward - self.previous_reward
+        if self.previous_reward is None:
+            reward_diff = 0
+        else:
+            reward_diff = self.current_reward - self.previous_reward
+        self.previous_reward = copy.copy(self.current_reward)
         self.reward_diff_history = self.reward_diff_history[1:]
         self.reward_diff_history.append(reward_diff)
 
@@ -120,9 +132,10 @@ class GeneralEnv(gym.Env):
         return np.linalg.norm(np.array(pos1)-np.array(pos2))
     
     def _get_reward(self) -> float:
-        reward = 1 
-        # print(self._distance(self.correct_param_value,self.param_values))
-        reward -= self._distance(self.correct_param_value,self.param_values)
+        current_distance = self._distance(self.correct_param_value,self.param_values)
+        
+        reward = (self.initial_distance - current_distance) / self.initial_distance
+
         return reward
 
 

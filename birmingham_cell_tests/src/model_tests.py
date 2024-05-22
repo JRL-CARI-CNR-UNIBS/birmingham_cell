@@ -81,6 +81,49 @@ if __name__ == '__main__':
                        action_type='increment_value', 
                        epoch_len = max_epoch_steps,
                        max_episode_steps=max_epoch_steps)
+    elif env_type == 'connection_history':
+        if 'obj_type' in params:
+            obj_model_name = params['obj_type']
+            if obj_model_name == 'can':
+                obj_model_height = 0.115
+                obj_model_width =  0.06
+                obj_model_length = 0.0
+            if obj_model_name == 'cylinder':
+                obj_model_height = params['obj_height']
+                obj_model_width =  params['obj_radius'] * 2
+                obj_model_length = 0.0
+            if obj_model_name == 'sphere':
+                obj_model_height = params['obj_radius'] * 2
+                obj_model_width =  0.0
+                obj_model_length = 0.0
+            if obj_model_name == 'box':
+                obj_model_height = params['obj_height']
+                obj_model_width =  params['obj_width']
+                obj_model_length = params['obj_length']
+        else:
+            obj_model_name = 'can'
+            obj_model_height = 0.115
+            obj_model_width =  0.06
+            obj_model_length = 0.0
+        if 'use_reward' in params:
+            use_reward = params['use_reward']
+        else:
+            use_reward = False
+        if 'history_len' in params:
+            history_len = params['history_len']
+        else:
+            history_len = 10
+        env = gym.make('ConnectionHistoryEnv-v0', 
+                       action_type='increment_value', 
+                       epoch_len = max_epoch_steps,
+                       max_episode_steps=max_epoch_steps,
+                       obj_model_name = obj_model_name,
+                       obj_model_height = obj_model_height,
+                       obj_model_width =  obj_model_width,
+                       obj_model_length = obj_model_length,
+                       use_reward = use_reward,
+                       history_len = history_len,
+                       )
     else:
         print('Env_type not exist')
         exit(1)

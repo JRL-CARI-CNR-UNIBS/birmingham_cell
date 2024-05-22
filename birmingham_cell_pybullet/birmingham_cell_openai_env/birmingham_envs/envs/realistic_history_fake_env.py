@@ -239,6 +239,7 @@ class RealHistoryFakeEnv(gym.Env):
         self.param_value_history = np.ndarray.tolist(np.zeros(self.history_len * len(self.param_values)))
         self.reward_history = np.ndarray.tolist(np.zeros(self.history_len))
         self.reward_diff_history = np.ndarray.tolist(np.zeros(self.history_len))
+        self.current_reward = 0
 
         observation = self._get_obs()
         info = {"is_success": False}
@@ -294,13 +295,15 @@ class RealHistoryFakeEnv(gym.Env):
         self.param_value_history = self.param_value_history[len(self.param_values):]
         self.param_value_history = np.ndarray.tolist(np.concatenate([np.array(self.param_value_history),np.array(self.param_values)]))
 
-        self.current_reward = reward
+        self.current_reward = copy.copy(reward)
         self.reward_history = self.reward_history[1:]
         self.reward_history.append(reward)
 
         reward_diff = reward - self.previous_reward
         self.reward_diff_history = self.reward_diff_history[1:]
         self.reward_diff_history.append(reward_diff)
+
+        self.previous_reward = copy.copy(reward)
 
         observation = self._get_obs()
 

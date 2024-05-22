@@ -11,3 +11,4 @@ from birmingham_envs.envs.generic_real_force_fake_env import GenericRealForceFak
 from birmingham_envs.envs.realistic_history_fake_env import RealHistoryFakeEnv
 from birmingham_envs.envs.real_pos_feedback_env import RealPosFeedbackFakeEnv
 from birmingham_envs.envs.general_env import GeneralEnv
+from birmingham_envs.envs.connection_history_env import ConnectionHistoryEnv

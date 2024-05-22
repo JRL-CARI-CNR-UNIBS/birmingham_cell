@@ -63,3 +63,8 @@ register(
     id="GeneralEnv-v0",
     entry_point="birmingham_envs.envs:GeneralEnv",
 )
+
+register(
+    id="ConnectionHistoryEnv-v0",
+    entry_point="birmingham_envs.envs:ConnectionHistoryEnv",
+)
