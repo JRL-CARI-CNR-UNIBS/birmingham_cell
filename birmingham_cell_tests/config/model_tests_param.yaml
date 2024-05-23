@@ -1,10 +1,10 @@
 env_type: 'connection_history'
-model_name: 'real_history_diff'
+model_name: 'general_rand_'
 max_epoch_steps: 100
 obj_type: 'can'
 # obj_radius: 0.03
 # obj_height: 0.07
 # obj_width: 0.03
 # obj_length: 0.04
-use_reward: true
+use_reward: False
 history_len: 10

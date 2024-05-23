@@ -124,6 +124,23 @@ if __name__ == '__main__':
                        use_reward = use_reward,
                        history_len = history_len,
                        )
+    elif env_type == 'general_rand':
+        if 'use_reward' in params:
+            use_reward = params['use_reward']
+        else:
+            use_reward = False
+        if 'history_len' in params:
+            history_len = params['history_len']
+        else:
+            history_len = 10
+
+        env = gym.make('GeneralEnv-v0', 
+                                                    epoch_len = max_epoch_steps,
+                                                    max_episode_steps=max_epoch_steps,
+                                                    space_dimension=6,
+                                                    history_len=history_len,
+                                                    use_reward=use_reward,
+                                                    )
     else:
         print('Env_type not exist')
         exit(1)
@@ -145,15 +162,16 @@ if __name__ == '__main__':
     # while (steps < max_epoch_steps):
         action, _states = model.predict(obs)
         print('observation')
-        print(obs)
-        print('action')
-        print(action)
-        print(' ')
+        # print(obs)
+        # print('action')
+        # print(action)
+        # print(' ')
         old_param = np.array(copy.copy(obs[0:6]))
         obs, reward, success, truncated, info = env.step(action)
         new_param = np.array(copy.copy(obs[0:6]))
         diff = (new_param - old_param) * 100
-        print('calculated action')
-        print(diff)
+        print(reward)
+        # print('calculated action')
+        # print(diff)
         steps += 1  
 np.ndarray.tolist

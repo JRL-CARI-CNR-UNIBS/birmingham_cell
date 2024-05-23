@@ -577,7 +577,7 @@ class ConnectionHistoryEnv(gym.Env):
         self.run_tree_clnt.call(self.tree_name, self.trees_path)
         self._get_obs()
         self.final_distance = self._distance(self.tar_pos,self.obj_pos)
-        print(self.final_distance)
+        # print(self.final_distance)
 
         success = bool(self._is_success())
 

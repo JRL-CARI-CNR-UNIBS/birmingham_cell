@@ -125,6 +125,9 @@ class GeneralEnv(gym.Env):
         truncated = False
         info = {"is_success": terminated}
 
+        print('correct_values: ' + str(self.correct_param_value))
+        print('current_values: ' + str(self.param_values))
+        print(' ')
 
         return observation, reward, terminated, truncated, info
 
