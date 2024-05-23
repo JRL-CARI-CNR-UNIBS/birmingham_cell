@@ -1,8 +1,8 @@
 max_epoch_steps: [25]
 learning_rate: [0.001]
 gamma: [0.9]
-total_timesteps: 10000000
-name_space: 'general_rand'
+total_timesteps: 1000000
+name_space: 'real_history_diff__'
 verbose: 0
 model_save_freq: 1000000
 noise_sigma: [0.1]
