@@ -1,7 +1,7 @@
 max_epoch_steps: [25]
-learning_rate: [0.001]
+learning_rate: [0.0001]
 gamma: [0.9]
-total_timesteps: 1000000
+total_timesteps: 20000000
 name_space: 'real_history_diff__'
 verbose: 0
 model_save_freq: 1000000
@@ -9,4 +9,4 @@ noise_sigma: [0.1]
 # space_dimension: [6]    
 history_len: [10]
 # single_threshold: [0.01,0.001]
-use_reward: [False]
+use_reward: [True]
