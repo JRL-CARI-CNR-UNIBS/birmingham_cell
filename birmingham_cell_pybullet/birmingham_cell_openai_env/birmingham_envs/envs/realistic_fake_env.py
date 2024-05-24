@@ -183,6 +183,13 @@ class RealisticFakeEnv(gym.Env):
         self.correct_grasp_pos  = (np.array(self.correct_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
         self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.obj_pos_error)).tolist()
        
+# \\
+        low_limit = [-0.02, -0.02, 0.0]
+        high_limit = [0.02, 0.02, 0.02]
+
+        self.initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        self.initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+# \\
 
         observation, _ = self.reset()  # required for init; seed can be changed later
         rospy.loginfo("Reset done")
@@ -208,13 +215,15 @@ class RealisticFakeEnv(gym.Env):
         super().reset(seed=seed, options=options)
 
         self.epoch_steps = 0
-        low_limit = [-0.02, -0.02, 0.0]
-        high_limit = [0.02, 0.02, 0.02]
+        # low_limit = [-0.02, -0.02, 0.0]
+        # high_limit = [0.02, 0.02, 0.02]
 
-        initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
-        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
+        # initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        # initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        # self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
+        # self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
+        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,self.initial_error_grasp_pos))
+        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,self.initial_error_insert_pos))
 
         self.current_grasp_pos  = copy.copy(self.initial_grasp_pos)
         self.current_insert_pos = copy.copy(self.initial_insert_pos)
@@ -273,6 +282,9 @@ class RealisticFakeEnv(gym.Env):
         else:
             reward = self._get_reward()
 
+        print(self.epoch_steps)
+        print(reward)
+        print(success)
         terminated = success
         truncated = False
         info = {"is_success": terminated}

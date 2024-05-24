@@ -62,7 +62,7 @@ class ConnectionHistoryEnv(gym.Env):
         self.use_reward = use_reward
         self.current_reward = 0
         self.history_len = history_len
-        self.previous_reward = 0
+        self.previous_reward = None
         self.param_value_history = []
         self.reward_history = []
         self.reward_diff_history = []
@@ -591,11 +591,15 @@ class ConnectionHistoryEnv(gym.Env):
         self.param_value_history = self.param_value_history[len(self.param_values):]
         self.param_value_history = np.ndarray.tolist(np.concatenate([np.array(self.param_value_history),np.array(self.param_values)]))
 
-        self.current_reward = reward
+        self.current_reward = copy.copy(reward)
         self.reward_history = self.reward_history[1:]
         self.reward_history.append(reward)
 
-        reward_diff = reward - self.previous_reward
+        if self.previous_reward is None:
+            reward_diff = 0
+        else:
+            reward_diff = reward - self.previous_reward
+        self.previous_reward = copy.copy(reward)
         self.reward_diff_history = self.reward_diff_history[1:]
         self.reward_diff_history.append(reward_diff)
 

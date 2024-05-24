@@ -161,8 +161,8 @@ if __name__ == '__main__':
     while (not success) and (steps < max_epoch_steps):
     # while (steps < max_epoch_steps):
         action, _states = model.predict(obs)
-        print('observation')
-        # print(obs)
+        # print('observation')
+        print(obs)
         # print('action')
         # print(action)
         # print(' ')
