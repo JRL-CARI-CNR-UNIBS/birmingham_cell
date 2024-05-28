@@ -161,10 +161,10 @@ if __name__ == '__main__':
     while (not success) and (steps < max_epoch_steps):
     # while (steps < max_epoch_steps):
         action, _states = model.predict(obs)
-        # print('observation')
+        print('observation')
         print(obs)
-        # print('action')
-        # print(action)
+        print('action')
+        print(action)
         # print(' ')
         old_param = np.array(copy.copy(obs[0:6]))
         obs, reward, success, truncated, info = env.step(action)

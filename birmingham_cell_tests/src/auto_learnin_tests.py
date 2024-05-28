@@ -7,13 +7,25 @@ import sys
 
 from stable_baselines3 import TD3, SAC, DDPG
 from stable_baselines3.common.noise import NormalActionNoise
-from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import CheckpointCallback, BaseCallback, CallbackList
 
 import rospkg
 import os
 import yaml
 import datetime
 
+class SuccessCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super(SuccessCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:        
+        if 'episode' in self.locals['infos'][0]:
+            episode_rewards = self.locals['infos'][0]['episode']['r']
+            if episode_rewards >= 1:
+                self.success_reached = True
+                print(f"Success reached with reward: {episode_rewards}")
+                return False  # Questo interrompe l'allenamento
+        return True  # Continua l'allenamento
 
 if __name__ == '__main__':
 
@@ -66,7 +78,7 @@ if __name__ == '__main__':
                         exit(1)
                     train_freq_vec = []
                     for value in params['train_freq']['step']:
-                        train_freq_vec.append((value, 'step'))
+                        train_freq_vec.append((value,'step'))
                 else:
                     print('train_freq_vec is not a int or a list of int')
                     exit(1)
@@ -79,7 +91,7 @@ if __name__ == '__main__':
                         exit(1)
                     train_freq_vec = []
                     for value in params['train_freq']['episode']:
-                        train_freq_vec.append((value, 'episode'))
+                        train_freq_vec.append((value,'episode'))
                 else:
                     print('train_freq_vec is not a int or a list of int')
                     exit(1)
@@ -174,10 +186,9 @@ if __name__ == '__main__':
                                 name_space = params['name_space'] + '/'
                             else:
                                 name_space = ''
-                            model_name = name_space + env_type + '/'  + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma) + '/' + str(noise_sigma)
-                            log_name = name_space + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma) + '/' + str(noise_sigma)
-                            model_path = models_repo_path + '/' + model_name
-                            log_path = log_repo_path + '/' + log_name
+                            save_name = name_space + env_type + '/' + str(max_epoch_steps) + '/' + str(learning_rate) + '/' + str(gamma) + '/' + str(noise_sigma) + '/' + str(train_freq)
+                            model_path = models_repo_path + '/' + save_name
+                            log_path = log_repo_path + '/' + save_name
                             if env_type == 'fake':
                                 env = gym.make('FakeEnv-v0',
                                             action_type='increment_value',
@@ -195,10 +206,21 @@ if __name__ == '__main__':
                                                 action_type='increment_value', 
                                                 epoch_len = max_epoch_steps,
                                                 max_episode_steps=max_epoch_steps)
+                            elif env_type == 'static_connection':
+                                env = gym.make('StaticConnectionEnv-v0', 
+                                                action_type='target_value', 
+                                                epoch_len = max_epoch_steps,
+                                                max_episode_steps=max_epoch_steps)
                             elif env_type == 'realistic_fake':
                                 print('In realistic_fake')
                                 env = gym.make('RealisticFakeEnv-v0', 
                                                 action_type='increment_value', 
+                                                epoch_len = max_epoch_steps,
+                                                max_episode_steps=max_epoch_steps)
+                            elif env_type == 'static_real_fake':
+                                print('In static_real_fake')
+                                env = gym.make('StaticRealFakeEnv-v0', 
+                                                action_type='target_value', 
                                                 epoch_len = max_epoch_steps,
                                                 max_episode_steps=max_epoch_steps)
                             elif env_type == 'realistic_history_fake':
@@ -416,6 +438,7 @@ if __name__ == '__main__':
                                         tensorboard_log=log_path,
                                         gamma=gamma,
                                         train_freq = train_freq,
+                                        learning_starts=1,
                                         )
                             if 'model_save_freq' in params:
                                 checkpoint_callback = CheckpointCallback(
@@ -430,7 +453,9 @@ if __name__ == '__main__':
                                 model.save(model_path)
 
                             else:
+                                    success_callback = SuccessCallback()
                                     model.learn(total_timesteps=params['total_timesteps'], 
                                             log_interval=1, 
+                                            callback=success_callback,
                                             )
                             

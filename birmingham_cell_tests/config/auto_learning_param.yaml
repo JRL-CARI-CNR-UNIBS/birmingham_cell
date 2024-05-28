@@ -1,11 +1,11 @@
-env_type: ['realistic_fake']
-max_epoch_steps: [25]
+env_type: ['static_connection']
+max_epoch_steps: [1]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 1000000
-name_space: 'realistic_fake_boh'
+total_timesteps: 10000
+name_space: 'static_connection'
 verbose: 1
-model_save_freq: 1000000
+# model_save_freq: 1000000
 noise_sigma: [0.1]
 train_freq: 
-    episode: [1,2,3,4]
+    step: [1]

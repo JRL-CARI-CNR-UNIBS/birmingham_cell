@@ -58,7 +58,7 @@ pybullet_simulation:
           max_force: 10000
       link_dynamics:
         - link_name: 'panda_leftfinger'
-          lateral_friction: 60
+          lateral_friction: 6
           spinning_friction: 0.1
           rolling_friction: 0.1
           contact_stiffness: 1000000
@@ -67,7 +67,7 @@ pybullet_simulation:
           angular_damping: 0
           friction_anchor: 1
         - link_name: 'panda_rightfinger'
-          lateral_friction: 60
+          lateral_friction: 6
           spinning_friction: 0.1
           rolling_friction: 0.1
           contact_stiffness: 1000000

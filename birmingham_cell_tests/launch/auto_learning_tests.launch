@@ -5,7 +5,7 @@
   <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
   <rosparam command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
 
-  <node name="auto_learning_tests" 
+  <node name="auto_learning_tests_" 
         pkg="birmingham_cell_tests" 
         type="auto_learnin_tests.py" 
         output="screen" 

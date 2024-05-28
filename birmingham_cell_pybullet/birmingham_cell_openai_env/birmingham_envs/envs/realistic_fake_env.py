@@ -282,9 +282,9 @@ class RealisticFakeEnv(gym.Env):
         else:
             reward = self._get_reward()
 
-        print(self.epoch_steps)
-        print(reward)
-        print(success)
+        # print(self.epoch_steps)
+        # print(reward)
+        # print(success)
         terminated = success
         truncated = False
         info = {"is_success": terminated}

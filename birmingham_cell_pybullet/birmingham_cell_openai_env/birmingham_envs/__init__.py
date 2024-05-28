@@ -68,3 +68,18 @@ register(
     id="ConnectionHistoryEnv-v0",
     entry_point="birmingham_envs.envs:ConnectionHistoryEnv",
 )
+
+register(
+    id="TOFConnectionEnv-v0",
+    entry_point="birmingham_envs.envs:TOFConnectionEnv",
+)
+
+register(
+    id="StaticRealFakeEnv-v0",
+    entry_point="birmingham_envs.envs:StaticRealFakeEnv",
+)
+
+register(
+    id="StaticConnectionEnv-v0",
+    entry_point="birmingham_envs.envs:StaticConnectionEnv",
+)
