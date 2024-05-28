@@ -20,7 +20,6 @@ class SuccessCallback(BaseCallback):
 
     def _on_step(self) -> bool:        
         if 'episode' in self.locals['infos'][0]:
-            print('In')
             episode_rewards = self.locals['infos'][0]['episode']['r']
             if episode_rewards >= 1:
                 self.success_reached = True

@@ -646,28 +646,28 @@ class ConnectionEnv(gym.Env):
                 reward -= self.insertion_max_wrench[3] * 0.00005 # max 0.05
                 reward -= self.insertion_max_wrench[4] * 0.00005 # max 0.05
         elif (grasp_zone == 'collision'):
-            insertion_movement = np.linalg.norm(
-                np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
-                                             self.param_names_to_value_index[self.insertion_pos_param][2]+1],
-                            self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
-                                                self.param_names_to_value_index[self.insertion_pos_param][2]+1]))            
+            # insertion_movement = np.linalg.norm(
+            #     np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
+            #                                  self.param_names_to_value_index[self.insertion_pos_param][2]+1],
+            #                 self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
+            #                                     self.param_names_to_value_index[self.insertion_pos_param][2]+1]))            
             dist_xy_grasp = np.linalg.norm(self.current_grasp_pos[0:2])
             # dist_xy_grasp = np.linalg.norm(self.obj_to_grasp_pos[0:2])
             dist_flor_to_grasp = self.gripper_grasp_pos[2]
             reward = 0
             reward += dist_flor_to_grasp * 3 # max 0.1. x3 -> 0.3
             reward -= dist_xy_grasp * 2 # max 0.1. x2 -> 0.2
-            reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
+            # reward -= insertion_movement * 5.5 # max 0.018. x5.5 -> ~0.1
         else:
-            insertion_movement = np.linalg.norm(
-                np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
-                                             self.param_names_to_value_index[self.insertion_pos_param][2]+1],
-                            self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
-                                                self.param_names_to_value_index[self.insertion_pos_param][2]+1]))
+            # insertion_movement = np.linalg.norm(
+                # np.multiply(self.last_action[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                #                              self.param_names_to_value_index[self.insertion_pos_param][2]+1],
+                #             self.max_variations[self.param_names_to_value_index[self.insertion_pos_param][0]:
+                #                                 self.param_names_to_value_index[self.insertion_pos_param][2]+1]))
             dist_grasp = np.linalg.norm(self.current_grasp_pos)
             # dist_grasp = np.linalg.norm(self.initial_obj_to_grasp_pos)
             reward = -0.3
-            reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
+            # reward -= insertion_movement * 6 # max 0.018. x7.9 -> 0.15   Not perfect
             reward -= dist_grasp * 5.5 # max 0.1. x5.5 -> 0.55  Not perfect
 
         rospy.set_param('/exec_params/actions/can_peg_in_hole/skills/insert/executed',False)
