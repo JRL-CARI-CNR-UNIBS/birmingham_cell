@@ -1,11 +1,12 @@
-env_type: ['static_connection']
-max_epoch_steps: [1]
+env_type: ['static_real_fake']
+max_epoch_steps: [1000]
 learning_rate: [0.01]
 gamma: [0.9]
-total_timesteps: 10000
-name_space: 'static_connection'
+total_timesteps: 1000
+name_space: 'static_real_fake'
 verbose: 1
 # model_save_freq: 1000000
 noise_sigma: [0.1]
 train_freq: 
     step: [1]
+stop_on_success: True

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+  <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
+
+  <node name="static_tests" 
+        pkg="birmingham_cell_tests" 
+        type="static_tests.py" 
+        output="screen"/>
+
+</launch>

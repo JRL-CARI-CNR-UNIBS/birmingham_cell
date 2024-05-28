@@ -35,6 +35,4 @@ if __name__ == '__main__':
             steps += 1  
         steps_vec.append(steps)
     
-    print('Final steps vector: ' + str(steps_vec))
-
     exit(0)

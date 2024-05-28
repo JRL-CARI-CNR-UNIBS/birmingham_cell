@@ -52,7 +52,7 @@ class ConnectionEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
-        observation_type: str = 'param_pos_obj',
+        observation_type: str = 'param_pos',
         epoch_len: int = None,
     ) -> None:
         rospy.init_node(node_name)

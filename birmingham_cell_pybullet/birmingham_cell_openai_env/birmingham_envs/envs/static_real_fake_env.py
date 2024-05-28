@@ -185,11 +185,6 @@ class StaticRealFakeEnv(gym.Env):
         self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.obj_pos_error)).tolist()
        
 # \\
-        low_limit = [-0.02, -0.02, 0.0]
-        high_limit = [0.02, 0.02, 0.02]
-
-        self.initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-        self.initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
 # \\
 
         observation, _ = self.reset()  # required for init; seed can be changed later
@@ -221,6 +216,12 @@ class StaticRealFakeEnv(gym.Env):
         if self.epoch_num != 0:
             self.epoch_num += 1
         self.epoch_steps = 0
+
+        low_limit = [-0.02, -0.02, 0.0]
+        high_limit = [0.02, 0.02, 0.02]
+
+        self.initial_error_grasp_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        self.initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,self.initial_error_grasp_pos))
         self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,self.initial_error_insert_pos))
 
@@ -283,11 +284,6 @@ class StaticRealFakeEnv(gym.Env):
         else:
             reward = self._get_reward()
 
-        # print(self.epoch_steps)
-        print(reward)
-        if success:
-            print('Success: '+ str(self.epoch_num) + '---------------------------------------------------------------------------')
-            reward = 1
         terminated = success
         truncated = False
         info = {"is_success": terminated}

@@ -20,6 +20,7 @@ class SuccessCallback(BaseCallback):
 
     def _on_step(self) -> bool:        
         if 'episode' in self.locals['infos'][0]:
+            print('In')
             episode_rewards = self.locals['infos'][0]['episode']['r']
             if episode_rewards >= 1:
                 self.success_reached = True
@@ -51,6 +52,12 @@ if __name__ == '__main__':
     else:
         verbose = 0          
     print('verbose: ' + str(verbose))
+
+    if 'stop_on_success' in params:
+        stop_on_success = params['stop_on_success']
+    else:
+        stop_on_success = False
+    print('stop_on_success: ' + str(stop_on_success))
 
     if 'noise_sigma' in params:
         noise_sigma_vec = params['noise_sigma']
@@ -446,16 +453,28 @@ if __name__ == '__main__':
                                     save_path=model_path + '/',
                                     name_prefix=name_space,
                                 )
-                                model.learn(total_timesteps=params['total_timesteps'], 
-                                            log_interval=1, 
-                                            callback=checkpoint_callback,
-                                            )
+                                if stop_on_success:
+                                    success_callback = SuccessCallback()
+                                    callback = CallbackList([checkpoint_callback,success_callback])
+                                    model.learn(total_timesteps=params['total_timesteps'], 
+                                                log_interval=1, 
+                                                callback=callback,
+                                                )
+                                else:
+                                    model.learn(total_timesteps=params['total_timesteps'], 
+                                                log_interval=1, 
+                                                callback=checkpoint_callback,
+                                                )
                                 model.save(model_path)
-
                             else:
+                                if stop_on_success:
                                     success_callback = SuccessCallback()
                                     model.learn(total_timesteps=params['total_timesteps'], 
                                             log_interval=1, 
                                             callback=success_callback,
+                                            )
+                                else:
+                                    model.learn(total_timesteps=params['total_timesteps'], 
+                                            log_interval=1, 
                                             )
                             
