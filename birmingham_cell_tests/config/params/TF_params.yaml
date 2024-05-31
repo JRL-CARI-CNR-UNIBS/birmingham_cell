@@ -1,7 +1,8 @@
 tf_params:
-  - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.519], quaternion: [1.0, 0.0, 0.0, 0.0]}
+  # - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.519], quaternion: [1.0, 0.0, 0.0, 0.0]} # normal home 
+  - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.15], quaternion: [1.0, 0.0, 0.0, 0.0]} # collection data home
   - {name: "can_approach"  , frame: "can" ,  position: [0.00, 0.00, 0.2],     quaternion: [1.0, 0.0, 0.0, 0.0]}
   # - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.04],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.03],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "hole_approach" , frame: "hole",  position: [0.00, 0.00, 0.2],     quaternion: [1.0, 0.0, 0.0, 0.0]}
-  - {name: "hole_insertion", frame: "hole",  position: [0.00, 0.00, 0.15],    quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "hole_insertion", frame: "hole",  position: [0.00, 0.00, 0.19],    quaternion: [1.0, 0.0, 0.0, 0.0]}

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+  <arg name="param_path" default="config/collecting_data_param.yaml" />
+  <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/simulation_skills_framework_config.yaml" />
+  <rosparam command="load" file="$(find birmingham_cell_tests)/config/params/collecting_data/simulation_exec_params.yaml" />
+
+  <node name="collecting_data" 
+        pkg="birmingham_cell_tests" 
+        type="collect_data.py" 
+        output="screen" 
+        args="$(arg param_path)"/>
+
+</launch>

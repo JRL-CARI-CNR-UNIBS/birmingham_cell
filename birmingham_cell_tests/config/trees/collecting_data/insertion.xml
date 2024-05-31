@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="insertion">
+    <Sequence name="insertion">
+      <SkillExecutionNode robot="panda" action_name="insertion" skill_name="insert"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

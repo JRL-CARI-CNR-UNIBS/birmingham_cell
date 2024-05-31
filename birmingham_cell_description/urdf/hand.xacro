@@ -31,7 +31,7 @@
         </geometry>
       </collision>
     </link>
-    <link name="${ns}_leftfinger">
+    <link name="${ns}_leftfinger" concave="yes">
       <contact>
         <friction_anchor/>
         <stiffness value="30000.0"/>
@@ -60,7 +60,7 @@
         </geometry>
       </collision>
     </link>
-    <link name="${ns}_rightfinger">
+    <link name="${ns}_rightfinger" concave="yes">
       <contact>
         <friction_anchor/>
         <stiffness value="30000.0"/>

@@ -1,0 +1,8 @@
+object_model: 
+    name: 'cylinder'
+    height: 0.1
+    radius: 0.03
+target_model: 
+    name: 'cylinder_hole'
+    height: 0.07
+    radius: 0.032

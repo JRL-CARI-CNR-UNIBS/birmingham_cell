@@ -2,7 +2,7 @@ pybullet_simulation:
   robots:
     panda:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/panda_pybullet.xacro'   # an urdf file with the same name will be generated
+      xacro_file_path: 'urdf/panda_pybullet'   # an urdf file with the same name will be generated
       controlled_joint_name: 
         - 'panda_joint1'
         - 'panda_joint2'
@@ -56,22 +56,41 @@ pybullet_simulation:
           child_frame_position: [0,0,0]   # position of the joint frame relative to a given child center of mass frame (or world origin if no child specified)
           child_frame_orientation: [0,0,0,1]  # the orientation of the joint frame relative to the child center of mass coordinate frame (or world origin frame if no child specified)
           max_force: 10000
+      # link_dynamics:
+      #   - link_name: 'panda_leftfinger'
+      #     lateral_friction: 6
+      #     spinning_friction: 0.1
+      #     rolling_friction: 0.1
+      #     contact_stiffness: 1000000
+      #     contact_damping: 1
+      #     linear_damping: 0
+      #     angular_damping: 0
+      #     friction_anchor: 1
+      #   - link_name: 'panda_rightfinger'
+      #     lateral_friction: 6
+      #     spinning_friction: 0.1
+      #     rolling_friction: 0.1
+      #     contact_stiffness: 1000000
+      #     contact_damping: 1
+      #     linear_damping: 0
+      #     angular_damping: 0
+      #     friction_anchor: 1
       link_dynamics:
         - link_name: 'panda_leftfinger'
-          lateral_friction: 6
-          spinning_friction: 0.1
-          rolling_friction: 0.1
+          lateral_friction: 10
+          # spinning_friction: 0.1
+          # rolling_friction: 0.1
           contact_stiffness: 1000000
-          contact_damping: 1
-          linear_damping: 0
-          angular_damping: 0
-          friction_anchor: 1
+          contact_damping: 50
+          # linear_damping: 0
+          # angular_damping: 0
+          # friction_anchor: 1
         - link_name: 'panda_rightfinger'
-          lateral_friction: 6
-          spinning_friction: 0.1
-          rolling_friction: 0.1
+          lateral_friction: 10
+          # spinning_friction: 0.1
+          # rolling_friction: 0.1
           contact_stiffness: 1000000
-          contact_damping: 1
-          linear_damping: 0
-          angular_damping: 0
-          friction_anchor: 1
+          contact_damping: 50
+          # linear_damping: 0
+          # angular_damping: 0
+          # friction_anchor: 1

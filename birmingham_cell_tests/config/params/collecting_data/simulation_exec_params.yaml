@@ -1,0 +1,87 @@
+exec_params:
+  actions:
+    init:
+      action_type: "init"
+
+      skills:
+        move_to_home:
+          target_frame : "home"
+          acceleration_scaling: 1
+          velocity_scaling: 1
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+    grasping:
+      action_type: "pick_and_place"
+      object_name: "can"
+      location_name: "hole"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+        move_to_grasp:
+          target_frame : "can_grasp"
+          acceleration_scaling: 1
+          velocity_scaling: 1
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+    insertion:
+      action_type: "pick_and_place"
+      object_name: "can"
+      location_name: "hole"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+        move_to_hole:
+          target_frame : "hole_approach"
+          acceleration_scaling: 1
+          velocity_scaling: 1
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+        move_to_insertion:
+          target_frame : "hole_insertion"
+          acceleration_scaling: 1
+          velocity_scaling: 1
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+        insert:
+          skill_type: "simple_touch"
+          goal_twist_frame: "panda_grasptarget"
+          release: 0.0
+          release_condition: 0
+          relative_target: true
+          goal_twist: [0, 0, 0.005, 0, 0, 0]
+          target_force: 100.0
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"
+          position: [0,0,-0.1]
+          quaternion: [0,0,0,1]
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7

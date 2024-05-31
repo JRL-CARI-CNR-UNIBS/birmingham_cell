@@ -2,14 +2,14 @@
 
 <launch>
   <arg name="use_moveit" default="true" />
-  <arg name="use_rviz" default="false" />
-  <arg name="use_pybullet_gui" default="false" />
+  <arg name="rviz_gui" default="false" />
+  <arg name="pybullet_gui" default="false" />
   <arg name="test_type" default="simulation" />
   
   <include file="$(find birmingham_cell_configurations)/launch/simulation_start.launch">
-     <arg name="use_rviz" default="$(arg use_rviz)" />
+     <arg name="use_rviz" default="$(arg rviz_gui)" />
      <arg name="use_moveit" default="$(arg use_moveit)" />
-     <arg name="use_pybullet_gui" default="$(arg use_pybullet_gui)" />
+     <arg name="use_pybullet_gui" default="$(arg pybullet_gui)" />
   </include>   
 
   <include file="$(find birmingham_cell_tests)/launch/load_test_params.launch"/>

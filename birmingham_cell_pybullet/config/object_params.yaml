@@ -2,21 +2,21 @@ pybullet_simulation:
   objects:
     can:
       package_name: 'battery_cell_description'
-      urdf_file_path: 'urdf/can.urdf'
+      urdf_file_path: 'urdf/can'
       mesh_file_path: 'meshes/can.STL'
       mesh_position_offset: [0, 0, -0.0575] # pybullet return the position of object center of mass
       mesh_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
     hole:
       package_name: 'battery_cell_description'
-      urdf_file_path: 'urdf/hole.urdf'
+      urdf_file_path: 'urdf/hole'
       mesh_file_path: 'meshes/Hole_60.STL'
       mesh_position_offset: [0, 0, -0.0575] # pybullet return the position of object center of mass
       mesh_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
     box:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/box.xacro'
+      xacro_file_path: 'urdf/box'
       xacro_args:
         length: 1
         width:  1
@@ -27,7 +27,7 @@ pybullet_simulation:
       attached_link: 'gripper_base'
     cylinder:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/cylinder.xacro'
+      xacro_file_path: 'urdf/cylinder'
       xacro_args:
         radius: 0.1
         height: 0.1
@@ -35,9 +35,20 @@ pybullet_simulation:
       sgp_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
       sgp_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
+      link_dynamics:
+        - link_name: 'cylinder'
+          lateral_friction: 0.5
+          # spinning_friction: 0.1
+          # rolling_friction: 0.1
+          contact_stiffness: 1000000
+          contact_damping: 5
+          # linear_damping: 0
+          # angular_damping: 0
+          # friction_anchor: 1
+
     cone:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/cone.xacro'
+      xacro_file_path: 'urdf/cone'
       xacro_args:
         radius:  1
         height: 1
@@ -47,7 +58,7 @@ pybullet_simulation:
       attached_link: 'gripper_base'
     sphere:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/sphere.xacro'
+      xacro_file_path: 'urdf/sphere'
       xacro_args:
         radius:  1
       solid_geometric_primitive: 'sphere'
@@ -56,7 +67,7 @@ pybullet_simulation:
       attached_link: 'gripper_base'
     box_hole:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/box_hole.xacro'
+      xacro_file_path: 'urdf/box_hole'
       xacro_args:
         length: 1
         width:  1
@@ -67,7 +78,7 @@ pybullet_simulation:
       attached_link: 'gripper_base'
     cylinder_hole:
       package_name: 'birmingham_cell_description'
-      xacro_file_path: 'urdf/cylinder_hole.xacro'
+      xacro_file_path: 'urdf/cylinder_hole'
       xacro_args:
         radius: 0.01
         height: 0.01
