@@ -32,15 +32,7 @@ def read_wrench_cb(data):
     wrench_record.append(info)
 
 
-def wrench_recording():
-    global wrench_record
-    wrench_record = []
-    sub = rospy.Subscriber('/panda/panda_hand_joint/wrench',WrenchStamped,read_wrench_cb)
-    global stop_recording
-    while not stop_recording:
-        rospy.sleep(0.01)
-
-stop_recording = False
+recording = False
 wrench_record = []
 current_considered_pos_name = ''
 current_considered_pos_value = []
@@ -213,6 +205,10 @@ if __name__ == '__main__':
     y_values = np.arange(grasping_area_lower_limit[1], grasping_area_upper_limit[1], 0.001)
     z_values = [0]
     combinations = list(itertools.product(x_values, y_values, z_values))
+    print('combinations size: ' + str(len(combinations)))
+
+    recording = False
+    sub = rospy.Subscriber('/panda/panda_hand_joint/wrench',WrenchStamped, read_wrench_cb)
 
     current_considered_pos_name = 'grasp_pose'
     grasp_exec = 0
@@ -232,27 +228,16 @@ if __name__ == '__main__':
 
         result = run_tree_clnt.call('to_grasping', [trees_path])
 
-        if result.result > 3:
-            stop_recording = False
-            stop = stop_recording
-            recording_thread = threading.Thread(target=wrench_recording)
-            recording_thread.start()
-            
+        if result.result < 3:
+            wrench_record = []
+            recording = True
+
             run_tree_clnt.call('grasping', [trees_path])
             
-            stop_recording = True
-            recording_thread.join()
+            recording = False
+            data = wrench_record    
 
-            data = []
-            try:
-                with open(pack_path + '/data/grasping_data.csv', 'r') as csvfile:
-                    csv_reader = csv.DictReader(csvfile)
-                    data = [row for row in csv_reader]
-                    data.extend(wrench_record)
-            except:
-                data = wrench_record    
-
-            with open(pack_path + '/data/grasping_data.csv', 'w') as csvfile:
+            with open(pack_path + '/data/grasping_data' + str(grasp_exec) + '.csv', 'w') as csvfile:
                 field_names = data[0].keys() if data else []
 
                 csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
@@ -300,26 +285,15 @@ if __name__ == '__main__':
         result = run_tree_clnt.call('to_insertion', [trees_path])
 
         if result.result < 3:
-            stop_recording = False
-            stop = stop_recording
-            recording_thread = threading.Thread(target=wrench_recording)
-            recording_thread.start()
+            wrench_record = []
+            recording = True
             
             run_tree_clnt.call('insertion', [trees_path])
             
-            stop_recording = True
-            recording_thread.join()
+            recording = False
+            data = wrench_record    
 
-            data = []
-            try:
-                with open(pack_path + '/data/insertion_data.csv', 'r') as csvfile:
-                    csv_reader = csv.DictReader(csvfile)
-                    data = [row for row in csv_reader]
-                    data.extend(wrench_record)
-            except:
-                data = wrench_record    
-
-            with open(pack_path + '/data/insertion_data.csv', 'w') as csvfile:
+            with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
                 field_names = data[0].keys() if data else []
 
                 csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)

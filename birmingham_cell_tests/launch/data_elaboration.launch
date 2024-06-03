@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <node name="data_elaboration" 
+        pkg="birmingham_cell_tests" 
+        type="data_elaboration.py" 
+        output="screen"/>
+
+</launch>
