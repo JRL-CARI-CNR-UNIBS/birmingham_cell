@@ -58,6 +58,12 @@ if __name__ == '__main__':
         stop_on_success = False
     print('stop_on_success: ' + str(stop_on_success))
 
+    if 'progress_bar' in params:
+        progress_bar = params['progress_bar']
+    else:
+        progress_bar = False
+    print('progress_bar: ' + str(progress_bar))
+
     if 'noise_sigma' in params:
         noise_sigma_vec = params['noise_sigma']
         if isinstance(noise_sigma_vec, float):
@@ -430,6 +436,16 @@ if __name__ == '__main__':
                                 env = gym.make('GeneralEnv-v0', 
                                                 epoch_len = max_epoch_steps,
                                                 max_episode_steps=max_epoch_steps)
+                            elif env_type == 'force_grasp':
+                                print('In force_grasp')
+                                env = gym.make('ForceGraspEnv-v0', 
+                                                epoch_len = 25,
+                                                max_episode_steps=25)
+                            elif env_type == 'force_pag_in_hole':
+                                print('In force_pag_in_hole')
+                                env = gym.make('ForcePegInHoleEnv-v0', 
+                                                epoch_len = 25,
+                                                max_episode_steps=25)
                             else:
                                 print('Env_type not in the possible env list.')
                                 exit(0)  
@@ -469,11 +485,13 @@ if __name__ == '__main__':
                                 if stop_on_success:
                                     success_callback = SuccessCallback()
                                     model.learn(total_timesteps=params['total_timesteps'], 
-                                            log_interval=1, 
-                                            callback=success_callback,
-                                            )
+                                                log_interval=1, 
+                                                callback=success_callback,
+                                                progress_bar=progress_bar,
+                                                )
                                 else:
                                     model.learn(total_timesteps=params['total_timesteps'], 
-                                            log_interval=1, 
-                                            )
+                                                log_interval=1,
+                                                progress_bar=progress_bar,
+                                                )
                             

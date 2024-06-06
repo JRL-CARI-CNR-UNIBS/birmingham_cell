@@ -15,3 +15,5 @@ from birmingham_envs.envs.connection_history_env import ConnectionHistoryEnv
 from birmingham_envs.envs.TOF_connection_env import TOFConnectionEnv
 from birmingham_envs.envs.static_real_fake_env import StaticRealFakeEnv
 from birmingham_envs.envs.static_connection_env import StaticConnectionEnv
+from birmingham_envs.envs.force_grasp_env import ForceGraspEnv
+from birmingham_envs.envs.force_pag_in_hole_env import ForcePegInHoleEnv

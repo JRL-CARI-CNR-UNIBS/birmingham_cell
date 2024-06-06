@@ -83,3 +83,13 @@ register(
     id="StaticConnectionEnv-v0",
     entry_point="birmingham_envs.envs:StaticConnectionEnv",
 )
+
+register(
+    id="ForceGraspEnv-v0",
+    entry_point="birmingham_envs.envs:ForceGraspEnv",
+)
+
+register(
+    id="ForcePegInHoleEnv-v0",
+    entry_point="birmingham_envs.envs:ForcePegInHoleEnv",
+)

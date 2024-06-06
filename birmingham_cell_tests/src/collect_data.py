@@ -213,43 +213,43 @@ if __name__ == '__main__':
     current_considered_pos_name = 'grasp_pose'
     grasp_exec = 0
     print('grasp_exec:')
-    for grasp_pose_error in combinations: 
-        grasp_exec += 1
-        print('          ' + str(grasp_exec))
-        current_considered_pos_value = np.ndarray.tolist(correct_grasp_pos + np.array(grasp_pose_error))
-        current_tfs = rospy.get_param('tf_params')
-        new_tfs = []
-        for tf in current_tfs:
-            new_tf = copy.copy(tf)
-            if new_tf['name'] == 'can_grasp':
-                new_tf['position'] = current_considered_pos_value
-            new_tfs.append(new_tf)
-        rospy.set_param('tf_params',new_tfs)
+    # for grasp_pose_error in combinations: 
+    #     grasp_exec += 1
+    #     print('          ' + str(grasp_exec))
+    #     current_considered_pos_value = np.ndarray.tolist(correct_grasp_pos + np.array(grasp_pose_error))
+    #     current_tfs = rospy.get_param('tf_params')
+    #     new_tfs = []
+    #     for tf in current_tfs:
+    #         new_tf = copy.copy(tf)
+    #         if new_tf['name'] == 'can_grasp':
+    #             new_tf['position'] = current_considered_pos_value
+    #         new_tfs.append(new_tf)
+    #     rospy.set_param('tf_params',new_tfs)
 
-        result = run_tree_clnt.call('to_grasping', [trees_path])
+    #     result = run_tree_clnt.call('to_grasping', [trees_path])
 
-        if result.result < 3:
-            wrench_record = []
-            recording = True
+    #     if result.result < 3:
+    #         wrench_record = []
+    #         recording = True
 
-            run_tree_clnt.call('grasping', [trees_path])
+    #         run_tree_clnt.call('grasping', [trees_path])
             
-            recording = False
-            data = wrench_record    
+    #         recording = False
+    #         data = wrench_record    
 
-            with open(pack_path + '/data/grasping_data' + str(grasp_exec) + '.csv', 'w') as csvfile:
-                field_names = data[0].keys() if data else []
+    #         with open(pack_path + '/data/grasping_data' + str(grasp_exec) + '.csv', 'w') as csvfile:
+    #             field_names = data[0].keys() if data else []
 
-                csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
+    #             csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
     
-                if data:
-                    csv_writer.writeheader()
+    #             if data:
+    #                 csv_writer.writeheader()
                 
-                csv_writer.writerows(data)
+    #             csv_writer.writerows(data)
 
-        run_tree_clnt.call('out_of_grasping', [trees_path])
+    #     run_tree_clnt.call('out_of_grasping', [trees_path])
 
-        restore_state_clnt.call('grasping_reset')
+    #     restore_state_clnt.call('grasping_reset')
 
     new_tfs = []
     for tf in current_tfs:
@@ -293,15 +293,15 @@ if __name__ == '__main__':
             recording = False
             data = wrench_record    
 
-            with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
-                field_names = data[0].keys() if data else []
+            # with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
+            #     field_names = data[0].keys() if data else []
 
-                csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
+            #     csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
     
-                if data:
-                    csv_writer.writeheader()
+            #     if data:
+            #         csv_writer.writeheader()
                 
-                csv_writer.writerows(data)
+            #     csv_writer.writerows(data)
 
         restore_state_clnt.call('insertion_reset')
         restore_state_clnt.call('insertion_reset')
