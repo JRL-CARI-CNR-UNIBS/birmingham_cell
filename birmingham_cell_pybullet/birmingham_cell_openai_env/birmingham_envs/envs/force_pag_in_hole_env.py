@@ -39,7 +39,7 @@ class ForcePegInHoleEnv(gym.Env):
 
         # lettura dati di forze
         data_path = self.package_path + '/data'
-        grasp_data_path = data_path + '/01_grasp_data.csv'
+        grasp_data_path = data_path + '/02_grasp_data.csv'
         insert_data_path = data_path + '/02_insert_data.csv'
 
         sampling_freq = 250
@@ -88,7 +88,7 @@ class ForcePegInHoleEnv(gym.Env):
         self.action_space = spaces.Box(-1, 1, shape=(len(self.max_variations),), dtype=np.float64)
 
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([self.param_values,self.current_grasp_pos,self.grasp_forces/1000,self.insert_forces/1000])
+        observation = np.concatenate([self.param_values,self.current_grasp_pos,self.current_insert_pos,self.grasp_forces/1000,self.insert_forces/1000])
         # observation = np.concatenate([self.param_values,self.current_grasp_pos])
         # print(observation)
         return observation
@@ -199,10 +199,10 @@ class ForcePegInHoleEnv(gym.Env):
     
     def _get_reward(self) -> float:
         if self.in_grasp_area and(self._distance(self.current_grasp_pos,self.correct_grasp_pos) < self.distance_threshold):
-            reward = 1 - (self._distance(self.current_insert_pos, self.correct_insert_pos) * 2.5)
+            reward = 1 - self._distance(self.current_insert_pos, self.correct_insert_pos)
         elif self.in_grasp_area:
             reward = 0.5 - (self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 5)
-            reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 2.5)
+            reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 0.5)
         else:
             reward = -0.5 - (self._distance(self.current_grasp_pos, self.theoretical_correct_grasp_pos) * 2.5)
             reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 2.5)
