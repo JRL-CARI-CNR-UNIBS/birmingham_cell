@@ -19,7 +19,9 @@ def read_wrench_cb(data):
     global wrench_record
     global current_considered_pos_name
     global current_considered_pos_value
+    global current_operation_name
     info = {current_considered_pos_name: current_considered_pos_value,
+            'operation': current_operation_name,
             'secs' : data.header.stamp.secs,
             'nsecs' : data.header.stamp.nsecs,
             'fx' : data.wrench.force.x,
@@ -36,6 +38,7 @@ recording = False
 wrench_record = []
 current_considered_pos_name = ''
 current_considered_pos_value = []
+current_operation_name = ''
 
 if __name__ == '__main__':
     
@@ -131,7 +134,7 @@ if __name__ == '__main__':
         new_tfs.append(new_tf)
     rospy.set_param('tf_params',new_tfs)
     correct_grasp_pos = np.array([0.0,0.0,grasp_height])
-    correct_insertion_pos = np.array([0.00, 0.00, 0.17])
+    correct_insertion_pos = np.array([0.00, 0.00, 0.20])
     
     rospy.loginfo("Wait for skills_util/run_tree service")
     rospy.wait_for_service('/skills_util/run_tree')
@@ -251,57 +254,109 @@ if __name__ == '__main__':
 
     #     restore_state_clnt.call('grasping_reset')
 
-    new_tfs = []
-    for tf in current_tfs:
-        new_tf = copy.copy(tf)
-        if new_tf['name'] == 'can_grasp':
-            new_tf['position'] = np.ndarray.tolist(correct_grasp_pos)
-        new_tfs.append(new_tf)
-    rospy.set_param('tf_params',new_tfs)
+    # new_tfs = []
+    # for tf in current_tfs:
+    #     new_tf = copy.copy(tf)
+    #     if new_tf['name'] == 'can_grasp':
+    #         new_tf['position'] = np.ndarray.tolist(correct_grasp_pos)
+    #     new_tfs.append(new_tf)
+    # rospy.set_param('tf_params',new_tfs)
 
-    run_tree_clnt.call('insertion_init', [trees_path])
+    # run_tree_clnt.call('insertion_init', [trees_path])
 
-    delete_state_clnt.call(['insertion_reset'])
-    save_state_clnt.call('insertion_reset')
+    # delete_state_clnt.call(['insertion_reset'])
+    # save_state_clnt.call('insertion_reset')
 
-    current_considered_pos_name = 'insert_pose'
-    insert_exec = 0
-    print('insert_exec:')
+    # current_considered_pos_name = 'insert_pose'
+    # insert_exec = 0
+    # print('insert_exec:')
+
+    # for insertion_pose_error in combinations:       
+    #     insert_exec += 1
+    #     print('            ' + str(insert_exec))
+
+    #     current_considered_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
+    #     current_tfs = rospy.get_param('tf_params')
+    #     new_tfs = []
+    #     for tf in current_tfs:
+    #         new_tf = copy.copy(tf)
+    #         if new_tf['name'] == 'hole_insertion':
+    #             new_tf['position'] = current_considered_pos_value
+    #         new_tfs.append(new_tf)
+    #     rospy.set_param('tf_params',new_tfs)
+
+    #     result = run_tree_clnt.call('to_insertion', [trees_path])
+
+    #     if result.result < 3:
+    #         wrench_record = []
+    #         recording = True
+            
+    #         run_tree_clnt.call('insertion', [trees_path])
+            
+    #         recording = False
+    #         data = wrench_record    
+
+    #         # with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
+    #         #     field_names = data[0].keys() if data else []
+
+    #         #     csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
+    
+    #         #     if data:
+    #         #         csv_writer.writeheader()
+                
+    #         #     csv_writer.writerows(data)
+
+    #     restore_state_clnt.call('insertion_reset')
+    #     restore_state_clnt.call('insertion_reset')
+
+    step = 0
 
     for insertion_pose_error in combinations:       
-        insert_exec += 1
-        print('            ' + str(insert_exec))
+        for grasp_pose_error in combinations: 
+            current_insert_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
+            current_grasp_pos_value = np.ndarray.tolist(correct_grasp_pos + np.array(grasp_pose_error))
+            current_considered_pos_value = np.ndarray.tolist(np.concatenate([current_grasp_pos_value,current_insert_pos_value]))
+            current_tfs = rospy.get_param('tf_params')
+            new_tfs = []
+            for tf in current_tfs:
+                new_tf = copy.copy(tf)
+                if new_tf['name'] == 'hole_insertion':
+                    new_tf['position'] = current_insert_pos_value
+                if new_tf['name'] == 'can_grasp':
+                    new_tf['position'] = current_grasp_pos_value
+                new_tfs.append(new_tf)
+            rospy.set_param('tf_params',new_tfs)
 
-        current_considered_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
-        current_tfs = rospy.get_param('tf_params')
-        new_tfs = []
-        for tf in current_tfs:
-            new_tf = copy.copy(tf)
-            if new_tf['name'] == 'hole_insertion':
-                new_tf['position'] = current_considered_pos_value
-            new_tfs.append(new_tf)
-        rospy.set_param('tf_params',new_tfs)
+            result = run_tree_clnt.call('to_grasping', [trees_path,pack_path + '/config/trees'])
 
-        result = run_tree_clnt.call('to_insertion', [trees_path])
+            if result.result < 3:
+                current_operation_name = 'grasping'
+                wrench_record = []
+                recording = True
+                run_tree_clnt.call('grasping', [trees_path,pack_path + '/config/trees'])
+                recording = False
 
-        if result.result < 3:
-            wrench_record = []
-            recording = True
+                data = wrench_record
+
+                result = run_tree_clnt.call('move_to_insertion', [trees_path,pack_path + '/config/trees'])
+                if result.result < 3:
+                    current_operation_name = 'insertion'
+                    wrench_record = []
+                    recording = True
+                    run_tree_clnt.call('insertion', [trees_path,pack_path + '/config/trees'])
+                    recording = False
+                    data = data + wrench_record
+                with open(pack_path + '/data/peg_in_hole_data' + str(step) + '.csv', 'w') as csvfile:
+                    field_names = data[0].keys() if data else []
+
+                    csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
+        
+                    if data:
+                        csv_writer.writeheader()
+                    
+                    csv_writer.writerows(data)
             
-            run_tree_clnt.call('insertion', [trees_path])
-            
-            recording = False
-            data = wrench_record    
+            step += 1 
+            restore_state_clnt.call('grasping_reset')
 
-            # with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
-            #     field_names = data[0].keys() if data else []
 
-            #     csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
-    
-            #     if data:
-            #         csv_writer.writeheader()
-                
-            #     csv_writer.writerows(data)
-
-        restore_state_clnt.call('insertion_reset')
-        restore_state_clnt.call('insertion_reset')

@@ -2,6 +2,7 @@
 <root BTCPP_format="4">
   <BehaviorTree ID="to_grasping">
     <Sequence name="to_grasping">
+      <SkillExecutionNode robot="panda" action_name="init" skill_name="open_gripper"/>
       <SkillExecutionNode robot="panda" action_name="grasping" skill_name="move_to_grasp"/>
     </Sequence>
   </BehaviorTree>

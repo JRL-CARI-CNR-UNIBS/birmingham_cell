@@ -79,6 +79,7 @@ class ForcePegInHoleEnv(gym.Env):
         self.theoretical_correct_insert_pos = np.array([0.0,0.0])
         
         observation, _ = self.reset()  # required for init; seed can be changed later
+
         rospy.loginfo("Reset done")
         observation_shape = observation.shape
         self.observation_space = spaces.Box(-1, 1, shape=observation_shape, dtype=np.float64)
@@ -88,9 +89,7 @@ class ForcePegInHoleEnv(gym.Env):
         self.action_space = spaces.Box(-1, 1, shape=(len(self.max_variations),), dtype=np.float64)
 
     def _get_obs(self) -> Dict[str, np.array]:
-        observation = np.concatenate([self.param_values,self.current_grasp_pos,self.current_insert_pos,self.grasp_forces/1000,self.insert_forces/1000])
-        # observation = np.concatenate([self.param_values,self.current_grasp_pos])
-        # print(observation)
+        observation = np.concatenate([self.param_values,self.current_grasp_pos,self.current_insert_pos,self.grasp_forces/10000,self.insert_forces/10000])
         return observation
 
     def reset(self, seed: Optional[int] = None, options: Optional[dict] = None
@@ -198,14 +197,21 @@ class ForcePegInHoleEnv(gym.Env):
         return np.linalg.norm(pos1-pos2)
     
     def _get_reward(self) -> float:
-        if self.in_grasp_area and(self._distance(self.current_grasp_pos,self.correct_grasp_pos) < self.distance_threshold):
-            reward = 1 - self._distance(self.current_insert_pos, self.correct_insert_pos)
-        elif self.in_grasp_area:
-            reward = 0.5 - (self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 5)
-            reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 0.5)
+        # if self.in_grasp_area and(self._distance(self.current_grasp_pos,self.correct_grasp_pos) < self.distance_threshold):
+        #     reward = 1 - self._distance(self.current_insert_pos, self.correct_insert_pos)
+        # elif self.in_grasp_area:
+        #     reward = 0.5 - (self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 5)
+        #     reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 0.5)
+        if self.in_grasp_area and self.in_insert_area:
+            reward = 1 - (self._distance(np.concatenate([self.current_grasp_pos,self.current_insert_pos]),
+                                         np.concatenate([self.correct_grasp_pos,self.correct_insert_pos])))
+            # reward = 1 - (self._distance(self.current_grasp_pos, self.correct_grasp_pos) * 2.5)
+            # reward -= self._distance(self.current_insert_pos, self.correct_insert_pos) * 2.5
         else:
-            reward = -0.5 - (self._distance(self.current_grasp_pos, self.theoretical_correct_grasp_pos) * 2.5)
-            reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 2.5)
+            reward = 0 - (self._distance(np.concatenate([self.current_grasp_pos,self.current_insert_pos]),
+                                         np.concatenate([self.theoretical_correct_grasp_pos,self.theoretical_correct_insert_pos])))
+            # reward = -0.5 - (self._distance(self.current_grasp_pos, self.theoretical_correct_grasp_pos) * 2.5)
+            # reward -= (self._distance(self.current_insert_pos, self.theoretical_correct_insert_pos) * 2.5)
         return reward
 
     def _extract_xyz(self, position):

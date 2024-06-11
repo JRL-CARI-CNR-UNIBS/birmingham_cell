@@ -93,3 +93,8 @@ register(
     id="ForcePegInHoleEnv-v0",
     entry_point="birmingham_envs.envs:ForcePegInHoleEnv",
 )
+
+register(
+    id="ConnectionForcesEnv-v0",
+    entry_point="birmingham_envs.envs:ConnectionForcesEnv",
+)

@@ -174,4 +174,3 @@ if __name__ == '__main__':
         # print('calculated action')
         # print(diff)
         steps += 1  
-np.ndarray.tolist

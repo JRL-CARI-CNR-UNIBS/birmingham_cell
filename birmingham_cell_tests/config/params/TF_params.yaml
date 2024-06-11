@@ -5,4 +5,4 @@ tf_params:
   # - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.04],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.03],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "hole_approach" , frame: "hole",  position: [0.00, 0.00, 0.2],     quaternion: [1.0, 0.0, 0.0, 0.0]}
-  - {name: "hole_insertion", frame: "hole",  position: [0.00, 0.00, 0.19],    quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "hole_insertion", frame: "hole",  position: [0.00, 0.00, 0.17],    quaternion: [1.0, 0.0, 0.0, 0.0]}
