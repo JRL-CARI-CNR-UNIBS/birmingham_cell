@@ -134,7 +134,7 @@ if __name__ == '__main__':
         new_tfs.append(new_tf)
     rospy.set_param('tf_params',new_tfs)
     correct_grasp_pos = np.array([0.0,0.0,grasp_height])
-    correct_insertion_pos = np.array([0.00, 0.00, 0.20])
+    correct_insertion_pos = np.array([0.00, 0.00, 0.17])
     
     rospy.loginfo("Wait for skills_util/run_tree service")
     rospy.wait_for_service('/skills_util/run_tree')
@@ -204,8 +204,8 @@ if __name__ == '__main__':
     grasping_area_lower_limit = [-0.02,-0.02]
     grasping_area_upper_limit = [ 0.02, 0.02]
 
-    x_values = np.arange(grasping_area_lower_limit[0], grasping_area_upper_limit[0], 0.001)
-    y_values = np.arange(grasping_area_lower_limit[1], grasping_area_upper_limit[1], 0.001)
+    x_values = np.arange(grasping_area_lower_limit[0], grasping_area_upper_limit[0], 0.005)
+    y_values = np.arange(grasping_area_lower_limit[1], grasping_area_upper_limit[1], 0.005)
     z_values = [0]
     combinations = list(itertools.product(x_values, y_values, z_values))
     print('combinations size: ' + str(len(combinations)))
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 
     current_considered_pos_name = 'grasp_pose'
     grasp_exec = 0
-    print('grasp_exec:')
+    # print('grasp_exec:')
     # for grasp_pose_error in combinations: 
     #     grasp_exec += 1
     #     print('          ' + str(grasp_exec))
@@ -310,7 +310,7 @@ if __name__ == '__main__':
     #     restore_state_clnt.call('insertion_reset')
 
     step = 0
-
+    print('combinations size: ' + str(len(combinations) * len(combinations)))
     for insertion_pose_error in combinations:       
         for grasp_pose_error in combinations: 
             current_insert_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
@@ -357,6 +357,7 @@ if __name__ == '__main__':
                     csv_writer.writerows(data)
             
             step += 1 
+            print(step)
             restore_state_clnt.call('grasping_reset')
 
 
