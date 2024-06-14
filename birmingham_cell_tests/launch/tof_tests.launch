@@ -8,8 +8,8 @@
         type="tof_tests.py" 
         output="screen"/>
 
-  <node name='rosparam_to_rostopic'
+  <!-- <node name='rosparam_to_rostopic'
         pkg='skills_util'
         type='rosparam_to_rostopic.py'
-        output="screen"/>
+        output="screen"/> -->
 </launch>

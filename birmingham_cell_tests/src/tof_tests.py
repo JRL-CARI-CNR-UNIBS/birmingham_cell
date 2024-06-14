@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     steps_vec = []
 
-    for i in range(10):
+    for i in range(20):
         steps = 0
         success = False
         while (not success) and (steps < max_epoch_steps):
@@ -35,4 +35,6 @@ if __name__ == '__main__':
             steps += 1  
         steps_vec.append(steps)
     
+
+    print(steps_vec)
     exit(0)
