@@ -33,14 +33,14 @@ class TOFConnectionEnv(gym.Env):
         tree_name: str = 'tof_can_peg_in_hole',
         object_name: str = 'can',
         target_name: str = 'hole',
-        obj_model_name: str = 'can',
-        tar_model_name: str = 'hole',
+        obj_model_name: str = 'cylinder',
+        tar_model_name: str = 'cylinder_hole',
         obj_model_height: float = 0.1,
         obj_model_length: float = 0.1,
-        obj_model_width:  float = 0.1,
-        tar_model_height: float = 0.1,
+        obj_model_width:  float = 0.06,
+        tar_model_height: float = 0.07,
         tar_model_length: float = 0.1,
-        tar_model_width:  float = 0.1,
+        tar_model_width:  float = 0.064,
         distance_threshold: float = 0.01,
         force_threshold: float = 50,
         torque_threshold: float = 100,
@@ -52,7 +52,7 @@ class TOFConnectionEnv(gym.Env):
         save_data: bool = False,
         step_print: bool = False,
         only_pos_success: bool = True,
-        observation_type: str = 'param_pos_obj',
+        observation_type: str = 'param_pos',
         epoch_len: int = None,
     ) -> None:
         rospy.init_node(node_name)
@@ -578,12 +578,18 @@ class TOFConnectionEnv(gym.Env):
         # print(self.default_grasp_pos)
         # print(self.param_values)
 
-        self.current_grasp_pos[0] = self.default_grasp_pos[0] + self.param_values[0]
-        self.current_grasp_pos[1] = self.default_grasp_pos[1] - self.param_values[1]
-        self.current_grasp_pos[2] = self.default_grasp_pos[2] - self.param_values[2]
-        self.current_insert_pos[0] = self.default_insert_pos[0] + self.param_values[3]
-        self.current_insert_pos[1] = self.default_insert_pos[1] - self.param_values[4]
-        self.current_insert_pos[2] = self.default_insert_pos[2] - self.param_values[5]
+        if len(self.param_values) == 4:
+            self.current_grasp_pos[0] = self.default_grasp_pos[0] + self.param_values[0]
+            self.current_grasp_pos[1] = self.default_grasp_pos[1] - self.param_values[1]
+            self.current_insert_pos[0] = self.default_insert_pos[0] + self.param_values[2]
+            self.current_insert_pos[1] = self.default_insert_pos[1] - self.param_values[3]
+        else:
+            self.current_grasp_pos[0] = self.default_grasp_pos[0] + self.param_values[0]
+            self.current_grasp_pos[1] = self.default_grasp_pos[1] - self.param_values[1]
+            self.current_grasp_pos[2] = self.default_grasp_pos[2] - self.param_values[2]
+            self.current_insert_pos[0] = self.default_insert_pos[0] + self.param_values[3]
+            self.current_insert_pos[1] = self.default_insert_pos[1] - self.param_values[4]
+            self.current_insert_pos[2] = self.default_insert_pos[2] - self.param_values[5]
 
         if not self.obj_pos is None:
             self.old_obj_pos = self.obj_pos
