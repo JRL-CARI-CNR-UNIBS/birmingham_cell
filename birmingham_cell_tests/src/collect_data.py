@@ -20,6 +20,7 @@ def read_wrench_cb(data):
     global current_considered_pos_name
     global current_considered_pos_value
     global current_operation_name
+    global recording
     info = {current_considered_pos_name: current_considered_pos_value,
             'operation': current_operation_name,
             'secs' : data.header.stamp.secs,
@@ -31,7 +32,8 @@ def read_wrench_cb(data):
             'ty' : data.wrench.torque.y,
             'tz' : data.wrench.torque.z,
     }
-    wrench_record.append(info)
+    if recording:
+        wrench_record.append(info)
 
 
 recording = False
@@ -201,11 +203,11 @@ if __name__ == '__main__':
     delete_state_clnt.call(['grasping_reset'])
     save_state_clnt.call('grasping_reset')
 
-    grasping_area_lower_limit = [-0.02,-0.02]
-    grasping_area_upper_limit = [ 0.02, 0.02]
+    grasping_area_lower_limit = [-0.005,-0.005]
+    grasping_area_upper_limit = [ 0.005, 0.005]
 
-    x_values = np.arange(grasping_area_lower_limit[0], grasping_area_upper_limit[0], 0.005)
-    y_values = np.arange(grasping_area_lower_limit[1], grasping_area_upper_limit[1], 0.005)
+    x_values = np.arange(grasping_area_lower_limit[0], grasping_area_upper_limit[0], 0.00025)
+    y_values = np.arange(grasping_area_lower_limit[1], grasping_area_upper_limit[1], 0.00025)
     z_values = [0]
     combinations = list(itertools.product(x_values, y_values, z_values))
     print('combinations size: ' + str(len(combinations)))
@@ -254,60 +256,62 @@ if __name__ == '__main__':
 
     #     restore_state_clnt.call('grasping_reset')
 
-    # new_tfs = []
-    # for tf in current_tfs:
-    #     new_tf = copy.copy(tf)
-    #     if new_tf['name'] == 'can_grasp':
-    #         new_tf['position'] = np.ndarray.tolist(correct_grasp_pos)
-    #     new_tfs.append(new_tf)
-    # rospy.set_param('tf_params',new_tfs)
+    new_tfs = []
+    for tf in current_tfs:
+        new_tf = copy.copy(tf)
+        if new_tf['name'] == 'can_grasp':
+            new_tf['position'] = np.ndarray.tolist(correct_grasp_pos)
+        new_tfs.append(new_tf)
+    rospy.set_param('tf_params',new_tfs)
 
-    # run_tree_clnt.call('insertion_init', [trees_path])
+    run_tree_clnt.call('insertion_init', [trees_path])
 
-    # delete_state_clnt.call(['insertion_reset'])
-    # save_state_clnt.call('insertion_reset')
+    delete_state_clnt.call(['insertion_reset'])
+    save_state_clnt.call('insertion_reset')
 
-    # current_considered_pos_name = 'insert_pose'
-    # insert_exec = 0
-    # print('insert_exec:')
+    current_considered_pos_name = 'insert_pose'
+    insert_exec = 0
+    print('insert_exec:')
 
-    # for insertion_pose_error in combinations:       
-    #     insert_exec += 1
-    #     print('            ' + str(insert_exec))
+    for insertion_pose_error in combinations:       
+        insert_exec += 1
+        print('            ' + str(insert_exec))
 
-    #     current_considered_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
-    #     current_tfs = rospy.get_param('tf_params')
-    #     new_tfs = []
-    #     for tf in current_tfs:
-    #         new_tf = copy.copy(tf)
-    #         if new_tf['name'] == 'hole_insertion':
-    #             new_tf['position'] = current_considered_pos_value
-    #         new_tfs.append(new_tf)
-    #     rospy.set_param('tf_params',new_tfs)
+        current_considered_pos_value = np.ndarray.tolist(correct_insertion_pos + np.array(insertion_pose_error))
+        current_tfs = rospy.get_param('tf_params')
+        new_tfs = []
+        for tf in current_tfs:
+            new_tf = copy.copy(tf)
+            if new_tf['name'] == 'hole_insertion':
+                new_tf['position'] = current_considered_pos_value
+            new_tfs.append(new_tf)
+        rospy.set_param('tf_params',new_tfs)
 
-    #     result = run_tree_clnt.call('to_insertion', [trees_path])
+        result = run_tree_clnt.call('to_insertion', [trees_path])
 
-    #     if result.result < 3:
-    #         wrench_record = []
-    #         recording = True
+        if result.result < 3:
+            wrench_record = []
+            recording = True
             
-    #         run_tree_clnt.call('insertion', [trees_path])
+            run_tree_clnt.call('insertion', [trees_path])
             
-    #         recording = False
-    #         data = wrench_record    
+            recording = False
+            data = wrench_record    
 
-    #         # with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
-    #         #     field_names = data[0].keys() if data else []
+            with open(pack_path + '/data/insertion_data' + str(insert_exec) + '.csv', 'w') as csvfile:
+                field_names = data[0].keys() if data else []
 
-    #         #     csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
+                csv_writer = csv.DictWriter(csvfile, fieldnames=field_names)
     
-    #         #     if data:
-    #         #         csv_writer.writeheader()
+                if data:
+                    csv_writer.writeheader()
                 
-    #         #     csv_writer.writerows(data)
+                csv_writer.writerows(data)
 
-    #     restore_state_clnt.call('insertion_reset')
-    #     restore_state_clnt.call('insertion_reset')
+        restore_state_clnt.call('insertion_reset')
+        restore_state_clnt.call('insertion_reset')
+
+    exit(0)
 
     step = 0
     print('combinations size: ' + str(len(combinations) * len(combinations)))

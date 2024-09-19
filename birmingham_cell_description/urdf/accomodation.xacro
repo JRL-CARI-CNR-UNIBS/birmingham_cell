@@ -1,0 +1,155 @@
+<?xml version="1.0" ?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="accomodation_model">
+
+  <xacro:arg name="length" default="1" />
+  <xacro:property name="length" value="'$(arg length)'" />
+  <xacro:arg name="width"  default="1" />
+  <xacro:property name="width" value="'$(arg width)'" />
+  <xacro:arg name="height" default="1" />
+  <xacro:property name="height" value="'$(arg height)'" />
+
+
+  <link name="accomodation_1">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/accomodation.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision concave="true">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/accomodation.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <!-- <link name="accomodation_1">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_1.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_1.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_2" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="accomodation_1"/>
+    <child link="accomodation_2"/>
+  </joint>
+  <link name="accomodation_2">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_3" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="accomodation_1"/>
+    <child link="accomodation_3"/>
+  </joint>
+  <link name="accomodation_3">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_3.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_3.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_4" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="accomodation_1"/>
+    <child link="accomodation_4"/>
+  </joint>
+  <link name="accomodation_4">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_4.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_4.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_5" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="accomodation_1"/>
+    <child link="accomodation_5"/>
+  </joint>
+  <link name="accomodation_5">
+    <inertial>
+      <mass value="0.390" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_5.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/alloggio/alloggio_5.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link> -->
+</robot>

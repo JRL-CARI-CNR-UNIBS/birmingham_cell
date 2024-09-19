@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="to_item_grasp">
+    <Sequence name="to_item_grasp">
+      <SkillExecutionNode robot="panda" action_name="item_peg_in_hole" skill_name="move_to_grasp"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

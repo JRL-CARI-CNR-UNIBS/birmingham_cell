@@ -141,6 +141,12 @@ if __name__ == '__main__':
                                                     history_len=history_len,
                                                     use_reward=use_reward,
                                                     )
+    elif env_type == 'connection_grasp':
+        env = gym.make('ConnectionGraspEnv-v0',
+                       max_episode_steps=max_epoch_steps,)
+    elif env_type == 'connection_insert':
+        env = gym.make('ConnectionInsertEnv-v0',
+                       max_episode_steps=max_epoch_steps,)
     else:
         print('Env_type not exist')
         exit(1)
@@ -156,21 +162,29 @@ if __name__ == '__main__':
 
     # action = np.array([0,0,0,0,0,0])
     # env.step(action)
-    
+    steps_history = []
     old_param = np.array(copy.copy(obs[0:6]))
-    while (not success) and (steps < max_epoch_steps):
-    # while (steps < max_epoch_steps):
-        action, _states = model.predict(obs)
-        print('observation')
-        print(obs)
-        print('action')
-        print(action)
-        # print(' ')
-        old_param = np.array(copy.copy(obs[0:6]))
-        obs, reward, success, truncated, info = env.step(action)
-        new_param = np.array(copy.copy(obs[0:6]))
-        diff = (new_param - old_param) * 100
-        print(reward)
-        # print('calculated action')
-        # print(diff)
-        steps += 1  
+    for i in range(10):
+        success = False
+        steps = 0
+        while (not success) and (steps < max_epoch_steps):
+        # while (steps < max_epoch_steps):
+            action, _states = model.predict(obs)
+            print('observation')
+            print(obs)
+            print('action')
+            print(action)
+            # print(' ')
+            old_param = np.array(copy.copy(obs[0:6]))
+            obs, reward, success, truncated, info = env.step(action)
+            new_param = np.array(copy.copy(obs[0:6]))
+            diff = (new_param - old_param) * 100
+            print('Step: ' + str (steps) + '. Reward: ' + str(reward))
+            # print('calculated action')
+            # print(diff)
+            steps += 1  
+        steps_history.append(steps)
+    
+    print('steps_history')
+    print(steps_history)
+        

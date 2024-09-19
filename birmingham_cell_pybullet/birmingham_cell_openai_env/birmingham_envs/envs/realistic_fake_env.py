@@ -214,8 +214,14 @@ class RealisticFakeEnv(gym.Env):
         initial_error_insert_pos = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
         self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
         self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
-        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,self.initial_error_grasp_pos))
-        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,self.initial_error_insert_pos))
+        self.initial_grasp_pos = np.ndarray.tolist(np.add(self.correct_grasp_pos,initial_error_grasp_pos))
+        self.initial_insert_pos = np.ndarray.tolist(np.add(self.correct_insert_pos,initial_error_insert_pos))
+
+        self.obj_pos_error = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        self.tar_pos_error = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        self.correct_grasp_pos  = (np.array(self.correct_grasp_pos)  + np.array(self.obj_pos_error)).tolist()
+        self.correct_insert_pos = (np.array(self.correct_insert_pos) + np.array(self.tar_pos_error)).tolist()
+
 
         self.current_grasp_pos  = copy.copy(self.initial_grasp_pos)
         self.current_insert_pos = copy.copy(self.initial_insert_pos)

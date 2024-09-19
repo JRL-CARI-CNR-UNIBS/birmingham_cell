@@ -23,6 +23,7 @@ if __name__ == '__main__':
                     max_episode_steps=max_epoch_steps)
 
     obs, info = env.reset()
+    exit(0)
     action = [0]   
 
     steps_vec = []

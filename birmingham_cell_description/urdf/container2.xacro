@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="container2_model">
+
+  <xacro:arg name="length" default="1" />
+  <xacro:property name="length" value="'$(arg length)'" />
+  <xacro:arg name="width"  default="1" />
+  <xacro:property name="width" value="'$(arg width)'" />
+  <xacro:arg name="height" default="1" />
+  <xacro:property name="height" value="'$(arg height)'" />
+
+  <link name="container2__">
+    <inertial>
+      <mass value="0.000001" />
+      <origin xyz="0 0 0" />
+      <inertia  ixx="0.00000001" ixy="0.0"  ixz="0.0"  iyy="0.00000001"  iyz="0.0"  izz="0.00000001" />
+    </inertial>
+  </link>
+  <joint name="the_joint" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container2__"/>
+    <child link="container2"/>
+  </joint>
+  <link name="container2">
+    <inertial>
+      <mass value="0.191" />
+      <origin xyz="0 0 ${0.028 * height * 1000}" />
+      <inertia  ixx="0.0005" ixy="0.0"  ixz="0.0"  iyy="0.0005"  iyz="0.0"  izz="0.0005" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision concave="true">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

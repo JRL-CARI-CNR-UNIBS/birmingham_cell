@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="container1_peg_in_hole">
+    <Sequence name="container1_peg_in_hole">
+        <SubTree ID='to_container1_grasp_approach'/>
+        <SubTree ID='to_container1_grasp'/>
+        <SubTree ID='container1_grasp'/>
+        <SubTree ID='to_container1_insertion_approach'/>
+        <SubTree ID='to_container1_insertion'/>
+        <SubTree ID='container1_insertion'/>
+        <SubTree ID='container1_out_of_grasp'/>
+    </Sequence>
+  </BehaviorTree>
+</root>

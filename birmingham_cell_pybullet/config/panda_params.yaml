@@ -77,20 +77,12 @@ pybullet_simulation:
       #     friction_anchor: 1
       link_dynamics:
         - link_name: 'panda_leftfinger'
-          lateral_friction: 10
-          # spinning_friction: 0.1
-          # rolling_friction: 0.1
-          contact_stiffness: 1000000
-          contact_damping: 50
-          # linear_damping: 0
-          # angular_damping: 0
-          # friction_anchor: 1
+          lateral_friction: 100
+          contact_stiffness: 10000000
+          contact_damping: 5
+          friction_anchor: 100
         - link_name: 'panda_rightfinger'
-          lateral_friction: 10
-          # spinning_friction: 0.1
-          # rolling_friction: 0.1
-          contact_stiffness: 1000000
-          contact_damping: 50
-          # linear_damping: 0
-          # angular_damping: 0
-          # friction_anchor: 1
+          lateral_friction: 100
+          contact_stiffness: 10000000
+          contact_damping: 5
+          friction_anchor: 100

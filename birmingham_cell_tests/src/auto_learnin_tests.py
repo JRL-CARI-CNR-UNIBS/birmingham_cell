@@ -439,13 +439,13 @@ if __name__ == '__main__':
                             elif env_type == 'force_grasp':
                                 print('In force_grasp')
                                 env = gym.make('ForceGraspEnv-v0', 
-                                                epoch_len = 25,
-                                                max_episode_steps=25)
-                            elif env_type == 'force_pag_in_hole':
-                                print('In force_pag_in_hole')
+                                                epoch_len = max_epoch_steps,
+                                                max_episode_steps=max_epoch_steps)
+                            elif env_type == 'force_peg_in_hole':
+                                print('In force_peg_in_hole')
                                 env = gym.make('ForcePegInHoleEnv-v0', 
-                                                epoch_len = 25,
-                                                max_episode_steps=25)
+                                                epoch_len = max_epoch_steps,
+                                                max_episode_steps=max_epoch_steps)
                             else:
                                 print('Env_type not in the possible env list.')
                                 exit(0)  

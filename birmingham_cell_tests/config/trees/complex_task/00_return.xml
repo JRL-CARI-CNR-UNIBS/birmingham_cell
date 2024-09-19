@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="return">
+    <Sequence name="return">
+      <SkillExecutionNode robot="panda" action_name="init" skill_name="return"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="item_grasp_to_insertion">
+    <Sequence name="item_grasp_to_insertion">
+        <SubTree ID='to_item_grasp_approach'/>
+        <SubTree ID='to_item_grasp'/>
+        <SubTree ID='item_grasp'/>
+        <SubTree ID='return'/>
+    </Sequence>
+  </BehaviorTree>
+</root>

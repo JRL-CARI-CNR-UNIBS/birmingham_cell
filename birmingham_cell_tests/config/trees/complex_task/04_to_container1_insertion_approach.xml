@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="to_container1_insertion_approach">
+    <Sequence name="to_container1_insertion_approach">
+      <SkillExecutionNode robot="panda" action_name="container1_peg_in_hole" skill_name="return"/>
+      <SkillExecutionNode robot="panda" action_name="container1_peg_in_hole" skill_name="move_to_insertion_approach"/>
+    </Sequence>
+  </BehaviorTree>
+</root>

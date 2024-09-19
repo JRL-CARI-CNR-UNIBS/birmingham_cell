@@ -1,12 +1,12 @@
-env_type: ['force_pag_in_hole']
-max_epoch_steps: [25,50]
+env_type: ['realistic_fake']
+max_epoch_steps: [25]
 learning_rate: [0.001]
 gamma: [0.9]
-total_timesteps: 100000
-name_space: 'force_pag_in_hole_2'
+total_timesteps: 1000000
+name_space: 'realistic_fake_with_error'
 # verbose: 1
-# model_save_freq: 5000
+# model_save_freq: 10000
 noise_sigma: [0.1]
 # train_freq: 
 #     step: [1]
-stop_on_success: False
+# stop_on_success: False

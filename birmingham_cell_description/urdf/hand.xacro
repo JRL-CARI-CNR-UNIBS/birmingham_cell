@@ -31,7 +31,7 @@
         </geometry>
       </collision>
     </link>
-    <link name="${ns}_leftfinger" concave="yes">
+    <link name="${ns}_leftfinger">
       <contact>
         <friction_anchor/>
         <stiffness value="30000.0"/>
@@ -54,13 +54,13 @@
         </material>
       </visual>
       <!-- <collision> -->
-      <collision concave="yes">
+      <collision>
         <geometry>
           <mesh filename="package://birmingham_cell_description/meshes/leftfinger_collision.STL"/>
         </geometry>
       </collision>
     </link>
-    <link name="${ns}_rightfinger" concave="yes">
+    <link name="${ns}_rightfinger">
       <contact>
         <friction_anchor/>
         <stiffness value="30000.0"/>
@@ -84,7 +84,7 @@
         </material>
       </visual>
       <!-- <collision> -->
-      <collision concave="yes">
+      <collision>
         <geometry>
           <mesh filename="package://birmingham_cell_description/meshes/rightfinger_collision.STL"/>
         </geometry>

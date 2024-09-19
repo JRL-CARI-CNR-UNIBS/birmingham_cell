@@ -31,3 +31,86 @@ arbit_params:
           failure: -1000000 
           duration: -1000 
           max_force: -1 
+
+    container1_peg_in_hole:
+      failure: -1000000000
+      final_distance: -1000000
+      duration: -1000
+      max_force: -1 
+
+      skills:
+        move_to_container1_approach:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_container1_grasp:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_container1_insertion:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        insert:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+    item_peg_in_hole:
+      failure: -1000000000
+      final_distance: -1000000
+      duration: -1000
+      max_force: -1 
+
+      skills:
+        move_to_item_approach:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_item_grasp:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_item_insertion:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        insert:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+    container2_peg_in_hole:
+      failure: -1000000000
+      final_distance: -1000000
+      duration: -1000
+      max_force: -1 
+
+      skills:
+        move_to_container2_approach:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_container2_grasp:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        move_to_container2_insertion:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+        insert:
+          failure: -1000000 
+          duration: -1000 
+          max_force: -1 
+
+

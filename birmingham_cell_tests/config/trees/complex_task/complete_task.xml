@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<root BTCPP_format="4">
+  <BehaviorTree ID="complete_task">
+    <Sequence name="complete_task">
+        <SubTree ID='init'/>
+        <SubTree ID='container1_peg_in_hole'/>
+        <SubTree ID='item_peg_in_hole'/>
+        <SubTree ID='container2_peg_in_hole'/>
+    </Sequence>
+  </BehaviorTree>
+</root>

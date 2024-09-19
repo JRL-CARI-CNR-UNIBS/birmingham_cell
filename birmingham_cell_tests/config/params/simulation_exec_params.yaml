@@ -20,6 +20,13 @@ exec_params:
           skill_type: "panda_gripper_move"
           gripper_type: "pybullet"
           movement: "close"
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"         # the movement is refered to this frame
+          position: [0,0,-0.06]     # traslation to respect the three axes. Position and orientation are alternative to rotZdeg and others.
+          quaternion: [0,0,0,1]  # rotation to respect the three axes
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7
 
     can_peg_in_hole:
       action_type: "peg_in_hole"
@@ -85,3 +92,199 @@ exec_params:
           relative_target: true
           goal_twist: [0, 0, 0.005, 0, 0, 0]
           target_force: 100.0
+
+    container1_peg_in_hole:
+      action_type: "peg_in_hole"
+      object_name: "container1"
+      location_name: "container1_g"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+
+        move_to_approach:
+          target_frame : "container1_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_grasp:
+          target_frame : "container1_grasp"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"         
+          position: [0,0,-0.06]     
+          quaternion: [0,0,0,1]  
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7
+
+        move_to_insertion_approach:
+          target_frame : "container1_insertion_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_insertion:
+          target_frame : "container1_insertion"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        insert:
+          skill_type: "simple_touch"
+          goal_twist_frame: "panda_grasptarget"
+          release: 0.06
+          release_condition: 0
+          relative_target: true
+          goal_twist: [0, 0, 0.005, 0, 0, 0]
+          target_force: 100.0
+
+    item_peg_in_hole:
+      action_type: "peg_in_hole"
+      object_name: "item"
+      location_name: "item_g"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+
+        move_to_approach:
+          target_frame : "item_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_grasp:
+          target_frame : "item_grasp"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"         # the movement is refered to this frame
+          position: [0,0,-0.06]     # traslation to respect the three axes. Position and orientation are alternative to rotZdeg and others.
+          quaternion: [0,0,0,1]  # rotation to respect the three axes
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7
+
+        move_to_insertion_approach:
+          target_frame : "item_insertion_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_insertion:
+          target_frame : "item_insertion"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        insert:
+          skill_type: "simple_touch"
+          goal_twist_frame: "panda_grasptarget"
+          release: 0.06
+          release_condition: 0
+          relative_target: true
+          goal_twist: [0, 0, 0.005, 0, 0, 0]
+          target_force: 100.0
+
+    container2_peg_in_hole:
+      action_type: "peg_in_hole"
+      object_name: "container2"
+      location_name: "container2_g"
+
+      skills:
+        open_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "open"
+
+        move_to_approach:
+          target_frame : "container2_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_grasp:
+          target_frame : "container2_grasp"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        close_gripper:
+          skill_type: "panda_gripper_move"
+          gripper_type: "pybullet"
+          movement: "close"
+
+        return:
+          skill_type: "cartesian_position"
+          frame: "panda_grasptarget"         # the movement is refered to this frame
+          position: [0,0,-0.06]     # traslation to respect the three axes. Position and orientation are alternative to rotZdeg and others.
+          quaternion: [0,0,0,1]  # rotation to respect the three axes
+          linear_velocity_m_s: 0.05
+          angular_velocity_rad_s: 0.7
+
+        move_to_insertion_approach:
+          target_frame : "container2_insertion_approach"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        move_to_insertion:
+          target_frame : "container2_insertion"
+          acceleration_scaling: 0.5
+          velocity_scaling: 0.5
+          skill_type: "move_to"
+          relative_position: [0.0,0.0,0.0]
+          relative_orientation: [0.0,0.0,0.0,1.0]
+
+        insert:
+          skill_type: "simple_touch"
+          goal_twist_frame: "panda_grasptarget"
+          release: 0.06
+          release_condition: 0
+          relative_target: true
+          goal_twist: [0, 0, 0.005, 0, 0, 0]
+          target_force: 100.0
+

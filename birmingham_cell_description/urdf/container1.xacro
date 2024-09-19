@@ -1,0 +1,291 @@
+<?xml version="1.0" ?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="container1_model">
+
+  <xacro:arg name="length" default="1" />
+  <xacro:property name="length" value="'$(arg length)'" />
+  <xacro:arg name="width"  default="1" />
+  <xacro:property name="width" value="'$(arg width)'" />
+  <xacro:arg name="height" default="1" />
+  <xacro:property name="height" value="'$(arg height)'" />
+
+  <link name="container1_1">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_1.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_1.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_2" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_2"/>
+  </joint>
+  <link name="container1_2">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_2.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_3" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_3"/>
+  </joint>
+  <link name="container1_3">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_3.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_3.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_4" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_4"/>
+  </joint>
+  <link name="container1_4">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_4.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_4.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_5" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_5"/>
+  </joint>
+  <link name="container1_5">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_5.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_5.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_6" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_6"/>
+  </joint>
+  <link name="container1_6">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_6.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_6.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_7" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_7"/>
+  </joint>
+  <link name="container1_7">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_7.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_7.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_8" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_8"/>
+  </joint>
+  <link name="container1_8">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_8.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_8.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_9" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_9"/>
+  </joint>
+  <link name="container1_9">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_9.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_9.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_10" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_10"/>
+  </joint>
+  <link name="container1_10">
+    <inertial>
+      <mass value="0.00001" />
+      <mass value="0.226" />
+      <inertia  ixx="0.000000001" ixy="0.0"  ixz="0.0"  iyy="0.000000001"  iyz="0.0"  izz="0.000000001" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_10.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_10.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="1_to_11" type="fixed">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent link="container1_1"/>
+    <child link="container1_11"/>
+  </joint>
+  <link name="container1_11">
+    <inertial>
+      <mass value="0.226" />
+      <origin xyz="0 0 {0.025 * height * 1000}" />
+      <inertia  ixx="0.0003" ixy="0.0"  ixz="0.0"  iyy="0.0003"  iyz="0.0"  izz="0.0002" />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_11.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://birmingham_cell_description/meshes/container1/container1_11.STL" scale="${length} ${width} ${height}"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

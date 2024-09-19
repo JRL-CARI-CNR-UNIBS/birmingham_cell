@@ -295,23 +295,23 @@ class TOFConnectionEnv(gym.Env):
         self.spawn_model_clnt.call(object_names, model_name, pose, fixed)
 
         # randomizzo le posizioni di grasp e di insertion
-        new_tfs = []
-        for old_tf in self.initial_tf:
-            new_tf = copy.copy(old_tf)
-            if new_tf['name'] in self.randomized_tf:
-                low_limit = [-0.02, -0.02, 0.0]
-                high_limit = [0.02, 0.02, 0.02]
-                noise = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
-                new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
-                if new_tf['name'] == 'can_grasp':
-                    self.default_grasp_pos = copy.copy(new_tf['position'])
-                    self.current_grasp_pos = copy.copy(new_tf['position'])
-                if new_tf['name'] == 'hole_insertion':
-                    self.default_insert_pos = copy.copy(new_tf['position'])
-                    self.current_insert_pos = copy.copy(new_tf['position'])
-            new_tfs.append(new_tf)
-        rospy.set_param('tf_params',new_tfs)
-        rospy.sleep(0.5)
+        # new_tfs = []
+        # for old_tf in self.initial_tf:
+        #     new_tf = copy.copy(old_tf)
+        #     if new_tf['name'] in self.randomized_tf:
+        #         low_limit = [-0.02, -0.02, 0.0]
+        #         high_limit = [0.02, 0.02, 0.02]
+        #         noise = np.ndarray.tolist(self.np_random.uniform(low_limit, high_limit))
+        #         new_tf['position'] = np.ndarray.tolist(np.add(new_tf['position'], noise))
+        #         if new_tf['name'] == 'can_grasp':
+        #             self.default_grasp_pos = copy.copy(new_tf['position'])
+        #             self.current_grasp_pos = copy.copy(new_tf['position'])
+        #         if new_tf['name'] == 'hole_insertion':
+        #             self.default_insert_pos = copy.copy(new_tf['position'])
+        #             self.current_insert_pos = copy.copy(new_tf['position'])
+        #     new_tfs.append(new_tf)
+        # rospy.set_param('tf_params',new_tfs)
+        # rospy.sleep(0.5)
 
     def _get_obs(self) -> Dict[str, np.array]:
         # Come osservazione utilizzo le posizioni relative e il set di parametri

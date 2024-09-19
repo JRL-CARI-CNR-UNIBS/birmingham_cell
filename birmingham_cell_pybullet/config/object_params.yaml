@@ -86,3 +86,48 @@ pybullet_simulation:
       mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
       mesh_orientation_offset: [0, 0, 0, 1]
       attached_link: 'gripper_base'
+
+    item:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/item'
+      xacro_args:
+        length: 0.0008
+        width:  0.0008
+        height: 0.0008
+      mesh_file_path: 'meshes/item.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    accomodation:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/accomodation'
+      xacro_args:
+        length: 0.00085
+        width:  0.00085
+        height: 0.00085
+      mesh_file_path: 'meshes/accomodation.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    container1:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/container1'
+      xacro_args:
+        length: 0.0008
+        width:  0.0008
+        height: 0.001
+      mesh_file_path: 'meshes/container1.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'
+    container2:
+      package_name: 'birmingham_cell_description'
+      xacro_file_path: 'urdf/container2'
+      xacro_args:
+        length: 0.0008
+        width:  0.0008
+        height: 0.001
+      mesh_file_path: 'meshes/container2.STL'
+      mesh_position_offset: [0, 0, 0] # pybullet return the position of object center of mass
+      mesh_orientation_offset: [0, 0, 0, 1]
+      attached_link: 'gripper_base'

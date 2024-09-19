@@ -18,8 +18,10 @@ class ForceGraspEnv(gym.Env):
         self,
         node_name: str = 'ForceGraspEnv',
         package_name: str = 'birmingham_cell_tests',
-        distance_threshold: float = 0.002,
+        distance_threshold: float = 0.0005,
         epoch_len: int = None,
+        info_type: str = 'insert',
+        data_name: str = '1_3_insert_data_xyz_6'
     ) -> None:
         rospy.init_node(node_name)
 
@@ -39,43 +41,40 @@ class ForceGraspEnv(gym.Env):
 
         # lettura dati di forze
         data_path = self.package_path + '/data'
-        grasp_data_path = data_path + '/01_grasp_data.csv'
-        insert_data_path = data_path + '/02_insert_data.csv'
+        data_path = data_path + '/'+data_name+'.csv'
 
         sampling_freq = 250
-        grasp_max_time = 1
-        grasp_df = pd.read_csv(grasp_data_path)
-        grasp_df['x'], grasp_df['y'], grasp_df['z'] = zip(*grasp_df['grasp_pose'].apply(self._extract_xyz))
-        grasp_grouped = grasp_df.groupby('grasp_pose')  
 
-        self.grasp_pose_to_forces = {}
-        for name, group in grasp_grouped:
-            xy_name = str(group.iloc[0]['x']) + ',' + str(group.iloc[0]['y'])
-            self.grasp_pose_to_forces[xy_name] = {}
-            self.grasp_pose_to_forces[xy_name]['fx'] = self._pad_forces(group['fx'].values, grasp_max_time * sampling_freq)
-            self.grasp_pose_to_forces[xy_name]['fy'] = self._pad_forces(group['fy'].values, grasp_max_time * sampling_freq)
-            self.grasp_pose_to_forces[xy_name]['fz'] = self._pad_forces(group['fz'].values, grasp_max_time * sampling_freq)
-            self.grasp_pose_to_forces[xy_name]['tx'] = self._pad_forces(group['tx'].values, grasp_max_time * sampling_freq)
-            self.grasp_pose_to_forces[xy_name]['ty'] = self._pad_forces(group['ty'].values, grasp_max_time * sampling_freq)
-            self.grasp_pose_to_forces[xy_name]['tz'] = self._pad_forces(group['tz'].values, grasp_max_time * sampling_freq)
+        if info_type == 'grasp':
+            grasp_max_time = 1
+            grasp_df = pd.read_csv(data_path)
+            grasp_grouped = grasp_df.groupby('grasp_pose')  
 
-# //
-        # grasp_max_time = 2
-        # grasp_df = pd.read_csv(insert_data_path)
-        # grasp_df['x'], grasp_df['y'], grasp_df['z'] = zip(*grasp_df['insert_pose'].apply(self._extract_xyz))
-        # grasp_grouped = grasp_df.groupby('insert_pose')  
+            self.grasp_pose_to_forces = {}
+            for name, group in grasp_grouped:
+                xy_name = str(group.iloc[0]['x']) + ',' + str(group.iloc[0]['y'])
+                self.grasp_pose_to_forces[xy_name] = {}
+                self.grasp_pose_to_forces[xy_name]['fx'] = self._pad_forces(group['fx'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['fy'] = self._pad_forces(group['fy'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['fz'] = self._pad_forces(group['fz'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['tx'] = self._pad_forces(group['tx'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['ty'] = self._pad_forces(group['ty'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['tz'] = self._pad_forces(group['tz'].values, grasp_max_time * sampling_freq)
+        if info_type == 'insert':
+            grasp_max_time = 2
+            grasp_df = pd.read_csv(data_path)
+            grasp_grouped = grasp_df.groupby('insert_pose')  
 
-        # self.grasp_pose_to_forces = {}
-        # for name, group in grasp_grouped:
-        #     xy_name = str(group.iloc[0]['x']) + ',' + str(group.iloc[0]['y'])
-        #     self.grasp_pose_to_forces[xy_name] = {}
-        #     self.grasp_pose_to_forces[xy_name]['fx'] = self._pad_forces(group['fx'].values, grasp_max_time * sampling_freq)
-        #     self.grasp_pose_to_forces[xy_name]['fy'] = self._pad_forces(group['fy'].values, grasp_max_time * sampling_freq)
-        #     self.grasp_pose_to_forces[xy_name]['fz'] = self._pad_forces(group['fz'].values, grasp_max_time * sampling_freq)
-        #     self.grasp_pose_to_forces[xy_name]['tx'] = self._pad_forces(group['tx'].values, grasp_max_time * sampling_freq)
-        #     self.grasp_pose_to_forces[xy_name]['ty'] = self._pad_forces(group['ty'].values, grasp_max_time * sampling_freq)
-        #     self.grasp_pose_to_forces[xy_name]['tz'] = self._pad_forces(group['tz'].values, grasp_max_time * sampling_freq)
-# //
+            self.grasp_pose_to_forces = {}
+            for name, group in grasp_grouped:
+                xy_name = str(group.iloc[0]['x']) + ',' + str(group.iloc[0]['y'])
+                self.grasp_pose_to_forces[xy_name] = {}
+                self.grasp_pose_to_forces[xy_name]['fx'] = self._pad_forces(group['fx'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['fy'] = self._pad_forces(group['fy'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['fz'] = self._pad_forces(group['fz'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['tx'] = self._pad_forces(group['tx'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['ty'] = self._pad_forces(group['ty'].values, grasp_max_time * sampling_freq)
+                self.grasp_pose_to_forces[xy_name]['tz'] = self._pad_forces(group['tz'].values, grasp_max_time * sampling_freq)
 
         self.theoretical_correct_grasp_pos  = np.array([0.0,0.0])
         
@@ -114,11 +113,11 @@ class ForceGraspEnv(gym.Env):
         calculed_grasp_forces = self._generate_forces(current_to_correct_grasp_distance[0],current_to_correct_grasp_distance[1],self.grasp_pose_to_forces)
 
         self.grasp_forces = np.concatenate([calculed_grasp_forces['fx'],
-                                           calculed_grasp_forces['fy'],
-                                           calculed_grasp_forces['fz'],
-                                           calculed_grasp_forces['tx'],
-                                           calculed_grasp_forces['ty'],
-                                           calculed_grasp_forces['tz'],])
+                                            calculed_grasp_forces['fy'],
+                                            calculed_grasp_forces['fz'],
+                                            calculed_grasp_forces['tx'],
+                                            calculed_grasp_forces['ty'],
+                                            calculed_grasp_forces['tz'],])
         
         # print('current_grasp_pos: ' + str(self.current_grasp_pos))
         # print('correct_grasp_pos: ' + str(self.correct_grasp_pos))
@@ -188,21 +187,43 @@ class ForceGraspEnv(gym.Env):
             # print('Out')
             # print(reward)
         return reward
-
-    def _extract_xyz(self, position):
-        pos = ast.literal_eval(position)
-        return round(pos[0],3), round(pos[1],3), round(pos[2],3)
-  
+ 
     def _pad_forces(self, vector, lenght):
         return np.array(np.ndarray.tolist(vector) + [0.0] * (lenght - len(vector)))
 
     def _generate_forces(self, x, y, pose_to_forces):
         # print('x: ' + str(x))
         # print('y: ' + str(y))
-        x1 = round(x, 3)
-        x2 = round(x1 + 0.001, 3)
-        y1 = round(y, 3)
-        y2 = round(y1 + 0.001, 3)
+        x_min, x_max = -0.005, 0.005
+        y_min, y_max = -0.005, 0.005
+        if ((x >= x_min) & (x <= x_max) & (y >= y_min) & (y <= y_max)):
+            new_x = round(x / 0.00025) * 0.00025
+            new_y = round(y / 0.00025) * 0.00025
+            if new_x < x :
+                x1 = round(new_x,5)
+                x2 = round(new_x + 0.00025,5)
+            else:
+                x1 = round(new_x - 0.00025,5)
+                x2 = round(new_x,5)
+            if new_y < y :
+                y1 = round(new_y,5)
+                y2 = round(new_y + 0.00025,5)
+            else:
+                y1 = round(new_y - 0.00025,5)
+                y2 = round(new_y,5)
+        else:
+            x1 = round(x, 3)
+            if x1 <= x:
+                x2 = round(x1 + 0.001, 3)
+            else:
+                x2 = copy.copy(x1)
+                x1 = round(x2 - 0.001, 3)
+            y1 = round(y, 3)
+            if y1 <= y:
+                y2 = round(y1 + 0.001, 3)
+            else:
+                y2 = copy.copy(y1)
+                y1 = round(y2 - 0.001, 3)
 
         u = (x - x1) / (x2 - x1)
         v = (y - y1) / (y2 - y1)
@@ -276,6 +297,7 @@ class ForceGraspEnv(gym.Env):
             forces['tz'] = Tz
 
             self.in_grasp_area = True
+            # print('In')
         else:
             forces = {}
             forces['fx'] = np.zeros(len(pose_to_forces['0.0,0.0']['fx']))
@@ -285,6 +307,7 @@ class ForceGraspEnv(gym.Env):
             forces['ty'] = np.zeros(len(pose_to_forces['0.0,0.0']['fx']))
             forces['tz'] = np.zeros(len(pose_to_forces['0.0,0.0']['fx']))
             self.in_grasp_area = False
+            # print('name11: '+str(name11)+'. '+'name12: '+str(name12)+'. '+'name21: '+str(name21)+'. '+'name22: '+str(name22)+'.')
 
         return forces
 

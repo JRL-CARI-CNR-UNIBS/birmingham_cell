@@ -1,11 +1,11 @@
-env_type: 'realistic_history_fake'
+env_type: 'force_peg_in_hole'
 max_epoch_steps: 25
-learning_rate: 0.01
+learning_rate: 0.001
 gamma: 0.9
-total_timesteps: 1000000
-name_space: 'history_tests'
+total_timesteps: 100000
+name_space: 'force_peg_in_hole__2'
 verbose: 0
-model_save_freq: 100000
+model_save_freq: 10000
 noise_sigma: 0.1
 
-model_name: history_first
+model_name: _100000_steps

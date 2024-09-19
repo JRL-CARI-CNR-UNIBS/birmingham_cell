@@ -98,3 +98,13 @@ register(
     id="ConnectionForcesEnv-v0",
     entry_point="birmingham_envs.envs:ConnectionForcesEnv",
 )
+
+register(
+    id="ConnectionGraspEnv-v0",
+    entry_point="birmingham_envs.envs:ConnectionGraspEnv",
+)
+
+register(
+    id="ConnectionInsertEnv-v0",
+    entry_point="birmingham_envs.envs:ConnectionInsertEnv",
+)

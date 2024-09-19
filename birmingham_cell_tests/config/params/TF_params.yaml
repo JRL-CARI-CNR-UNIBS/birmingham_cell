@@ -1,8 +1,25 @@
 tf_params:
-  # - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.519], quaternion: [1.0, 0.0, 0.0, 0.0]} # normal home 
-  - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.15], quaternion: [1.0, 0.0, 0.0, 0.0]} # collection data home
+  - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.519], quaternion: [1.0, 0.0, 0.0, 0.0]} # normal home 
+  # - {name: "home"          , frame: "world", position: [0.554, 0.000, 0.15], quaternion: [1.0, 0.0, 0.0, 0.0]} # collection data home
   - {name: "can_approach"  , frame: "can" ,  position: [0.00, 0.00, 0.2],     quaternion: [1.0, 0.0, 0.0, 0.0]}
   # - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.04],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "can_grasp"     , frame: "can" ,  position: [0.00, 0.00, 0.03],    quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "hole_approach" , frame: "hole",  position: [0.00, 0.00, 0.2],     quaternion: [1.0, 0.0, 0.0, 0.0]}
   - {name: "hole_insertion", frame: "hole",  position: [0.00, 0.00, 0.17],    quaternion: [1.0, 0.0, 0.0, 0.0]}
+
+
+  - {name: "container1_grasp",              frame: "container1",           position: [0.00, 0.00, 0.04],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "container1_approach",           frame: "container1_grasp",     position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "container1_insertion",          frame: "accomodation",         position: [0.00, 0.00, 0.10],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "container1_insertion_approach", frame: "container1_insertion", position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "container1_g",                  frame: "accomodation",         position: [0.00, 0.00, 0.01],  quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "item_grasp",                    frame: "item",                 position: [0.00, 0.00, 0.04],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "item_approach",                 frame: "item_grasp",           position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "item_insertion",                frame: "container1",           position: [0.00, 0.00, 0.11],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "item_insertion_approach",       frame: "item_insertion",       position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "item_g",                        frame: "container1",           position: [0.00, 0.00, 0.02],  quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "container2_grasp",              frame: "container2",           position: [0.00, 0.00, 0.04],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "container2_approach",           frame: "container2_grasp",     position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "container2_insertion",          frame: "item",                 position: [0.00, 0.00, 0.10],  quaternion: [1.0, 0.0, 0.0, 0.0]}
+  - {name: "container2_insertion_approach", frame: "container2_insertion", position: [0.00, 0.00, -0.03], quaternion: [0.0, 0.0, 0.0, 1.0]}
+  - {name: "container2_g",                  frame: "item",                 position: [0.00, 0.00, 0.03],  quaternion: [0.0, 0.0, 0.0, 1.0]}
